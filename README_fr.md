@@ -74,7 +74,13 @@ Dans Type de base de données:
 ![vCardOOo screenshot 4](img/vCardOOo-4_fr.png)
 
 Dans Général: URL de la source de données:
-- mettre: votre compte Google (c'est-à-dire: votre_compte@gmail.com)
+- mettre l'url de votre instance vCard.
+
+Dans Général: Utilisateur:
+- mettre votre nom d'utilisateur.
+
+Dans Général: Mot de passe:
+- mettre votre mot de passe.
 
 Puis:
 - cliquez sur: Tester la connexion (bouton)

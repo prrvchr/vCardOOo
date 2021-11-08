@@ -4,7 +4,7 @@
 
 **The use of this software subjects you to our** [**Terms Of Use**](https://prrvchr.github.io/vCardOOo/vCardOOo/registration/TermsOfUse_en) **and** [**Data Protection Policy**](https://prrvchr.github.io/vCardOOo/vCardOOo/registration/PrivacyPolicy_en)
 
-# version [0.0.6](https://prrvchr.github.io/vCardOOo#historical)
+# version [0.0.1](https://prrvchr.github.io/vCardOOo#historical)
 
 ## Introduction:
 
@@ -68,13 +68,19 @@ In step: 2. Connection Settings:
 ![vCardOOo screenshot 3](img/vCardOOo-3.png)
 
 In Database type list:
-- select: Google Contacts
+- select: vCard Contacts
 - click on: Next(Button)
 
 ![vCardOOo screenshot 4](img/vCardOOo-4.png)
 
 In General: Datasource Url:
-- put: your Google account (ie: your_account@gmail.com)
+- put the url of your vCard instance.
+
+In General: User:
+- put your username.
+
+In General: Password:
+- put your password.
 
 Then:
 - click on: Test connection (button)
