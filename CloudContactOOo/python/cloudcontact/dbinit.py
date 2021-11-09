@@ -29,33 +29,34 @@
 
 from com.sun.star.sdbc import SQLException
 
-from unolib import KeyMap
-from unolib import getResourceLocation
-from unolib import getSimpleFile
+from .unolib import KeyMap
 
-from .dbconfig import g_path
+from .unotool import getResourceLocation
+from .unotool import getSimpleFile
+
+from .dbconfig import g_folder
 from .dbconfig import g_version
 
 from .dbqueries import getSqlQuery
 
-from .dbtools import getDataSourceCall
-from .dbtools import getSequenceFromResult
-from .dbtools import getDataFromResult
-from .dbtools import getKeyMapFromResult
-from .dbtools import registerDataSource
-from .dbtools import executeQueries
-from .dbtools import executeSqlQueries
-from .dbtools import getDataSourceConnection
-from .dbtools import createDataSource
-from .dbtools import checkDataBase
-from .dbtools import createStaticTable
+from .dbtool import getDataSourceCall
+from .dbtool import getSequenceFromResult
+from .dbtool import getDataFromResult
+from .dbtool import getKeyMapFromResult
+from .dbtool import registerDataSource
+from .dbtool import executeQueries
+from .dbtool import executeSqlQueries
+from .dbtool import getDataSourceConnection
+from .dbtool import createDataSource
+from .dbtool import checkDataBase
+from .dbtool import createStaticTable
 
 import traceback
 
 
 def getDataSourceUrl(ctx, dbname, plugin, register):
     error = None
-    url = getResourceLocation(ctx, plugin, g_path)
+    url = getResourceLocation(ctx, plugin, g_folder)
     odb = '%s/%s.odb' % (url, dbname)
     if not getSimpleFile(ctx).exists(odb):
         dbcontext = ctx.ServiceManager.createInstance('com.sun.star.sdb.DatabaseContext')
@@ -124,7 +125,7 @@ def getTablesAndStatements(ctx, statement, version=g_version):
     tables = []
     statements = []
     call = getDataSourceCall(ctx, statement.getConnection(), 'getTables')
-    for table in getSequenceFromResult(statement.executeQuery(getSqlQuery(ctx, 'getTableName'))):
+    for table in getSequenceFromResult(statement.executeQuery(getSqlQuery(ctx, 'getTableNames'))):
         view = False
         versioned = False
         columns = []
@@ -184,7 +185,7 @@ def getTablesAndStatements(ctx, statement, version=g_version):
     call.close()
     return tables, statements
 
-def getViewsAndTriggers(ctx, statement):
+def getViewsAndTriggers(ctx, statement, name):
     c1 = []
     s1 = []
     f1 = []
@@ -192,7 +193,7 @@ def getViewsAndTriggers(ctx, statement):
     triggers = []
     triggercore = []
     call = getDataSourceCall(ctx, statement.getConnection(), 'getViews')
-    tables = getSequenceFromResult(statement.executeQuery(getSqlQuery(ctx, 'getViewName')))
+    tables = getSequenceFromResult(statement.executeQuery(getSqlQuery(ctx, 'getViewNames')))
     for table in tables:
         call.setString(1, table)
         result = call.executeQuery()
@@ -227,14 +228,16 @@ def getViewsAndTriggers(ctx, statement):
             triggercore.append(getSqlQuery(ctx, 'createTriggerUpdateAddressBookCore', data))
     call.close()
     if queries:
-        column = 'Resource'
+        column = getSqlQuery(ctx, 'getPrimaryColumnName')
         c1.insert(0, '"%s"' % column)
+        c1.append('"%s"' % getSqlQuery(ctx, 'getBookmarkColumnName'))
         s1.insert(0, '"%s"."%s"' % (ptable, column))
-        f1.insert(0, '"%s"' % ptable)
-        f1.append('ORDER BY "%s"."%s"' % (ptable, pcolumn))
-        format = ('AddressBook', ','.join(c1), ','.join(s1), ' '.join(f1))
+        s1.append(getSqlQuery(ctx, 'getBookmarkColumn'))
+        f1.insert(0, getSqlQuery(ctx, 'getAddressBookTable'))
+        f1.append(getSqlQuery(ctx, 'getAddressBookPredicate'))
+        format = (name, ','.join(c1), ','.join(s1), ' '.join(f1))
         query = getSqlQuery(ctx, 'createView', format)
-        #print("dbinit._getViewsAndTriggers() %s"  % query)
+        #print("dbinit.getViewsAndTriggers()\n%s" % query)
         queries.append(query)
         trigger = getSqlQuery(ctx, 'createTriggerUpdateAddressBook', ' '.join(triggercore))
         triggers.append(trigger)

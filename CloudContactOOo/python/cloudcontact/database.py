@@ -37,25 +37,40 @@ from com.sun.star.sdb.CommandType import QUERY
 
 from com.sun.star.sdbc import XRestDataBase
 
-from unolib import KeyMap
-from unolib import parseDateTime
-from unolib import createService
+from .unolib import KeyMap
 
+from .unotool import parseDateTime
+from .unotool import createService
+from .unotool import getConfiguration
+from .unotool import getResourceLocation
+from .unotool import getSimpleFile
+
+from .configuration import g_identifier
 from .configuration import g_admin
+from .configuration import g_group
+from .configuration import g_host
 
 from .dbqueries import getSqlQuery
-from .dbconfig import g_role
-from .dbconfig import g_dba
 
-from .dbtools import checkDataBase
-from .dbtools import createStaticTable
-from .dbtools import executeSqlQueries
-from .dbtools import getDataSourceCall
-from .dbtools import executeQueries
-from .dbtools import getDictFromResult
-from .dbtools import getKeyMapFromResult
-from .dbtools import getSequenceFromResult
-from .dbtools import getKeyMapKeyMapFromResult
+from .dbconfig import g_dba
+from .dbconfig import g_folder
+from .dbconfig import g_jar
+from .dbconfig import g_role
+
+from .dbtool import checkDataBase
+from .dbtool import createDataSource
+from .dbtool import createStaticTable
+from .dbtool import getConnectionInfo
+from .dbtool import getDataBaseConnection
+from .dbtool import getDataBaseUrl
+from .dbtool import executeSqlQueries
+from .dbtool import getDataSourceCall
+from .dbtool import getDataSourceConnection
+from .dbtool import executeQueries
+from .dbtool import getDictFromResult
+from .dbtool import getKeyMapFromResult
+from .dbtool import getSequenceFromResult
+from .dbtool import getKeyMapKeyMapFromResult
 
 from .dbinit import getStaticTables
 from .dbinit import getQueries
@@ -72,70 +87,99 @@ from time import sleep
 
 class DataBase(unohelper.Base,
                XRestDataBase):
-    def __init__(self, ctx, datasource, name='', password='', sync=None):
+    def __init__(self, ctx):
+        print("gContact.DataBase.init() start")
         self._ctx = ctx
-        print("DataBase.init() 1")
-        connection = datasource.getConnection(name, password)
-        print("DataBase.init() 2")
-        self._statement = connection.createStatement()
-        print("DataBase.init() 3")
+        self._statement = None
+        self._embedded = False
         self._fieldsMap = {}
         self._batchedCalls = OrderedDict()
-        self.sync = sync
-        print("DataBase.init() 4")
+        self._addressbook = None
+        url = getResourceLocation(ctx, g_identifier, g_folder)
+        self._url = url + '/' + g_host
+        if self._embedded:
+            self._path = url + '/' + g_jar
+        else:
+            self._path = None
+        odb = self._url + '.odb'
+        exist = getSimpleFile(ctx).exists(odb)
+        if not exist:
+            connection = getDataSourceConnection(ctx, self._url)
+            error = self._createDataBase(connection)
+            if error is None:
+                datasource = connection.getParent()
+                #datasource.SuppressVersionColumns = True
+                datasource.DatabaseDocument.storeAsURL(odb, ())
+                datasource.dispose()
+            connection.close()
+        print("gContact.DataBase.init() end")
 
     @property
     def Connection(self):
+        if self._statement is None:
+            connection = self.getConnection()
+            self._statement = connection.createStatement()
         return self._statement.getConnection()
 
-# Procedures called by the DataSource
-    def createDataBase(self):
-        version, error = checkDataBase(self._ctx, self.Connection)
+    def getConnection(self, user='', password=''):
+        #info = getConnectionInfo(user, password, self._path)
+        return getDataSourceConnection(self._ctx, self._url, user, password, False)
+
+    def dispose(self):
+        if self._statement is not None:
+            connection = self._statement.getConnection()
+            self._statement.dispose()
+            self._statement = None
+            #connection.getParent().dispose()
+            connection.close()
+            print("gContact.DataBase.dispose() ***************** database: %s closed!!!" % g_host)
+
+# Procedures called by Initialization
+    def _createDataBase(self, connection):
+        version, error = checkDataBase(self._ctx, connection)
         if error is None:
-            createStaticTable(self._ctx, self._statement, getStaticTables())
-            tables, queries = getTablesAndStatements(self._ctx, self._statement, version)
-            executeSqlQueries(self._statement, tables)
-            executeQueries(self._ctx, self._statement, getQueries())
-            executeSqlQueries(self._statement, queries)
-            views, triggers = getViewsAndTriggers(self._ctx, self._statement)
-            executeSqlQueries(self._statement, views)
+            statement = connection.createStatement()
+            createStaticTable(self._ctx, statement, getStaticTables())
+            tables, queries = getTablesAndStatements(self._ctx, statement, version)
+            executeSqlQueries(statement, tables)
+            executeQueries(self._ctx, statement, getQueries())
+            executeSqlQueries(statement, queries)
+            views, triggers = getViewsAndTriggers(self._ctx, statement, self._getViewName())
+            executeSqlQueries(statement, views)
+            statement.close()
         return error
 
     def getDataSource(self):
         return self.Connection.getParent()
 
-    def storeDataBase(self, url):
-        self.Connection.getParent().DatabaseDocument.storeAsURL(url, ())
+    def getDatabaseDocument(self):
+        return self.getDataSource().DatabaseDocument
 
     def addCloseListener(self, listener):
-        print("DataBase.addCloseListener() 1")
-        #mri = createService(self._ctx, 'mytools.Mri')
-        #mri.inspect(listener)
-        #sleep(2)
         datasource = self.Connection.getParent()
-        print("DataBase.addCloseListener() 2")
         document = datasource.DatabaseDocument
-        print("DataBase.addCloseListener() 3")
         document.addCloseListener(listener)
-        print("DataBase.addCloseListener() 4")
 
     def shutdownDataBase(self, compact=False):
+        statement = self.Connection.createStatement()
         query = getSqlQuery(self._ctx, 'shutdown', compact)
-        self._statement.execute(query)
+        statement.execute(query)
+        statement.close()
 
     def createUser(self, name, password):
+        statement = self.Connection.createStatement()
         format = {'User': name, 'Password': password, 'Admin': g_admin}
         query = getSqlQuery(self._ctx, 'createUser', format)
-        status = self._statement.executeUpdate(query)
-        print("DataBase.createUser() %s" % status)
+        status = statement.executeUpdate(query)
+        statement.close()
         return status == 0
 
-    def insertUser(self, userid, account, group):
+    def insertUser(self, userid, account):
         user = KeyMap()
         call = self._getCall('insertUser')
         call.setString(1, userid)
         call.setString(2, account)
-        call.setString(3, group)
+        call.setString(3, g_group)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
@@ -153,19 +197,37 @@ class DataBase(unohelper.Base,
         return user
 
     def truncatGroup(self, start):
+        statement = self.Connection.createStatement()
         format = {'TimeStamp': unparseTimeStamp(start)}
         query = getSqlQuery(self._ctx, 'truncatGroup', format)
-        self._statement.execute(query)
+        statement.execute(query)
+        statement.close()
 
-    def createSynonym(self, user, name):
-        format = {'Schema': user.Resource, 'View': name.title()}
-        query = getSqlQuery(self._ctx, 'createSynonym', format)
-        self._statement.execute(query)
+    def initUser(self, format):
+        statement = self.Connection.createStatement()
+        format['View'] = self._getViewName()
+        query = getSqlQuery(self._ctx, 'createUserSchema', format)
+        statement.execute(query)
+        query = getSqlQuery(self._ctx, 'setUserAuthorization', format)
+        statement.execute(query)
+        query = getSqlQuery(self._ctx, 'createUserSynonym', format)
+        statement.execute(query)
+        query = getSqlQuery(self._ctx, 'setUserSchema', format)
+        statement.execute(query)
+        statement.close()
 
-    def createGroupView(self, user, name, group):
-        self._dropGroupView(user, name)
-        query = self._getGroupViewQuery('create', user, name, group)
-        self._statement.execute(query)
+    def createGroupView(self, user, group, groupid):
+        statement = self.Connection.createStatement()
+        format = {'Schema': user.Resource,
+                  'User': user.Account,
+                  'Name': group,
+                  'View': self._getViewName(),
+                  'GroupId': groupid}
+        query = getSqlQuery(self._ctx, 'dropGroupView', format)
+        statement.execute(query)
+        query = getSqlQuery(self._ctx, 'createGroupView', format)
+        statement.execute(query)
+        statement.close()
 
 # Procedures called by the User
     def getUserFields(self):
@@ -186,12 +248,16 @@ class DataBase(unohelper.Base,
         return default
 
     def setLoggingChanges(self, state):
+        statement = self.Connection.createStatement()
         query = getSqlQuery(self._ctx, 'loggingChanges', state)
-        self._statement.execute(query)
+        statement.execute(query)
+        statement.close()
 
     def saveChanges(self, compact=False):
+        statement = self.Connection.createStatement()
         query = getSqlQuery(self._ctx, 'saveChanges', compact)
-        self._statement.execute(query)
+        statement.execute(query)
+        statement.close()
 
     def getFieldsMap(self, method, reverse):
         if method not in self._fieldsMap:
@@ -289,17 +355,11 @@ class DataBase(unohelper.Base,
         call.close()
         return tuple(map)
 
-    def _dropGroupView(self, user, name):
-        query = self._getGroupViewQuery('drop', user, name)
-        self._statement.execute(query)
-
-    def _getGroupViewQuery(self, method, user, name, group=0):
-        query = '%sGroupView' % method
-        account, pwd = user.getCredential('')
-        format = {'User': account,
-                  'View': '%s.%s' % (user.Name.title(), name.title()),
-                  'Group': group}
-        return getSqlQuery(self._ctx, query, format)
+    def _getViewName(self):
+        if self._addressbook is None:
+            configuration = getConfiguration(self._ctx, g_identifier, False)
+            self._addressbook = configuration.getByName('AddressBookName')
+        return self._addressbook
 
     def _getCall(self, name, format=None):
         return getDataSourceCall(self._ctx, self.Connection, name, format)

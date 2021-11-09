@@ -27,42 +27,46 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import uno
 import unohelper
 
-from com.sun.star.util import XCloseListener
+from com.sun.star.frame import XTerminateListener
 
-from com.sun.star.logging.LogLevel import INFO
-from com.sun.star.logging.LogLevel import SEVERE
+from com.sun.star.lang import XEventListener
 
-from .configuration import g_compact
-
-from .logger import logMessage
-from .logger import getMessage
 
 import traceback
 
 
-class DataBaseListener(unohelper.Base,
-                       XCloseListener):
-    def __init__(self, ctx, replicator):
-        print("DataBaseListener.__init__() 1")
-        self._ctx = ctx
+class TerminateListener(unohelper.Base,
+                        XTerminateListener):
+    def __init__(self, replicator):
         self._replicator = replicator
-        print("DataBaseListener.__init__() 2")
 
-    # XCloseListener
-    def queryClosing(self, source, ownership):
-        print("DataBaseListener.queryClosing() 1")
-        if self._replicator.is_alive():
-            self._replicator.cancel()
-            self._replicator.join()
-        print("DataBaseListener.queryClosing() 2")
-        compact = self._replicator.count >= g_compact
-        self._replicator.DataBase.shutdownDataBase(compact)
-        print("DataBaseListener.queryClosing() 3")
-        msg = "DataSource queryClosing: Scheme: %s ... Done" % self._replicator.Provider.Host
-        logMessage(self._ctx, INFO, msg, 'DataBaseListener', 'queryClosing()')
-        print(msg)
-    def notifyClosing(self, source):
+# XTerminateListener
+    def queryTermination(self, event):
+        try:
+            self._replicator.dispose()
+        except Exception as e:
+            msg = "TerminateListener Error: %s" % traceback.print_exc()
+            print(msg)
+
+    def notifyTermination(self, event):
         pass
+
+    def disposing(self, source):
+        pass
+
+
+class EventListener(unohelper.Base,
+                    XEventListener):
+    def __init__(self, datasource):
+        self._datasource = datasource
+
+# XEventListener
+    def disposing(self, source):
+        try:
+            print("EventListener.disposing() ******************")
+            self._datasource.stopReplicator()
+        except Exception as e:
+            msg = "EventListener Error: %s" % traceback.print_exc()
+            print(msg)

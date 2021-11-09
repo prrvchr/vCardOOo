@@ -30,16 +30,12 @@
 import uno
 import unohelper
 
-from com.sun.star.util import XCloseListener
-
 from com.sun.star.logging.LogLevel import INFO
 from com.sun.star.logging.LogLevel import SEVERE
 
 from com.sun.star.sdb.CommandType import QUERY
 
 from com.sun.star.sdbc import XRestDataSource
-
-from oauth2lib import g_oauth2
 
 from .configuration import g_identifier
 from .configuration import g_group
@@ -50,8 +46,10 @@ from .provider import Provider
 from .user import User
 from .replicator import Replicator
 
-from .dbtools import getDataSource
-from .dbtools import getSqlException
+from .listener import EventListener
+from .listener import TerminateListener
+
+from .unotool import getDesktop
 
 from .logger import logMessage
 from .logger import getMessage
@@ -62,86 +60,36 @@ import traceback
 
 class DataSource(unohelper.Base,
                  XRestDataSource):
-    def __init__(self, ctx, sync):
-        print("DataSource.__init__() 1")
+    def __init__(self, ctx):
         self._ctx = ctx
-        self._Warnings = None
-        self._Users = {}
-        self.sync = sync
-        self.Error = None
-        self.Provider = Provider(ctx)
-        dbname = self.Provider.Host
-        datasource, url, created = getDataSource(ctx, dbname, g_identifier, True)
-        self.DataBase = DataBase(ctx, datasource)
-        if created:
-            self.Error = self.DataBase.createDataBase()
-            if self.Error is None:
-                self.DataBase.storeDataBase(url)
-        self.Replicator = Replicator(ctx, datasource, self.Provider, self._Users, self.sync)
-        print("DataSource.__init__() 2")
+        self._users = {}
+        self._connections = 0
+        self._listener = EventListener(self)
+        self._provider = Provider(ctx)
+        self._database = DataBase(ctx)
+        self._replicator = Replicator(ctx, self._database, self._provider, self._users)
+        listener = TerminateListener(self._replicator)
+        desktop = getDesktop(ctx)
+        desktop.addTerminateListener(listener)
 
-    @property
-    def Warnings(self):
-        return self._Warnings
-    @Warnings.setter
-    def Warnings(self, warning):
-        if warning is not None:
-            if self._Warnings is not None:
-                warning.NextException = self._Warnings
-            self._Warnings = warning
+# XRestDataSource
+    def getConnection(self, user, password):
+        connection = self._database.getConnection(user, password)
+        connection.addEventListener(self._listener)
+        self._connections += 1
+        return connection
 
-    def isValid(self):
-        return self.Error is None
-    def getWarnings(self):
-        return self._Warnings
-    def clearWarnings(self):
-        self._Warnings = None
+    def stopReplicator(self):
+        if self._connections > 0:
+            self._connections -= 1
+        print("DataSource.disposeConnection() %s" % self._connections)
+        if self._connections == 0:
+            self._replicator.stop()
 
-    # XRestDataSource
-    def getUser(self, name, password):
-        if name in self._Users:
-            user = self._Users[name]
-        else:
-            user = User(self._ctx, self, name)
-            if not self._initializeUser(user, name, password):
-                return None
-            self._Users[name] = user
-            # User has been initialized and the connection to the database is done...
-            # We can start the database replication in a background task.
-            self.sync.set()
-        return user
-
-    def _initializeUser(self, user, name, password):
-        print("DataSource._initializeUser() 1")
-        if user.Request is not None:
-            if user.MetaData is not None:
-                return True
-            if self.Provider.isOnLine():
-                data = self.Provider.getUser(user.Request, user)
-                if data.IsPresent:
-                    print("DataSource._initializeUser() 2")
-                    userid = self.Provider.getUserId(data.Value)
-                    user.MetaData = self.DataBase.insertUser(userid, name, g_group)
-                    credential = user.getCredential(password)
-                    print("DataSource._initializeUser() 3 %s" % (user.MetaData.getKeys(), ))
-                    if self.DataBase.createUser(*credential):
-                        print("DataSource._initializeUser() 4")
-                        self.DataBase.createGroupView(user, g_group, user.Group)
-                        print("DataSource._initializeUser() 5")
-                        return True
-                    else:
-                        warning = self._getWarning(1005, 1106, name)
-                else:
-                    warning = self._getWarning(1006, 1107, name)
-            else:
-                warning = self._getWarning(1004, 1108, name)
-        else:
-            warning = self._getWarning(1003, 1105, g_oauth2)
-        self.Warnings = warning
-        return False
-
-    def _getWarning(self, state, code, format):
-        state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, format)
-        warning = getSqlException(state, code, msg, self)
-        return warning
+    def setUser(self, name, password):
+        if name not in self._users:
+            user = User(self._ctx, self._database, self._provider, name, password)
+            self._users[name] = user
+        # User has been initialized and the connection to the database is done...
+        # We can start the database replication in a background task.
+        self._replicator.start()
