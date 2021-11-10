@@ -42,15 +42,15 @@ from com.sun.star.sdbcx import XCreateCatalog
 from com.sun.star.sdbcx import XDataDefinitionSupplier
 from com.sun.star.sdbcx import XDropCatalog
 
-from gcontact import DataSource
+from vcard import DataSource
 
-from gcontact import g_identifier
-from gcontact import g_host
-from gcontact import getDriverPropertyInfos
-from gcontact import getSqlException
+from vcard import g_identifier
+from vcard import g_host
+from vcard import getDriverPropertyInfos
+from vcard import getSqlException
 
-from gcontact import logMessage
-from gcontact import getMessage
+from vcard import logMessage
+from vcard import getMessage
 g_message = 'Driver'
 
 import validators
