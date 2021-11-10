@@ -66,6 +66,11 @@
                 </node>
             </node>
             <node oor:name="MetaData">
+                <node oor:name="Authentication" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:string">
+                        <value>UserPassword</value>
+                    </prop>
+                </node>
                 <node oor:name="FileSystemBased" oor:op="replace">
                     <prop oor:name="Value" oor:type="xs:boolean">
                         <value>false</value>
