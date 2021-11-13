@@ -121,11 +121,17 @@ def _createPreparedStatement(ctx, datasource, statements):
             query.Command = sql
             queries.insertByName(name, query)
 
-def getTablesAndStatements(ctx, statement, version=g_version):
+def getTablesAndStatements(ctx, connection, version=g_version):
     tables = []
     statements = []
-    call = getDataSourceCall(ctx, statement.getConnection(), 'getTables')
-    for table in getSequenceFromResult(statement.executeQuery(getSqlQuery(ctx, 'getTableNames'))):
+    statement = connection.createStatement()
+    query = getSqlQuery(ctx, 'getTableNames')
+    result = statement.executeQuery(query)
+    sequence = getSequenceFromResult(result)
+    result.close()
+    statement.close()
+    call = getDataSourceCall(ctx, connection, 'getTables')
+    for table in sequence:
         view = False
         versioned = False
         columns = []
@@ -245,21 +251,9 @@ def getViewsAndTriggers(ctx, statement, name):
 
 def getStaticTables():
     tables = ('Tables',
-              'Types',
               'Columns',
-              'TableType',
-              'TableColumn',
-              'Fields',
-              'Labels',
-              'TableLabel',
-              'Settings')
+              'TableColumn')
     return tables
 
 def getQueries():
-    return (('createInsertUser', None),
-            ('createGetPeopleIndex', None),
-            ('createGetLabelIndex', None),
-            ('createGetTypeIndex', None),
-            ('createMergePeople', None),
-            ('createMergeGroup', None),
-            ('createMergeConnection', None))
+    return (('createInsertUser', None), )

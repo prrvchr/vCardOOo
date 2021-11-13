@@ -38,6 +38,8 @@ from com.sun.star.ucb.ConnectionMode import ONLINE
 
 from com.sun.star.sdbc import XRestUser
 
+from .provider import Provider
+
 from .oauth2lib import getRequest
 from .oauth2lib import g_oauth2
 
@@ -53,64 +55,64 @@ import traceback
 
 class User(unohelper.Base,
            XRestUser):
-    def __init__(self, ctx, database, provider, name, password=''):
+    def __init__(self, ctx, database, server, name, password=''):
         self._ctx = ctx
-        self.Fields = database.getUserFields()
+        #self.Fields = database.getUserFields()
         #url = 'gcontact:request'
         #executeDispatch(ctx, url)
-        self.Request = getRequest(ctx, provider.Host, name)
-        self.MetaData = database.selectUser(name)
+        self._provider = Provider(ctx, server)
+        self._request = getRequest(ctx, server, name)
+        self._metadata = database.selectUser(server, name)
         if self._isNew():
-            self.MetaData = self._getMetaData(database, provider, name)
+            self._metadata = self._getMetaData(database, server, name, password)
             self._initUser(database, password)
 
     @property
-    def People(self):
-        return self.MetaData.getDefaultValue('People', None)
-    @property
-    def Resource(self):
-        return self.MetaData.getDefaultValue('Resource', None)
+    def User(self):
+        return self._metadata.getDefaultValue('User', None)
     @property
     def Group(self):
-        return self.MetaData.getDefaultValue('Group', None)
+        return self._metadata.getDefaultValue('Group', None)
     @property
-    def Account(self):
-        return self.MetaData.getDefaultValue('Account', '')
+    def Server(self):
+        return self._metadata.getDefaultValue('Server', '')
     @property
     def Name(self):
-        return self.Account.split('@').pop(0)
+        return self._metadata.getDefaultValue('Name', '')
     @property
-    def PeopleSync(self):
-        return self.MetaData.getDefaultValue('PeopleSync', None)
+    def CardSync(self):
+        return self._metadata.getDefaultValue('CardSync', None)
     @property
     def GroupSync(self):
-        return self.MetaData.getDefaultValue('GroupSync', None)
+        return self._metadata.getDefaultValue('GroupSync', None)
 
     def _isNew(self):
-        return self.MetaData is None
+        return self._metadata is None
 
-    def _getMetaData(self, database, provider, name):
-        if self.Request is None:
+    def _getMetaData(self, database, server, name, password):
+        if self._request is None:
             raise self._getSqlException(1003, 1105, g_oauth2)
-        if provider.isOffLine():
+        if self._provider.isOffLine():
             raise self._getSqlException(1004, 1108, name)
-        data = provider.getUser(self.Request, self.Fields)
+        data = self._provider.getUser(self._request, name, password)
         if not data.IsPresent:
             raise self._getSqlException(1006, 1107, name)
-        userid = provider.getUserId(data.Value)
-        return database.insertUser(userid, name)
+        print("User._getMetaData() \n%s" % data.Value.getValue('Data'))
+        userid = self._provider.getUserId(data.Value)
+        return database.insertUser(userid, server, name)
 
     def _initUser(self, database, password):
         credential = self._getCredential(password)
         if not database.createUser(*credential):
             raise self._getSqlException(1005, 1106, name)
-        format = {'Schema': self.Resource,
-                    'User': self.Account,
-                    'GroupId': self.Group}
+        format = {'Schema': self.User,
+                  'Server': self.Server,
+                  'User': self.Name,
+                  'Group': self.Group}
         database.initUser(format)
 
     def _getCredential(self, password):
-        return self.Account, password
+        return self.Name, password
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

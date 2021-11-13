@@ -263,11 +263,9 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = "SET PASSWORD '%s'" % format
 
 # Select Queries
+    # DataBase creation Select Queries
     elif name == 'getTableNames':
-        query = 'SELECT "Name" FROM "Tables" WHERE "View" IS NOT NULL ORDER BY "Table"'
-
-    elif name == 'getViewNames':
-        query = 'SELECT "Name" FROM "Tables" WHERE "View"=TRUE ORDER BY "Table"'
+        query = 'SELECT "Name" FROM "Tables" ORDER BY "Table";'
 
     elif name == 'getTables':
         s1 = '"T"."Table" AS "TableId"'
@@ -296,6 +294,10 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         f = (f1, f2, f3, f4, f5)
         p = (', '.join(s), ' '.join(f), w)
         query = 'SELECT %s FROM %s WHERE %s' % p
+
+
+    elif name == 'getViewNames':
+        query = 'SELECT "Name" FROM "Tables" WHERE "View"=TRUE ORDER BY "Table"'
 
     elif name == 'getViews':
         s1 = '"T1"."Table" AS "TableId"'
@@ -368,7 +370,14 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         p = (s, ' '.join(f), w)
         query = 'SELECT %s FROM %s WHERE %s' % p
 
-    elif name == 'getPerson':
+    elif name == 'getUser':
+        c = '"User","Group","Server","Name","CardSync","GroupSync"'
+        f = '"Users"'
+        j = '"Groups" ON "Users"."User"="Groups"."User"'
+        w = '"Users"."Server"=? AND "Users"."Name"=?'
+        query = 'SELECT %s FROM %s JOIN %s WHERE %s' % (c, f, j, w)
+
+    elif name == 'getPerson1':
         c = '"People","Group","Resource","Account","PeopleSync","GroupSync"'
         f = '"Peoples" JOIN "Groups"'
         o1 = '"Peoples"."People"="Groups"."People"'
@@ -442,6 +451,24 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
   END"""
 
     elif name == 'createInsertUser':
+        query = """\
+CREATE PROCEDURE "InsertUser"(IN "Server" VARCHAR(100),
+                              IN "User" VARCHAR(100),
+                              IN "Group" VARCHAR(100))
+  SPECIFIC "InsertUser_1"
+  MODIFIES SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE "Result" CURSOR WITH RETURN FOR
+      SELECT U."User", G."Group", U."Server", U."Name", U."CardSync", U."GroupSync"
+      FROM "Users" AS U JOIN "Groups" AS G ON U."User"=G."User"
+      WHERE U."Server"="Server" AND U."Name"="User" FOR READ ONLY;
+    INSERT INTO "Users" ("Server","Name") VALUES ("Server","User");
+    INSERT INTO "Groups" ("User","Name") VALUES (IDENTITY(),"Group");
+    OPEN "Result";
+  END"""
+
+    elif name == 'createInsertUser1':
         query = """\
 CREATE PROCEDURE "InsertUser"(IN "ResourceName" VARCHAR(100),
                               IN "UserName" VARCHAR(100),

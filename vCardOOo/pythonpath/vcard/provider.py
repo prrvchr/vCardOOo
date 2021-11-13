@@ -41,6 +41,8 @@ from com.sun.star.auth.RestRequestTokenType import TOKEN_SYNC
 
 from com.sun.star.sdbc import XRestProvider
 
+from .dataparser import DataParser
+
 from .unotool import getConnectionMode
 
 from .configuration import g_host
@@ -55,31 +57,38 @@ import json
 
 class Provider(unohelper.Base,
                XRestProvider):
-    def __init__(self, ctx):
+    def __init__(self, ctx, server):
         self._ctx = ctx
+        self._server = server
         self._Error = ''
         self.SessionMode = OFFLINE
 
     @property
     def Host(self):
-        return g_host
+        return self._server
     @property
     def BaseUrl(self):
-        return g_url
+        #return 'https://%s/.well-known/carddav' % self._server
+        #return 'https://%s/remote.php/dav/' % self._server
+        return 'https://%s' % self._server
 
     def isOnLine(self):
         return getConnectionMode(self._ctx, self.Host) != OFFLINE
     def isOffLine(self):
-        return getConnectionMode(self._ctx, self.Host) != ONLINE
+        offline = getConnectionMode(self._ctx, self.Host) != ONLINE
+        print("Provider.isOffLine() %s" % offline)
+        return offline
 
-    def getRequestParameter(self, method, data=None):
+    def getRequestParameter(self, method, user, password, data=None):
         parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
         parameter.Name = method
-        parameter.Url = self.BaseUrl
         if method == 'getUser':
-            parameter.Method = 'GET'
-            parameter.Url += '/people/me'
-            parameter.Query = '{"personFields": "%s"}' % ','.join(data)
+            parameter.Url = self.BaseUrl
+            parameter.Url = '%s/addressbooks/%s/Tous les contacts/' % (self.BaseUrl, user)
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Depth": "0"}'
         elif method == 'People':
             parameter.Method = 'GET'
             parameter.Url += '/people/me/connections'
@@ -137,9 +146,17 @@ class Provider(unohelper.Base,
         #    value = value.split('/').pop()
         return value
 
-    def getUser(self, request, fields):
-        parameter = self.getRequestParameter('getUser', fields)
-        return request.execute(parameter)
+    def getUser(self, request, user, password):
+        data = '''<?xml version="1.0" encoding="utf-8" ?>
+<d:propfind xmlns:d="DAV:" xmlns:s="http://sabredav.org/ns" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+  <d:prop xmlns:cs="http://calendarserver.org/ns">
+    <d:displayname/>
+  </d:prop>
+</d:propfind>'''
+        parameter = self.getRequestParameter('getUser', user, password, data)
+        parser = DataParser(parameter.Name)
+        r = request.getRequest(parameter, parser)
+        return r.execute()
     def getUserId(self, user):
         return user.getValue('resourceName').split('/').pop()
         #return user.getValue('resourceName')

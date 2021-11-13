@@ -38,20 +38,13 @@ from .unotool import getNamedValue
 
 class DataParser(unohelper.Base,
                  XRestDataParser):
-    def __init__(self, database, provider, method):
-        self.provider = provider
-        self.map = database.getFieldsMap(method, True)
-        self.keys = self.map.getKeys()
-        self.DataType = 'Json'
+    def __init__(self, method):
+        #self._provider = provider
+        #self.map = database.getFieldsMap(method, True)
+        #self.keys = self.map.getKeys()
+        self.DataType = 'Xml'
 
-    def parseResponse(self, pairs):
+    def parseResponse(self, response):
         data = KeyMap()
-        for key, value in pairs:
-            if value is None:
-                continue
-            if key in self.keys:
-                map = self.map.getValue(key)
-                k = map.getValue('Map')
-                v = self.provider.transform(k, value)
-                data.setValue(k, v)
-        return data if data.Count else None
+        data.insertValue('Data', response)
+        return data

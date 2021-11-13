@@ -44,14 +44,20 @@ from com.sun.star.sdbcx import XDropCatalog
 
 from vcard import DataSource
 
-from vcard import g_identifier
-from vcard import g_host
 from vcard import getDriverPropertyInfos
+from vcard import getResourceLocation
 from vcard import getSqlException
 
 from vcard import logMessage
 from vcard import getMessage
 g_message = 'Driver'
+
+from vcard import g_identifier
+from vcard import g_host
+
+from vcard import g_class
+from vcard import g_folder
+from vcard import g_jar
 
 import validators
 import traceback
@@ -73,13 +79,13 @@ class Driver(unohelper.Base,
         msg = getMessage(ctx, g_message, 101)
         logMessage(ctx, INFO, msg, 'Driver', '__init__()')
 
-    _dataSource = None
+    _datasource = None
 
     @property
     def DataSource(self):
-        if Driver._dataSource is None:
-            Driver._dataSource = DataSource(self._ctx)
-        return Driver._dataSource
+        if Driver._datasource is None:
+            Driver._datasource = DataSource(self._ctx)
+        return Driver._datasource
 
 # XCreateCatalog
     def createCatalog(self, info):
@@ -102,24 +108,26 @@ class Driver(unohelper.Base,
                 state = getMessage(self._ctx, g_message, 112)
                 msg = getMessage(self._ctx, g_message, 1101, url)
                 raise getSqlException(state, 1101, msg, self)
-            username = protocols[3]
-            password = ''
-            if not validators.email(username):
-                state = getMessage(self._ctx, g_message, 113)
-                msg = getMessage(self._ctx, g_message, 1102, username)
-                msg += getMessage(self._ctx, g_message, 1103)
-                raise getSqlException(state, 1104, msg, self)
+            server = protocols[3]
+            user, password = self._getUserCredential(infos)
+            print("Driver.connect() 1 %s - %s - %s" % (server, user, password))
+            #if not validators.email(user):
+            #    state = getMessage(self._ctx, g_message, 113)
+            #    msg = getMessage(self._ctx, g_message, 1102, user)
+            #    msg += getMessage(self._ctx, g_message, 1103)
+            #    raise getSqlException(state, 1104, msg, self)
             msg = getMessage(self._ctx, g_message, 114, g_host)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            self.DataSource.setUser(username, password)
-            msg = getMessage(self._ctx, g_message, 118, username)
+            self.DataSource.setUser(server, user, password)
+            msg = getMessage(self._ctx, g_message, 118, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            connection = self.DataSource.getConnection(username, password)
-            msg = getMessage(self._ctx, g_message, 119, username)
+            connection = self.DataSource.getConnection(user, password)
+            msg = getMessage(self._ctx, g_message, 119, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             version = connection.getMetaData().getDriverVersion()
-            msg = getMessage(self._ctx, g_message, 120, (version, username))
+            msg = getMessage(self._ctx, g_message, 120, (version, user))
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
+            print("Driver.connect() 2 %s - %s - %s - %s" % (server, user, password, version))
             return connection
         except SQLException as e:
             raise e
@@ -142,6 +150,22 @@ class Driver(unohelper.Base,
         return 1
     def getMinorVersion(self):
         return 0
+
+    def _getUserCredential(self, infos):
+        user = ''
+        password = ''
+        for info in infos:
+            if info.Name == 'user':
+                user = info.Value.strip()
+            elif info.Name == 'password':
+                password = info.Value.strip()
+            if user and password:
+                break
+        return user, password
+
+    def _getDataSourceClassPath(self):
+        path = '%s/%s' % (g_folder, g_jar)
+        return getResourceLocation(self.ctx, g_identifier, path)
 
 # XDropCatalog
     def dropCatalog(self, name, info):

@@ -31,7 +31,9 @@ from .configuration import g_identifier
 from .configuration import g_extension
 from .configuration import g_host
 
+from .dbconfig  import g_class
 from .dbconfig  import g_folder
+from .dbconfig  import g_jar
 
 from .logger import clearLogger
 from .logger import getLoggerSetting

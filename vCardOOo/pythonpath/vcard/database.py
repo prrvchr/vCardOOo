@@ -88,7 +88,7 @@ from time import sleep
 class DataBase(unohelper.Base,
                XRestDataBase):
     def __init__(self, ctx):
-        print("gContact.DataBase.init() start")
+        print("vCard.DataBase.init() start")
         self._ctx = ctx
         self._statement = None
         self._embedded = False
@@ -112,7 +112,7 @@ class DataBase(unohelper.Base,
                 datasource.DatabaseDocument.storeAsURL(odb, ())
                 datasource.dispose()
             connection.close()
-        print("gContact.DataBase.init() end")
+        print("vCard.DataBase.init() end")
 
     @property
     def Connection(self):
@@ -136,6 +136,17 @@ class DataBase(unohelper.Base,
 
 # Procedures called by Initialization
     def _createDataBase(self, connection):
+        version, error = checkDataBase(self._ctx, connection)
+        if error is None:
+            statement = connection.createStatement()
+            createStaticTable(self._ctx, statement, getStaticTables(), True)
+            tables, statements = getTablesAndStatements(self._ctx, connection, version)
+            executeSqlQueries(statement, tables)
+            executeQueries(self._ctx, statement, getQueries())
+            statement.close()
+        return error
+
+    def _createDataBase1(self, connection):
         version, error = checkDataBase(self._ctx, connection)
         if error is None:
             statement = connection.createStatement()
@@ -174,22 +185,24 @@ class DataBase(unohelper.Base,
         statement.close()
         return status == 0
 
-    def insertUser(self, userid, account):
+    def insertUser(self, userid, server, name):
         user = KeyMap()
         call = self._getCall('insertUser')
         call.setString(1, userid)
-        call.setString(2, account)
-        call.setString(3, g_group)
+        call.setString(2, server)
+        call.setString(3, name)
+        call.setString(4, g_group)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
         call.close()
         return user
 
-    def selectUser(self, account):
+    def selectUser(self, server, name):
         user = None
-        call = self._getCall('getPerson')
-        call.setString(1, account)
+        call = self._getCall('getUser')
+        call.setString(1, server)
+        call.setString(2, name)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)

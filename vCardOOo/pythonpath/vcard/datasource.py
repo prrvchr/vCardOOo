@@ -42,7 +42,7 @@ from .configuration import g_group
 from .configuration import g_compact
 
 from .database import DataBase
-from .provider import Provider
+#from .provider import Provider
 from .user import User
 from .replicator import Replicator
 
@@ -65,16 +65,16 @@ class DataSource(unohelper.Base,
         self._users = {}
         self._connections = 0
         self._listener = EventListener(self)
-        self._provider = Provider(ctx)
+        #self._provider = Provider(ctx)
         self._database = DataBase(ctx)
-        self._replicator = Replicator(ctx, self._database, self._provider, self._users)
-        listener = TerminateListener(self._replicator)
-        desktop = getDesktop(ctx)
-        desktop.addTerminateListener(listener)
+        #self._replicator = Replicator(ctx, self._database, self._provider, self._users)
+        #listener = TerminateListener(self._replicator)
+        #desktop = getDesktop(ctx)
+        #desktop.addTerminateListener(listener)
 
 # XRestDataSource
-    def getConnection(self, user, password):
-        connection = self._database.getConnection(user, password)
+    def getConnection(self, server, user, password):
+        connection = self._database.getConnection(server, user, password)
         connection.addEventListener(self._listener)
         self._connections += 1
         return connection
@@ -86,10 +86,15 @@ class DataSource(unohelper.Base,
         if self._connections == 0:
             self._replicator.stop()
 
-    def setUser(self, name, password):
-        if name not in self._users:
-            user = User(self._ctx, self._database, self._provider, name, password)
-            self._users[name] = user
+    def setUser(self, server, name, password):
+        key = self._getUserkey(server, name)
+        if key not in self._users:
+            user = User(self._ctx, self._database, server, name, password)
+            self._users[key] = user
         # User has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
-        self._replicator.start()
+
+        #self._replicator.start()
+
+    def _getUserkey(self, server, name):
+        return '%s#%s'% (server, name)

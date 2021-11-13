@@ -34,7 +34,7 @@ g_logger = '%s.Logger' % g_identifier
 # Resource strings files folder
 g_resource = 'resource'
 
-g_host = 'people.googleapis.com'
+g_host = 'nextcloud'
 g_version = 'v1'
 g_url = 'https://%s/%s' % (g_host, g_version)
 g_page = 100
