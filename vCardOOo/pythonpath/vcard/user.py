@@ -55,16 +55,19 @@ import traceback
 
 class User(unohelper.Base,
            XRestUser):
-    def __init__(self, ctx, database, server, name, password=''):
+    def __init__(self, ctx, database, url, name, password=''):
         self._ctx = ctx
         #self.Fields = database.getUserFields()
         #url = 'gcontact:request'
         #executeDispatch(ctx, url)
+        server, sep, addressbook = url.rpartition('/')
+        if not server:
+            server, addressbook = url, ''
         self._provider = Provider(ctx, server)
         self._request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
         if self._isNew():
-            self._metadata = self._getMetaData(database, server, name, password)
+            self._metadata = self._getMetaData(database, server, addressbook, name, password)
             self._initUser(database, password)
 
     @property
@@ -89,17 +92,30 @@ class User(unohelper.Base,
     def _isNew(self):
         return self._metadata is None
 
-    def _getMetaData(self, database, server, name, password):
+    def _getMetaData(self, database, server, addressbook, user, password):
         if self._request is None:
             raise self._getSqlException(1003, 1105, g_oauth2)
         if self._provider.isOffLine():
-            raise self._getSqlException(1004, 1108, name)
-        data = self._provider.getUser(self._request, name, password)
-        if not data.IsPresent:
-            raise self._getSqlException(1006, 1107, name)
-        print("User._getMetaData() \n%s" % data.Value.getValue('Data'))
-        userid = self._provider.getUserId(data.Value)
-        return database.insertUser(userid, server, name)
+            raise self._getSqlException(1004, 1108, user)
+        location = self._provider.getDiscoveryLocation(self._request, server, user, password)
+        print("User._getMetaData() 1 %s" % location)
+        url = self._provider.getUserUrl(self._request, user, password, location)
+        if not self._provider.hasAddressbook(self._request, user, password, url):
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
+        print("User._getMetaData() 2 %s" % url)
+        url = self._provider.getAddressbooksUrl(self._request, user, password, url)
+        print("User._getMetaData() 3 %s" % url)
+        url, addressbook = self._provider.getAddressbookUrl(self._request, addressbook, user, password, url)
+        if url is None or addressbook is None:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
+        print("User._getMetaData() 4 %s - %s" % (url, addressbook))
+        if not self._provider.getAddressbook(self._request, addressbook, user, password, url):
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
+        print("User._getMetaData() 5 %s" % url)
+        return database.insertUser(server, addressbook, user)
 
     def _initUser(self, database, password):
         credential = self._getCredential(password)

@@ -45,12 +45,15 @@ from .dataparser import DataParser
 
 from .unotool import getConnectionMode
 
+from .dbtool import getSqlException
+
 from .configuration import g_host
 from .configuration import g_url
 from .configuration import g_page
 from .configuration import g_member
 from .logger import logMessage
 from .logger import getMessage
+g_message = 'datasource'
 
 import json
 
@@ -60,6 +63,7 @@ class Provider(unohelper.Base,
     def __init__(self, ctx, server):
         self._ctx = ctx
         self._server = server
+        self._headers = ('1', 'access-control', 'addressbook')
         self._Error = ''
         self.SessionMode = OFFLINE
 
@@ -68,8 +72,6 @@ class Provider(unohelper.Base,
         return self._server
     @property
     def BaseUrl(self):
-        #return 'https://%s/.well-known/carddav' % self._server
-        #return 'https://%s/remote.php/dav/' % self._server
         return 'https://%s' % self._server
 
     def isOnLine(self):
@@ -79,16 +81,171 @@ class Provider(unohelper.Base,
         print("Provider.isOffLine() %s" % offline)
         return offline
 
-    def getRequestParameter(self, method, user, password, data=None):
+    def transcode(self, name, value):
+        if name == 'People':
+            value = self._getResource('people', value)
+        elif name == 'Group':
+            value = self._getResource('contactGroups', value)
+        return value
+    def transform(self, name, value):
+        #if name == 'Resource' and value.startswith('people'):
+        #    value = value.split('/').pop()
+        return value
+
+    def getDiscoveryLocation(self, request, server, user, password):
+        parameter = self._getRequestParameter('getUrl', user, password)
+        response = request.getResponse(parameter, None)
+        if not response.Ok or not response.IsRedirect:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, '%s Response not Ok' % server)
+        location = response.getHeader('Location')
+        response.close()
+        if not location:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, '%s url is None' % server)
+        return location
+
+    def getUserUrl(self, request, user, password, url):
+        data = '''<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <d:current-user-principal/>
+  </d:prop>
+</d:propfind>'''
+        parameter = self._getRequestParameter('getUser', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            raise self._getSqlException(1006, 1107, user)
+        url = response.Data
+        response.close()
+        return url
+
+    def hasAddressbook(self, request, user, password, url):
+        parameter = self._getRequestParameter('hasAddressbook', user, password, url)
+        response = request.getResponse(parameter, None)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        headers = response.getHeader('DAV')
+        response.close()
+        for headers in self._headers:
+            if headers not in headers:
+                return False
+        return True
+
+    def getAddressbooksUrl(self, request, user, password, url):
+        data = '''<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <card:addressbook-home-set xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+  </d:prop>
+</d:propfind>'''
+        parameter = self._getRequestParameter('getAddressbooksUrl', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            raise self._getSqlException(1006, 1107, user)
+        url = response.Data
+        response.close()
+        return url
+
+    def getAddressbookUrl(self, request, addressbook, user, password, url):
+        data = '''<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <d:displayname/>
+    <d:resourcetype>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+    </d:resourcetype>
+  </d:prop>
+</d:propfind>'''
+        parameter = self._getRequestParameter('getAddressbookUrl', user, password, url, data)
+        parser = DataParser(parameter.Name, addressbook)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        url, name = response.Data
+        response.close()
+        return url, name
+
+    def getAddressbook(self, request, addressbook, user, password, url):
+        data = '''<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <d:displayname/>
+    <d:resourcetype>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+    </d:resourcetype>
+  </d:prop>
+</d:propfind>'''
+        parameter = self._getRequestParameter('getAddressbook', user, password, url, data)
+        parser = DataParser(parameter.Name, addressbook)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        isopen = response.Data == url
+        response.close()
+        return isopen
+
+
+    def getUserId(self, user):
+        return user.getValue('resourceName').split('/').pop()
+        #return user.getValue('resourceName')
+    def getItemId(self, item):
+        return item.getDefaultValue('resourceName', '').split('/').pop()
+
+    def _getResource(self, resource, keys):
+        groups = []
+        for k in keys:
+            groups.append('%s/%s' % (resource, k))
+        return tuple(groups)
+
+    def _getRequestParameter(self, method, user, password, url=None, data=None):
         parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
         parameter.Name = method
-        if method == 'getUser':
-            parameter.Url = self.BaseUrl
-            parameter.Url = '%s/addressbooks/%s/Tous les contacts/' % (self.BaseUrl, user)
+        if method == 'getUrl':
+            parameter.Url = self.BaseUrl + '/.well-known/carddav'
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Header = '{"Depth": "0"}'
+            parameter.NoRedirect = True
+        elif method == 'getUser':
+            parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
             parameter.Header = '{"Depth": "0"}'
+        elif method == 'hasAddressbook':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'OPTIONS'
+            parameter.Auth = (user, password)
+        elif method == 'getAddressbooksUrl':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Depth": "0"}'
+        elif method == 'getAddressbookUrl':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Depth": "1"}'
+        elif method == 'getAddressbook':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Depth": "1"}'
         elif method == 'People':
             parameter.Method = 'GET'
             parameter.Url += '/people/me/connections'
@@ -135,37 +292,14 @@ class Provider(unohelper.Base,
             parameter.Query = '{"resourceNames": ["%s"], "maxMembers": %s}' % (resources, g_member)
         return parameter
 
-    def transcode(self, name, value):
-        if name == 'People':
-            value = self._getResource('people', value)
-        elif name == 'Group':
-            value = self._getResource('contactGroups', value)
-        return value
-    def transform(self, name, value):
-        #if name == 'Resource' and value.startswith('people'):
-        #    value = value.split('/').pop()
-        return value
+    def _checkAddressbookHeader(self, headers):
+        for headers in self._headers:
+            if headers not in headers:
+                return False
+        return True
 
-    def getUser(self, request, user, password):
-        data = '''<?xml version="1.0" encoding="utf-8" ?>
-<d:propfind xmlns:d="DAV:" xmlns:s="http://sabredav.org/ns" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
-  <d:prop xmlns:cs="http://calendarserver.org/ns">
-    <d:displayname/>
-  </d:prop>
-</d:propfind>'''
-        parameter = self.getRequestParameter('getUser', user, password, data)
-        parser = DataParser(parameter.Name)
-        r = request.getRequest(parameter, parser)
-        return r.execute()
-    def getUserId(self, user):
-        return user.getValue('resourceName').split('/').pop()
-        #return user.getValue('resourceName')
-    def getItemId(self, item):
-        return item.getDefaultValue('resourceName', '').split('/').pop()
-
-    def _getResource(self, resource, keys):
-        groups = []
-        for k in keys:
-            groups.append('%s/%s' % (resource, k))
-        return tuple(groups)
-            
+    def _getSqlException(self, state, code, format):
+        state = getMessage(self._ctx, g_message, state)
+        msg = getMessage(self._ctx, g_message, code, format)
+        error = getSqlException(state, code, msg, self)
+        return error
