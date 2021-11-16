@@ -371,11 +371,13 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = 'SELECT %s FROM %s WHERE %s' % p
 
     elif name == 'getUser':
-        c = '"User","Group","Server","Name","CardSync","GroupSync"'
-        f = '"Users"'
-        j = '"Groups" ON "Users"."User"="Groups"."User"'
-        w = '"Users"."Server"=? AND "Users"."Name"=?'
-        query = 'SELECT %s FROM %s JOIN %s WHERE %s' % (c, f, j, w)
+        c = '"User","Addressbook","Group","Scheme","Server","Path",U."Name" AS "UserName",'
+        c += 'A."Name" AS "AddressbookName",A."Token" AS "Async",G."Token" AS "Gsync"'
+        f = '"Users" AS U '
+        f += 'JOIN "Addressbook" AS A ON U."User" = A."User" '
+        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
+        w = 'U."Server" = ? AND U."Name" = ? AND A."Name" = ?'
+        query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
 
     elif name == 'getPerson1':
         c = '"People","Group","Resource","Account","PeopleSync","GroupSync"'
@@ -452,19 +454,28 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
 
     elif name == 'createInsertUser':
         query = """\
-CREATE PROCEDURE "InsertUser"(IN "Server" VARCHAR(100),
-                              IN "User" VARCHAR(100),
-                              IN "Group" VARCHAR(100))
+CREATE PROCEDURE "InsertUser"(IN "Scheme" VARCHAR(128),
+                              IN "Server" VARCHAR(128),
+                              IN "Path" VARCHAR(256),
+                              IN "Addressbook" VARCHAR(150),
+                              IN "User" VARCHAR(128),
+                              IN "Password" VARCHAR(128))
   SPECIFIC "InsertUser_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE "Result" CURSOR WITH RETURN FOR
-      SELECT U."User", G."Group", U."Server", U."Name", U."CardSync", U."GroupSync"
-      FROM "Users" AS U JOIN "Groups" AS G ON U."User"=G."User"
-      WHERE U."Server"="Server" AND U."Name"="User" FOR READ ONLY;
-    INSERT INTO "Users" ("Server","Name") VALUES ("Server","User");
-    INSERT INTO "Groups" ("User","Name") VALUES (IDENTITY(),"Group");
+      SELECT U."User", A."Addressbook", G."Group",
+      A."Scheme", U."Server", A."Path",
+      U."Name" AS "UserName", U."Password", A."Name" AS "AddressbookName",
+      A."Token" AS "Async", G."Token" AS "Gsync"
+      FROM "Users" AS U
+      JOIN "Addressbooks" AS A ON U."User" = A."User"
+      JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL
+      WHERE U."Server" = "Server" AND U."Name" = "User" AND  A."Name" = "Addressbook" FOR READ ONLY;
+    INSERT INTO "Users" ("Server","Name", "Password") VALUES ("Server","User","Password");
+    INSERT INTO "Addressbooks" ("User","Scheme","Path","Name") VALUES (IDENTITY(),"Scheme","Path","Addressbook");
+    INSERT INTO "Groups" ("Addressbook") VALUES (IDENTITY());
     OPEN "Result";
   END"""
 
@@ -654,7 +665,7 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
 
 # Get Procedure Query
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?,?,?)'
     elif name == 'mergePeople':
         query = 'CALL "MergePeople"(?,?,?,?,?)'
     elif name == 'mergeGroup':

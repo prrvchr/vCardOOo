@@ -60,8 +60,9 @@ import json
 
 class Provider(unohelper.Base,
                XRestProvider):
-    def __init__(self, ctx, server):
+    def __init__(self, ctx, scheme, server):
         self._ctx = ctx
+        self._scheme = scheme
         self._server = server
         self._headers = ('1', 'access-control', 'addressbook')
         self._Error = ''
@@ -72,7 +73,7 @@ class Provider(unohelper.Base,
         return self._server
     @property
     def BaseUrl(self):
-        return 'https://%s' % self._server
+        return self._scheme + '://' + self._server
 
     def isOnLine(self):
         return getConnectionMode(self._ctx, self.Host) != OFFLINE

@@ -1,8 +1,11 @@
 Column|Name
 0|User
-1|Group
-2|Server
-3|Name
-4|CardSync
-5|GroupSync
-6|TimeStamp
+1|Addressbook
+2|Group
+3|Scheme
+4|Server
+5|Path
+6|Name
+7|Password
+8|Token
+9|TimeStamp

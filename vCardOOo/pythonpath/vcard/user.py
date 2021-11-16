@@ -44,11 +44,14 @@ from .oauth2lib import getRequest
 from .oauth2lib import g_oauth2
 
 from .unotool import executeDispatch
+from .unotool import getUrl
 
 from .dbtool import getSqlException
 
 from .logger import getMessage
 g_message = 'datasource'
+
+from .configuration import g_scheme
 
 import traceback
 
@@ -60,12 +63,14 @@ class User(unohelper.Base,
         #self.Fields = database.getUserFields()
         #url = 'gcontact:request'
         #executeDispatch(ctx, url)
-        server, sep, addressbook = url.rpartition('/')
+        scheme, server, addressbook = self._getUrlParts(url)
+        print("User.__init__() 1 %s - %s - %s" % (scheme, server, addressbook))
         if not server:
-            server, addressbook = url, ''
-        self._provider = Provider(ctx, server)
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % url)
+        self._provider = Provider(ctx, scheme, server)
         self._request = getRequest(ctx, server, name)
-        self._metadata = database.selectUser(server, name)
+        self._metadata = database.selectUser(addressbook, server, name)
         if self._isNew():
             self._metadata = self._getMetaData(database, server, addressbook, name, password)
             self._initUser(database, password)
@@ -74,20 +79,45 @@ class User(unohelper.Base,
     def User(self):
         return self._metadata.getDefaultValue('User', None)
     @property
+    def Addressbook(self):
+        return self._metadata.getDefaultValue('Addressbook', None)
+    @property
     def Group(self):
         return self._metadata.getDefaultValue('Group', None)
+    @property
+    def Scheme(self):
+        return self._metadata.getDefaultValue('Scheme', '')
     @property
     def Server(self):
         return self._metadata.getDefaultValue('Server', '')
     @property
+    def Path(self):
+        return self._metadata.getDefaultValue('Path', '')
+    @property
     def Name(self):
-        return self._metadata.getDefaultValue('Name', '')
+        return self._metadata.getDefaultValue('UserName', '')
     @property
-    def CardSync(self):
-        return self._metadata.getDefaultValue('CardSync', None)
+    def Password(self):
+        return self._metadata.getDefaultValue('Password', '')
     @property
-    def GroupSync(self):
-        return self._metadata.getDefaultValue('GroupSync', None)
+    def AddressbookName(self):
+        return self._metadata.getDefaultValue('AddressbookName', '')
+    @property
+    def Async(self):
+        return self._metadata.getDefaultValue('Async', None)
+    @property
+    def Gsync(self):
+        return self._metadata.getDefaultValue('Gsync', None)
+
+    def _getUrlParts(self, location)
+        url = getUrl(self._ctx, location)
+        if location is None:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % location)
+        scheme = url.Protocol if url.Protocol else g_scheme
+        server = url.Server
+        addressbook = url.Path.strip('/')
+        return scheme, server, addressbook
 
     def _isNew(self):
         return self._metadata is None
@@ -115,7 +145,7 @@ class User(unohelper.Base,
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
         print("User._getMetaData() 5 %s" % url)
-        return database.insertUser(server, addressbook, user)
+        return database.insertUser(server, addressbook, url, user, password)
 
     def _initUser(self, database, password):
         credential = self._getCredential(password)

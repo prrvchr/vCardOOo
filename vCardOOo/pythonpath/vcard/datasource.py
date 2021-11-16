@@ -67,6 +67,7 @@ class DataSource(unohelper.Base,
         self._listener = EventListener(self)
         #self._provider = Provider(ctx)
         self._database = DataBase(ctx)
+        self._scheme = 'https'
         #self._replicator = Replicator(ctx, self._database, self._provider, self._users)
         #listener = TerminateListener(self._replicator)
         #desktop = getDesktop(ctx)
@@ -89,7 +90,7 @@ class DataSource(unohelper.Base,
     def setUser(self, server, name, password):
         key = self._getUserkey(server, name)
         if key not in self._users:
-            user = User(self._ctx, self._database, server, name, password)
+            user = User(self._ctx, self._database, self._scheme, server, name, password)
             self._users[key] = user
         # User has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.

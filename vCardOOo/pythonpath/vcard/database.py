@@ -185,24 +185,27 @@ class DataBase(unohelper.Base,
         statement.close()
         return status == 0
 
-    def insertUser(self, userid, server, name):
+    def insertUser(self, scheme, server, path, addressbook, user, password):
         user = KeyMap()
         call = self._getCall('insertUser')
-        call.setString(1, userid)
+        call.setString(1, scheme)
         call.setString(2, server)
-        call.setString(3, name)
-        call.setString(4, g_group)
+        call.setString(3, path)
+        call.setString(4, addressbook)
+        call.setString(5, user)
+        call.setString(6, password)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
         call.close()
         return user
 
-    def selectUser(self, server, name):
+    def selectUser(self, addressbook, server, name):
         user = None
         call = self._getCall('getUser')
         call.setString(1, server)
         call.setString(2, name)
+        call.setString(3, addressbook)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
