@@ -104,11 +104,11 @@ class Driver(unohelper.Base,
             msg = getMessage(self._ctx, g_message, 111, url)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             protocols = url.strip().split(':')
-            if len(protocols) != 4 or not all(protocols):
+            if len(protocols) < 4 or not all(protocols):
                 state = getMessage(self._ctx, g_message, 112)
                 msg = getMessage(self._ctx, g_message, 1101, url)
                 raise getSqlException(state, 1101, msg, self)
-            server = protocols[3]
+            server = ':'.join(protocols[3:]).strip('/')
             user, password = self._getUserCredential(infos)
             print("Driver.connect() 1 %s - %s - %s" % (server, user, password))
             #if not validators.email(user):
@@ -118,16 +118,16 @@ class Driver(unohelper.Base,
             #    raise getSqlException(state, 1104, msg, self)
             msg = getMessage(self._ctx, g_message, 114, g_host)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            self.DataSource.setUser(server, user, password)
+            name, password = self.DataSource.getDataBaseCredential(server, user, password)
             msg = getMessage(self._ctx, g_message, 118, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            connection = self.DataSource.getConnection(user, password)
+            connection = self.DataSource.getConnection(name, password)
             msg = getMessage(self._ctx, g_message, 119, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             version = connection.getMetaData().getDriverVersion()
-            msg = getMessage(self._ctx, g_message, 120, (version, user))
+            msg = getMessage(self._ctx, g_message, 120, (version, name))
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            print("Driver.connect() 2 %s - %s - %s - %s" % (server, user, password, version))
+            print("Driver.connect() 2 %s - %s - %s - %s" % (server, name, password, version))
             return connection
         except SQLException as e:
             raise e

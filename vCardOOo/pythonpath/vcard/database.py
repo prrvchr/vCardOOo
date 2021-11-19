@@ -179,56 +179,79 @@ class DataBase(unohelper.Base,
 
     def createUser(self, name, password):
         statement = self.Connection.createStatement()
-        format = {'User': name, 'Password': password, 'Admin': g_admin}
+        format = {'User': name,
+                  'Password': password,
+                  'Admin': g_admin}
         query = getSqlQuery(self._ctx, 'createUser', format)
         status = statement.executeUpdate(query)
         statement.close()
         return status == 0
 
-    def insertUser(self, scheme, server, path, addressbook, user, password):
-        user = KeyMap()
-        call = self._getCall('insertUser')
-        call.setString(1, scheme)
-        call.setString(2, server)
-        call.setString(3, path)
-        call.setString(4, addressbook)
-        call.setString(5, user)
-        call.setString(6, password)
-        result = call.executeQuery()
-        if result.next():
-            user = getKeyMapFromResult(result)
-        call.close()
-        return user
-
-    def selectUser(self, addressbook, server, name):
+    def selectUser(self, server, name):
         user = None
         call = self._getCall('getUser')
         call.setString(1, server)
         call.setString(2, name)
-        call.setString(3, addressbook)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
         call.close()
         return user
 
-    def truncatGroup(self, start):
-        statement = self.Connection.createStatement()
-        format = {'TimeStamp': unparseTimeStamp(start)}
-        query = getSqlQuery(self._ctx, 'truncatGroup', format)
-        statement.execute(query)
-        statement.close()
+    def selectAddressbook(self, user, name):
+        addressbook = None
+        call = self._getCall('getAddressbook')
+        call.setLong(1, user)
+        call.setString(2, name)
+        result = call.executeQuery()
+        if result.next():
+            addressbook = getKeyMapFromResult(result)
+        call.close()
+        return addressbook
+
+    def insertUser(self, scheme, server, path, name, default):
+        user = None
+        call = self._getCall('insertUser')
+        call.setString(1, scheme)
+        call.setString(2, server)
+        call.setString(3, path)
+        call.setString(4, name)
+        call.setString(5, default)
+        result = call.executeQuery()
+        if result.next():
+            user = getKeyMapFromResult(result)
+        call.close()
+        return user
+
+    def insertAddressbook(self, user, path, name):
+        addressbook = None
+        call = self._getCall('insertAddressbook')
+        call.setLong(1, user)
+        call.setString(2, path)
+        call.setString(3, name)
+        result = call.executeQuery()
+        if result.next():
+            addressbook = getKeyMapFromResult(result)
+        call.close()
+        return addressbook
 
     def initUser(self, format):
         statement = self.Connection.createStatement()
         format['View'] = self._getViewName()
         query = getSqlQuery(self._ctx, 'createUserSchema', format)
         statement.execute(query)
-        query = getSqlQuery(self._ctx, 'setUserAuthorization', format)
-        statement.execute(query)
-        query = getSqlQuery(self._ctx, 'createUserSynonym', format)
-        statement.execute(query)
+        #query = getSqlQuery(self._ctx, 'setUserAuthorization', format)
+        #statement.execute(query)
+        #query = getSqlQuery(self._ctx, 'createUserSynonym', format)
+        #statement.execute(query)
         query = getSqlQuery(self._ctx, 'setUserSchema', format)
+        statement.execute(query)
+        statement.close()
+
+    def truncatGroup(self, start):
+        statement = self.Connection.createStatement()
+        format = {'TimeStamp': unparseTimeStamp(start)}
+        query = getSqlQuery(self._ctx, 'truncatGroup', format)
         statement.execute(query)
         statement.close()
 
@@ -361,6 +384,12 @@ class DataBase(unohelper.Base,
         self._batchedCalls = OrderedDict()
 
 # Procedures called internaly
+    def _encodePassword(self, password):
+        return uno.sequence(password)
+
+    def _escapeQuote(self, text):
+        return text.replace("'", "''")
+
     def _getFieldsMap(self, method):
         map = []
         call = self._getCall('getFieldsMap')

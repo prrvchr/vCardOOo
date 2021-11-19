@@ -33,18 +33,6 @@ import unohelper
 from com.sun.star.logging.LogLevel import INFO
 from com.sun.star.logging.LogLevel import SEVERE
 
-from com.sun.star.ucb.ConnectionMode import OFFLINE
-from com.sun.star.ucb.ConnectionMode import ONLINE
-
-from com.sun.star.sdbc import XRestUser
-
-from .provider import Provider
-
-from .oauth2lib import getRequest
-from .oauth2lib import g_oauth2
-
-from .unotool import executeDispatch
-
 from .dbtool import getSqlException
 
 from .logger import getMessage
@@ -53,37 +41,26 @@ g_message = 'datasource'
 import traceback
 
 
-def getUserId(server, name):
-    return server + '/' + name
+def getAddressbookId(user, addressbook):
+    return user + '/' + addressbook
 
 
-class User(unohelper.Base,
-           XRestUser):
-    def __init__(self, ctx, database, scheme, server, name, pwd=''):
+class AddressBook(unohelper.Base):
+    def __init__(self, ctx, database, user, name):
         self._ctx = ctx
-        self._password = pwd
-        #self.Fields = database.getUserFields()
-        #url = 'gcontact:request'
-        #executeDispatch(ctx, url)
-        print("User.__init__() 1 %s - %s " % (server, name))
-        self._request = getRequest(ctx, server, name)
-        self._metadata = database.selectUser(server, name)
+        print("AddressBook.__init__() 1 %s - %s - %s" % (user.Scheme, user.Server, name))
+        self.User = user
+        self._metadata = database.selectAddressbook(user.Id, user.getDefault(name))
         if self._isNew():
-            provider = Provider(ctx, scheme, server)
-            self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
-        else:
-            provider = Provider(ctx, self.Scheme, self.Server)
-        self._provider = provider
+            self._metadata = self._getNewAddressbook(database, name)
+            self._initAddressbook(database)
 
     @property
-    def Id(self):
-        return self._metadata.getValue('User')
+    def Addressbook(self):
+        return self._metadata.getValue('Addressbook')
     @property
-    def Scheme(self):
-        return self._metadata.getValue('Scheme')
-    @property
-    def Server(self):
-        return self._metadata.getValue('Server')
+    def Group(self):
+        return self._metadata.getValue('Group')
     @property
     def Path(self):
         return self._metadata.getValue('Path')
@@ -91,54 +68,54 @@ class User(unohelper.Base,
     def Name(self):
         return self._metadata.getValue('Name')
     @property
-    def Password(self):
-        return self._password
+    def AdrSync(self):
+        return self._metadata.getValue('AdrSync')
+    @property
+    def GrpSync(self):
+        return self._metadata.getValue('GrpSync')
 
-    def getDefault(self, name):
-        if not name:
-            name = self._metadata.getValue('Default')
-        return name
+    def updateUser(self, scheme):
+        self.User.updateUser(scheme)
 
-    def getUserId(self):
-        return getUserId(self.Server, self.Name)
+    def getAddressbookId(self):
+        return getAddressbookId(self.User.getUserId(), self.Name)
 
-    def isOffLine(self):
-        return self._provider.isOffLine()
-
-    def getAddressbookUrl(self, name):
-        return self._provider.getAddressbookUrl(self._request, name, self.Name, self.Password, self.Path)
-
-    def getAddressbook(self, name, path):
-        return self._provider.getAddressbook(self._request, name, self.Name, self.Password, path)
+    def getDataBaseCredential(self):
+        name = getAddressbookId(self.User.getUserId(), self.Name)
+        password = ''
+        return name, password
 
     def _isNew(self):
         return self._metadata is None
 
-    def _getNewUser(self, database, provider, scheme, server, user, pwd):
-        if self._request is None:
-            raise self._getSqlException(1003, 1105, g_oauth2)
-        if provider.isOffLine():
-            raise self._getSqlException(1004, 1108, user)
-        url = provider.getWellKnownUrl()
-        redirect, url = provider.getDiscoveryUrl(self._request, user, pwd, url)
-        print("User._getMetaData() 1 %s" % url)
-        if redirect:
-            scheme, server = provider.getUrlParts(url)
-            redirect, url = provider.getDiscoveryUrl(self._request, user, pwd, url)
-        path = provider.getUserUrl(self._request, user, pwd, url)
-        if not provider.supportAddressbook(self._request, user, pwd, path):
+    def _getNewAddressbook(self, database, name):
+        if self.User.isOffLine():
+            raise self._getSqlException(1004, 1108, self.User.Name)
+        path, name = self.User.getAddressbookUrl(name)
+        if path is None or name is None:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
-        print("User._getMetaData() 2 %s" % path)
-        path = provider.getAddressbooksUrl(self._request, user, pwd, path)
-        print("User._getMetaData() 3 %s" % path)
-        default = provider.getDefaultAddressbook(self._request, user, pwd, path)
-        keymap = database.insertUser(scheme, server, path, user, default)
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+        print("AddressBook._getMetaData() 1 %s - %s" % (path, name))
+        if not self.User.getAddressbook(name, path):
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+        print("AddressBook._getMetaData() 2 %s" % path)
+        keymap = database.insertAddressbook(self.User.Id, path, name)
+        print("AddressBook._getMetaData() 3 %s" % name)
         i = 4
         for key in keymap.getKeys():
-            print("User._getMetaData() %i %s - %s" % (i, key, keymap.getValue(key)))
+            print("AddressBook._getMetaData() %i %s - %s" % (i, key, keymap.getValue(key)))
             i += 1
         return keymap
+
+    def _initAddressbook(self, database):
+        name, password = self.getDataBaseCredential()
+        if not database.createUser(name, password):
+            raise self._getSqlException(1005, 1106, name)
+        format = {'Schema': name,
+                  'View': self.Name,
+                  'User': name}
+        database.initUser(format)
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

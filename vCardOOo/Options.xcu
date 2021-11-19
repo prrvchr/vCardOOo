@@ -32,7 +32,7 @@
   oor:package="io.github.prrvchr"
   oor:name="vCardOOo">
     <prop oor:name="AddressBookName">
-        <value xml:lang="en-US">My contacts</value>
-        <value xml:lang="fr-FR">Mes contacts</value>
+        <value xml:lang="en">My contacts</value>
+        <value xml:lang="fr">Mes contacts</value>
     </prop>
 </oor:component-data>

@@ -82,6 +82,10 @@ class DataParser(unohelper.Base,
             item = '{urn:ietf:params:xml:ns:carddav}addressbook-home-set'
             path = './{DAV:}response/{DAV:}propstat/{DAV:}prop/%s/{DAV:}href'
             keys['Url'] = (path % item, None)
+        elif self._method == 'getDefaultAddressbook':
+            keys = {}
+            path = './{DAV:}response[2]/{DAV:}propstat/{DAV:}prop/{DAV:}displayname'
+            keys['Name'] = (path, None)
         elif self._method == 'getAddressbookUrl':
             keys = {}
             if not self._addressbook:
@@ -104,6 +108,8 @@ class DataParser(unohelper.Base,
             data = None
         elif self._method == 'getAddressbooksUrl':
             data = None
+        elif self._method == 'getDefaultAddressbook':
+            data = None
         elif self._method == 'getAddressbookUrl':
             data = []
         elif self._method == 'getAddressbook':
@@ -116,6 +122,8 @@ class DataParser(unohelper.Base,
         elif self._method == 'getUser':
             data = value
         elif self._method == 'getAddressbooksUrl':
+            data = value
+        elif self._method == 'getDefaultAddressbook':
             data = value
         elif self._method == 'getAddressbookUrl':
             data.append(value)

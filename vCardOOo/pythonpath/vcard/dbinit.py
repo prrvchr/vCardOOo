@@ -256,4 +256,5 @@ def getStaticTables():
     return tables
 
 def getQueries():
-    return (('createInsertUser', None), )
+    return (('createInsertUser', None),
+            ('createInsertAddressbook', None))

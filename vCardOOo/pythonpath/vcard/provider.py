@@ -44,6 +44,7 @@ from com.sun.star.sdbc import XRestProvider
 from .dataparser import DataParser
 
 from .unotool import getConnectionMode
+from .unotool import getUrl
 
 from .dbtool import getSqlException
 
@@ -64,6 +65,7 @@ class Provider(unohelper.Base,
         self._ctx = ctx
         self._scheme = scheme
         self._server = server
+        self._url = '/.well-known/carddav'
         self._headers = ('1', 'access-control', 'addressbook')
         self._Error = ''
         self.SessionMode = OFFLINE
@@ -73,7 +75,7 @@ class Provider(unohelper.Base,
         return self._server
     @property
     def BaseUrl(self):
-        return self._scheme + '://' + self._server
+        return self._scheme + self._server
 
     def isOnLine(self):
         return getConnectionMode(self._ctx, self.Host) != OFFLINE
@@ -81,6 +83,15 @@ class Provider(unohelper.Base,
         offline = getConnectionMode(self._ctx, self.Host) != ONLINE
         print("Provider.isOffLine() %s" % offline)
         return offline
+
+    def getWellKnownUrl(self):
+        return self._scheme + self._server + self._url
+
+    def getUrlParts(self, location):
+        url = getUrl(self._ctx, location)
+        self._scheme = url.Protocol
+        self._server = url.Server
+        return self._scheme, self._server
 
     def transcode(self, name, value):
         if name == 'People':
@@ -93,19 +104,20 @@ class Provider(unohelper.Base,
         #    value = value.split('/').pop()
         return value
 
-    def getDiscoveryLocation(self, request, server, user, password):
-        parameter = self._getRequestParameter('getUrl', user, password)
+    def getDiscoveryUrl(self, request, user, password, url):
+        parameter = self._getRequestParameter('getUrl', user, password, url)
         response = request.getResponse(parameter, None)
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, '%s Response not Ok' % server)
+            raise self._getSqlException(1006, 1107, '%s Response not Ok' % url)
         location = response.getHeader('Location')
         response.close()
         if not location:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, '%s url is None' % server)
-        return location
+            raise self._getSqlException(1006, 1107, '%s url is None' % url)
+        redirect = location.endswith(self._url)
+        return redirect, location
 
     def getUserUrl(self, request, user, password, url):
         data = '''<?xml version="1.0" encoding="utf-8"?>
@@ -124,7 +136,7 @@ class Provider(unohelper.Base,
         response.close()
         return url
 
-    def hasAddressbook(self, request, user, password, url):
+    def supportAddressbook(self, request, user, password, url):
         parameter = self._getRequestParameter('hasAddressbook', user, password, url)
         response = request.getResponse(parameter, None)
         if not response.Ok:
@@ -154,6 +166,27 @@ class Provider(unohelper.Base,
         url = response.Data
         response.close()
         return url
+
+    def getDefaultAddressbook(self, request, user, password, url):
+        data = '''<?xml version="1.0" encoding="utf-8"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <d:displayname/>
+    <d:resourcetype>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+    </d:resourcetype>
+  </d:prop>
+</d:propfind>'''
+        parameter = self._getRequestParameter('getDefaultAddressbook', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        name = response.Data
+        response.close()
+        return name
 
     def getAddressbookUrl(self, request, addressbook, user, password, url):
         data = '''<?xml version="1.0" encoding="utf-8"?>
@@ -214,7 +247,7 @@ class Provider(unohelper.Base,
         parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
         parameter.Name = method
         if method == 'getUrl':
-            parameter.Url = self.BaseUrl + '/.well-known/carddav'
+            parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Header = '{"Depth": "0"}'
@@ -235,6 +268,12 @@ class Provider(unohelper.Base,
             parameter.Auth = (user, password)
             parameter.Data = data
             parameter.Header = '{"Depth": "0"}'
+        elif method == 'getDefaultAddressbook':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Depth": "1"}'
         elif method == 'getAddressbookUrl':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'PROPFIND'

@@ -250,6 +250,9 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
     elif name == 'setUserSchema':
         query = 'ALTER USER "%(User)s" SET INITIAL SCHEMA "%(Schema)s"' % format
 
+    elif name == 'setUserPassword':
+        query = """ALTER USER "%(User)s" SET PASSWORD '%(Password)s'""" % format
+
 # Get last IDENTITY value that was inserted into a table by the current session
     elif name == 'getIdentity':
         query = 'CALL IDENTITY();'
@@ -371,13 +374,19 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = 'SELECT %s FROM %s WHERE %s' % p
 
     elif name == 'getUser':
-        c = '"User","Addressbook","Group","Scheme","Server","Path",U."Name" AS "UserName",'
-        c += 'A."Name" AS "AddressbookName",A."Token" AS "Async",G."Token" AS "Gsync"'
-        f = '"Users" AS U '
-        f += 'JOIN "Addressbook" AS A ON U."User" = A."User" '
-        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
-        w = 'U."Server" = ? AND U."Name" = ? AND A."Name" = ?'
+        c = '"User","Scheme","Server","Path","Name","Default"'
+        f = '"Users"'
+        w = '"Server" = ? AND "Name" = ?'
         query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
+
+    elif name == 'getAddressbook':
+        c = 'A."Addressbook",G."Group",A."Path",'
+        c += 'A."Name",A."Token" AS "AdrSync",G."Token" AS "GrpSync"'
+        f = '"Addressbooks" AS A '
+        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
+        w = 'A."User" = ? AND A."Name" = ?'
+        query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
+
 
     elif name == 'getPerson1':
         c = '"People","Group","Resource","Account","PeopleSync","GroupSync"'
@@ -391,6 +400,16 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = 'SELECT "Resource" FROM "Groups" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR'
 
 # Update Queries
+    elif name == 'updateUser':
+        query = 'UPDATE "Users" SET "Scheme"=?,"Password"=? WHERE "User"=?'
+
+    elif name == 'updateUserScheme':
+        query = 'UPDATE "Users" SET "Scheme"=? WHERE "User"=?'
+
+    elif name == 'updateUserPassword':
+        query = 'UPDATE "Users" SET "Password"=? WHERE "User"=?'
+
+
     elif name == 'updatePeoples':
         query = 'UPDATE "Peoples" SET "TimeStamp"=? WHERE "Resource"=?'
 
@@ -457,24 +476,38 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
 CREATE PROCEDURE "InsertUser"(IN "Scheme" VARCHAR(128),
                               IN "Server" VARCHAR(128),
                               IN "Path" VARCHAR(256),
-                              IN "Addressbook" VARCHAR(150),
-                              IN "User" VARCHAR(128),
-                              IN "Password" VARCHAR(128))
+                              IN "Name" VARCHAR(128),
+                              IN "Default" VARCHAR(128))
   SPECIFIC "InsertUser_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE "Result" CURSOR WITH RETURN FOR
-      SELECT U."User", A."Addressbook", G."Group",
-      A."Scheme", U."Server", A."Path",
-      U."Name" AS "UserName", U."Password", A."Name" AS "AddressbookName",
-      A."Token" AS "Async", G."Token" AS "Gsync"
-      FROM "Users" AS U
-      JOIN "Addressbooks" AS A ON U."User" = A."User"
+      SELECT "User", "Scheme", "Server", "Path", "Name", "Default"
+      FROM "Users"
+      WHERE "Server" = "Server" AND "Name" = "Name" FOR READ ONLY;
+    INSERT INTO "Users" ("Scheme","Server","Name","Path","Default")
+      VALUES ("Scheme","Server","Name","Path","Default");
+    OPEN "Result";
+  END"""
+
+    elif name == 'createInsertAddressbook':
+        query = """\
+CREATE PROCEDURE "InsertAddressbook"(IN "User" INTEGER,
+                                     IN "Path" VARCHAR(256),
+                                     IN "Name" VARCHAR(128))
+  SPECIFIC "InsertAddressbook_1"
+  MODIFIES SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE "Result" CURSOR WITH RETURN FOR
+      SELECT A."Addressbook", G."Group", A."Path", A."Name",
+      A."Token" AS "AdrSync", G."Token" AS "GrpSync"
+      FROM "Addressbooks" AS A
       JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL
-      WHERE U."Server" = "Server" AND U."Name" = "User" AND  A."Name" = "Addressbook" FOR READ ONLY;
-    INSERT INTO "Users" ("Server","Name", "Password") VALUES ("Server","User","Password");
-    INSERT INTO "Addressbooks" ("User","Scheme","Path","Name") VALUES (IDENTITY(),"Scheme","Path","Addressbook");
+      WHERE A."User" = "User" AND A."Name" = "Name" FOR READ ONLY;
+    INSERT INTO "Addressbooks" ("User","Path","Name")
+      VALUES ("User","Path","Name");
     INSERT INTO "Groups" ("Addressbook") VALUES (IDENTITY());
     OPEN "Result";
   END"""
@@ -665,7 +698,9 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
 
 # Get Procedure Query
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?,?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?,?)'
+    elif name == 'insertAddressbook':
+        query = 'CALL "InsertAddressbook"(?,?,?)'
     elif name == 'mergePeople':
         query = 'CALL "MergePeople"(?,?,?,?,?)'
     elif name == 'mergeGroup':
