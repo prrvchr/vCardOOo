@@ -41,22 +41,21 @@ g_message = 'datasource'
 import traceback
 
 
-def getAddressbookId(user, addressbook):
-    return user + '/' + addressbook
-
-
 class AddressBook(unohelper.Base):
     def __init__(self, ctx, database, user, name):
         self._ctx = ctx
         print("AddressBook.__init__() 1 %s - %s - %s" % (user.Scheme, user.Server, name))
         self.User = user
-        self._metadata = database.selectAddressbook(user.Id, user.getDefault(name))
-        if self._isNew():
+        name = self.User.unquoteUrl(name)
+        self._metadata = database.selectAddressbook(user.Id, name)
+        print("AddressBook.__init__() 2 %s - '%s' - %s" % (user.Id, name, self._metadata))
+        if self._isNewAddressbook():
             self._metadata = self._getNewAddressbook(database, name)
-            self._initAddressbook(database)
+            self.User.createAddressbook(database, self.Name, self.Id)
+        self.User.addAddressbook(self.Id)
 
     @property
-    def Addressbook(self):
+    def Id(self):
         return self._metadata.getValue('Addressbook')
     @property
     def Group(self):
@@ -74,18 +73,10 @@ class AddressBook(unohelper.Base):
     def GrpSync(self):
         return self._metadata.getValue('GrpSync')
 
-    def updateUser(self, scheme):
-        self.User.updateUser(scheme)
-
-    def getAddressbookId(self):
-        return getAddressbookId(self.User.getUserId(), self.Name)
-
     def getDataBaseCredential(self):
-        name = getAddressbookId(self.User.getUserId(), self.Name)
-        password = ''
-        return name, password
+        return self.User.getDataBaseCredential(self.Id)
 
-    def _isNew(self):
+    def _isNewAddressbook(self):
         return self._metadata is None
 
     def _getNewAddressbook(self, database, name):
@@ -108,14 +99,8 @@ class AddressBook(unohelper.Base):
             i += 1
         return keymap
 
-    def _initAddressbook(self, database):
-        name, password = self.getDataBaseCredential()
-        if not database.createUser(name, password):
-            raise self._getSqlException(1005, 1106, name)
-        format = {'Schema': name,
-                  'View': self.Name,
-                  'User': name}
-        database.initUser(format)
+    def getAddressbookId(self):
+        return '%i' % self.Id
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

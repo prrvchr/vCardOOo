@@ -42,13 +42,11 @@ from .configuration import g_group
 from .configuration import g_compact
 
 from .database import DataBase
-#from .provider import Provider
 
 from .user import User
 from .user import getUserId
 
 from .addressbook import AddressBook
-from .addressbook import getAddressbookId
 
 from .replicator import Replicator
 
@@ -75,7 +73,6 @@ class DataSource(unohelper.Base,
         self._ctx = ctx
         self._count = 0
         self._users = {}
-        self._addressbooks = {}
         self._listener = EventListener(self)
         #self._provider = Provider(ctx)
         self._database = DataBase(ctx)
@@ -91,35 +88,29 @@ class DataSource(unohelper.Base,
         self._count += 1
         return connection
 
-    def stopReplicator(self):
+    def closeConnection(self, connection):
+        url = connection.getMetaData().getUserName()
+        server, name, aid = self._getUrlParts(url)
+        uid = getUserId(server, name)
+        if uid in self._users:
+            self._users.get(uid).removeAddressbook(aid)
         if self._count > 0:
             self._count -= 1
-        print("DataSource.disposeConnection() %s" % self._count)
+        print("DataSource.closeConnection() 1: %s - %s - %s - %s" % (self._count, server, name, aid))
         if self._count == 0:
             #self._replicator.stop()
             pass
 
-    def getDataBaseCredential(self, url, name, password):
-        scheme, server, addressbook = self._getUrlParts(url)
-        if not server:
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % url)
+    def getConnectionCredential(self, scheme, server, addressbook, name, password):
         print("DataSource.getDataBaseCredential() 1 %s - %s - %s" % (scheme, server, addressbook))
         uid = getUserId(server, name)
-        aid = getAddressbookId(uid, addressbook)
-        if aid in self._addressbooks:
-            name, password = self._addressbooks.get(aid).getDataBaseCredential()
+        if uid in self._users:
+            user = self._users.get(uid)
         else:
-            if uid in self._users:
-                u = self._users.get(uid)
-            else:
-                u = User(self._ctx, self._database, scheme, server, name, password)
-                self._users[uid] = u
-            a = AddressBook(self._ctx, self._database, u, addressbook)
-            self._addressbooks[aid] = a
-            name, password = a.getDataBaseCredential()
-            if aid != name:
-                self._addressbooks[name] = a
+            user = User(self._ctx, self._database, scheme, server, name, password)
+            self._users[uid] = user
+        a = AddressBook(self._ctx, self._database, user, addressbook)
+        name, password = a.getDataBaseCredential()
         # User and/or AddressBook has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
         #self._replicator.start()
@@ -127,18 +118,8 @@ class DataSource(unohelper.Base,
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
-        if url is None:
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % location)
-        scheme = url.Protocol if url.Protocol else g_scheme
         server = url.Server
-        addressbook = url.Path.strip('/')
-        if scheme + server + addressbook != location:
-            scheme = g_scheme
-        return scheme, server, addressbook
+        user = url.Path.strip('/')
+        aid = int(url.Name)
+        return server, user, aid
 
-    def _getSqlException(self, state, code, format):
-        state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, format)
-        error = getSqlException(state, code, msg, self)
-        return error

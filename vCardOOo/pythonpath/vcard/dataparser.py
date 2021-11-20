@@ -84,7 +84,9 @@ class DataParser(unohelper.Base,
             keys['Url'] = (path % item, None)
         elif self._method == 'getDefaultAddressbook':
             keys = {}
-            path = './{DAV:}response[2]/{DAV:}propstat/{DAV:}prop/{DAV:}displayname'
+            path = './{DAV:}response[2]/'
+            keys['Url'] = (path + '{DAV:}href', None)
+            path += '{DAV:}propstat/{DAV:}prop/{DAV:}displayname'
             keys['Name'] = (path, None)
         elif self._method == 'getAddressbookUrl':
             keys = {}
@@ -109,7 +111,7 @@ class DataParser(unohelper.Base,
         elif self._method == 'getAddressbooksUrl':
             data = None
         elif self._method == 'getDefaultAddressbook':
-            data = None
+            data = []
         elif self._method == 'getAddressbookUrl':
             data = []
         elif self._method == 'getAddressbook':
@@ -124,7 +126,7 @@ class DataParser(unohelper.Base,
         elif self._method == 'getAddressbooksUrl':
             data = value
         elif self._method == 'getDefaultAddressbook':
-            data = value
+            data.append(value)
         elif self._method == 'getAddressbookUrl':
             data.append(value)
         elif self._method == 'getAddressbook':

@@ -200,7 +200,7 @@ class DataBase(unohelper.Base,
 
     def selectAddressbook(self, user, name):
         addressbook = None
-        call = self._getCall('getAddressbook')
+        call = self._getCall('selectAddressbook')
         call.setLong(1, user)
         call.setString(2, name)
         result = call.executeQuery()
@@ -209,33 +209,44 @@ class DataBase(unohelper.Base,
         call.close()
         return addressbook
 
-    def insertUser(self, scheme, server, path, name, default):
-        user = None
+    def insertUser(self, scheme, server, path, user, url, name):
+        usr = None
         call = self._getCall('insertUser')
         call.setString(1, scheme)
         call.setString(2, server)
         call.setString(3, path)
-        call.setString(4, name)
-        call.setString(5, default)
+        call.setString(4, user)
+        call.setString(5, url)
+        call.setString(6, name)
         result = call.executeQuery()
         if result.next():
-            user = getKeyMapFromResult(result)
+            usr = getKeyMapFromResult(result)
         call.close()
-        return user
+        return usr
 
     def insertAddressbook(self, user, path, name):
-        addressbook = None
+        ab = None
         call = self._getCall('insertAddressbook')
         call.setLong(1, user)
         call.setString(2, path)
         call.setString(3, name)
         result = call.executeQuery()
         if result.next():
-            addressbook = getKeyMapFromResult(result)
+            ab = getKeyMapFromResult(result)
         call.close()
-        return addressbook
+        return ab
 
-    def initUser(self, format):
+    def getDefaultAddressbook(self, user):
+        default = ''
+        call = self._getCall('getDefaultAddressbook')
+        call.setLong(1, user)
+        result = call.executeQuery()
+        if result.next():
+            default = getValueFromResult(result)
+        call.close()
+        return default
+
+    def initAddressbook(self, format):
         statement = self.Connection.createStatement()
         format['View'] = self._getViewName()
         query = getSqlQuery(self._ctx, 'createUserSchema', format)

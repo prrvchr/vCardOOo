@@ -184,9 +184,9 @@ class Provider(unohelper.Base,
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1006, 1107, user)
-        name = response.Data
+        url, name = response.Data
         response.close()
-        return name
+        return url, name
 
     def getAddressbookUrl(self, request, addressbook, user, password, url):
         data = '''<?xml version="1.0" encoding="utf-8"?>

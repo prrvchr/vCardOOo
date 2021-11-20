@@ -47,19 +47,20 @@ from vcard import DataSource
 from vcard import getDriverPropertyInfos
 from vcard import getResourceLocation
 from vcard import getSqlException
+from vcard import getUrl
 
 from vcard import logMessage
 from vcard import getMessage
 g_message = 'Driver'
 
 from vcard import g_identifier
+from vcard import g_scheme
 from vcard import g_host
 
 from vcard import g_class
 from vcard import g_folder
 from vcard import g_jar
 
-import validators
 import traceback
 
 # pythonloader looks for a static g_ImplementationHelper variable
@@ -105,29 +106,26 @@ class Driver(unohelper.Base,
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                state = getMessage(self._ctx, g_message, 112)
-                msg = getMessage(self._ctx, g_message, 1101, url)
-                raise getSqlException(state, 1101, msg, self)
-            server = ':'.join(protocols[3:]).strip('/')
-            user, password = self._getUserCredential(infos)
-            print("Driver.connect() 1 %s - %s - %s" % (server, user, password))
-            #if not validators.email(user):
-            #    state = getMessage(self._ctx, g_message, 113)
-            #    msg = getMessage(self._ctx, g_message, 1102, user)
-            #    msg += getMessage(self._ctx, g_message, 1103)
-            #    raise getSqlException(state, 1104, msg, self)
+                raise self._getSqlException(112, 1101, url)
+            location = ':'.join(protocols[3:]).strip('/')
+            scheme, server, addressbook = self._getUrlParts(location)
+            if not server:
+                #TODO: Raise SqlException with correct message!
+                raise self._getSqlException(1104, 1101, url)
+            user, pwd = self._getUserCredential(infos)
+            print("Driver.connect() 1 %s - %s - '%s' - %s - %s" % (scheme, server, addressbook, user, pwd))
             msg = getMessage(self._ctx, g_message, 114, g_host)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            name, password = self.DataSource.getDataBaseCredential(server, user, password)
+            name, pwd = self.DataSource.getConnectionCredential(scheme, server, addressbook, user, pwd)
             msg = getMessage(self._ctx, g_message, 118, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            connection = self.DataSource.getConnection(name, password)
+            connection = self.DataSource.getConnection(name, pwd)
             msg = getMessage(self._ctx, g_message, 119, user)
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             version = connection.getMetaData().getDriverVersion()
             msg = getMessage(self._ctx, g_message, 120, (version, name))
             logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            print("Driver.connect() 2 %s - %s - %s - %s" % (server, name, password, version))
+            print("Driver.connect() 2 %s - %s - %s - %s" % (server, name, pwd, version))
             return connection
         except SQLException as e:
             raise e
@@ -151,17 +149,35 @@ class Driver(unohelper.Base,
     def getMinorVersion(self):
         return 0
 
+    def _getUrlParts(self, location):
+        url = getUrl(self._ctx, location, g_scheme)
+        if url is None:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1104, 1101, location)
+        scheme = url.Protocol
+        server = url.Server
+        addressbook = url.Name
+        if not location.startswith(scheme):
+            scheme = g_scheme
+        return scheme, server, addressbook
+
     def _getUserCredential(self, infos):
         user = ''
-        password = ''
+        pwd = ''
         for info in infos:
             if info.Name == 'user':
                 user = info.Value.strip()
             elif info.Name == 'password':
-                password = info.Value.strip()
-            if user and password:
+                pwd = info.Value.strip()
+            if user and pwd:
                 break
-        return user, password
+        return user, pwd
+
+    def _getSqlException(self, state, code, format):
+        state = getMessage(self._ctx, g_message, state)
+        msg = getMessage(self._ctx, g_message, code, format)
+        error = getSqlException(state, code, msg, self)
+        return error
 
     def _getDataSourceClassPath(self):
         path = '%s/%s' % (g_folder, g_jar)

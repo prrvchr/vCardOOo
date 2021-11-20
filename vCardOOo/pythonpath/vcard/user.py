@@ -62,15 +62,17 @@ class User(unohelper.Base,
     def __init__(self, ctx, database, scheme, server, name, pwd=''):
         self._ctx = ctx
         self._password = pwd
+        self._addressbooks = []
         #self.Fields = database.getUserFields()
         #url = 'gcontact:request'
         #executeDispatch(ctx, url)
-        print("User.__init__() 1 %s - %s " % (server, name))
+        print("User.__init__() 1 %s - %s" % (server, name))
         self._request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
-        if self._isNew():
+        if self._isNewUser():
             provider = Provider(ctx, scheme, server)
-            self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
+            self._metadata, name = self._getNewUser(database, provider, scheme, server, name, pwd)
+            self.createAddressbook(database, name, self.Default)
         else:
             provider = Provider(ctx, self.Scheme, self.Server)
         self._provider = provider
@@ -78,6 +80,9 @@ class User(unohelper.Base,
     @property
     def Id(self):
         return self._metadata.getValue('User')
+    @property
+    def Default(self):
+        return self._metadata.getValue('Default')
     @property
     def Scheme(self):
         return self._metadata.getValue('Scheme')
@@ -94,13 +99,30 @@ class User(unohelper.Base,
     def Password(self):
         return self._password
 
-    def getDefault(self, name):
-        if not name:
-            name = self._metadata.getValue('Default')
-        return name
+    def unquoteUrl(self, url):
+        return self._request.unquoteUrl(url)
 
-    def getUserId(self):
-        return getUserId(self.Server, self.Name)
+    def addAddressbook(self, aid):
+        self._addressbooks.append(aid)
+
+    def removeAddressbook(self, aid):
+        if aid in self._addressbooks:
+            print("User.removeAddressbook() 1 %s" % (self._addressbooks, ))
+            self._addressbooks.remove(aid)
+
+    def createAddressbook(self, database, name, aid):
+        user, password = self.getDataBaseCredential(aid)
+        if not database.createUser(user, password):
+            raise self._getSqlException(1005, 1106, user)
+        format = {'Schema': user,
+                  'View': name,
+                  'User': user}
+        database.initAddressbook(format)
+
+    def getDataBaseCredential(self, aid):
+        name = '%s/%i' % (getUserId(self.Server, self.Name), aid)
+        password = ''
+        return name, password
 
     def isOffLine(self):
         return self._provider.isOffLine()
@@ -111,7 +133,7 @@ class User(unohelper.Base,
     def getAddressbook(self, name, path):
         return self._provider.getAddressbook(self._request, name, self.Name, self.Password, path)
 
-    def _isNew(self):
+    def _isNewUser(self):
         return self._metadata is None
 
     def _getNewUser(self, database, provider, scheme, server, user, pwd):
@@ -126,19 +148,29 @@ class User(unohelper.Base,
             scheme, server = provider.getUrlParts(url)
             redirect, url = provider.getDiscoveryUrl(self._request, user, pwd, url)
         path = provider.getUserUrl(self._request, user, pwd, url)
+        if path is None:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
         if not provider.supportAddressbook(self._request, user, pwd, path):
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
         print("User._getMetaData() 2 %s" % path)
         path = provider.getAddressbooksUrl(self._request, user, pwd, path)
         print("User._getMetaData() 3 %s" % path)
-        default = provider.getDefaultAddressbook(self._request, user, pwd, path)
-        keymap = database.insertUser(scheme, server, path, user, default)
+        url, name = provider.getDefaultAddressbook(self._request, user, pwd, path)
+        if url is None or name is None:
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+        if not provider.getAddressbook(self._request, name, name, pwd, url):
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+        print("User._getMetaData() 4 %s" % user)
+        metadata = database.insertUser(scheme, server, path, user, url, name)
         i = 4
-        for key in keymap.getKeys():
-            print("User._getMetaData() %i %s - %s" % (i, key, keymap.getValue(key)))
+        for key in metadata.getKeys():
+            print("User._getMetaData() %i %s - %s" % (i, key, metadata.getValue(key)))
             i += 1
-        return keymap
+        return metadata, name
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

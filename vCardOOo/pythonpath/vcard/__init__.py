@@ -29,6 +29,7 @@
 
 from .configuration import g_identifier
 from .configuration import g_extension
+from .configuration import g_scheme
 from .configuration import g_host
 
 from .dbconfig  import g_class
@@ -55,3 +56,4 @@ from .unotool import getFileSequence
 from .unotool import getResourceLocation
 from .unotool import getSimpleFile
 from .unotool import getStringResource
+from .unotool import getUrl

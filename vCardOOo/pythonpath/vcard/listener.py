@@ -63,10 +63,10 @@ class EventListener(unohelper.Base,
         self._datasource = datasource
 
 # XEventListener
-    def disposing(self, source):
+    def disposing(self, event):
         try:
             print("EventListener.disposing() ******************")
-            self._datasource.stopReplicator()
+            self._datasource.closeConnection(event.Source)
         except Exception as e:
             msg = "EventListener Error: %s" % traceback.print_exc()
             print(msg)

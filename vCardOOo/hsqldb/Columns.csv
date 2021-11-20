@@ -2,10 +2,10 @@ Column|Name
 0|User
 1|Addressbook
 2|Group
-3|Scheme
-4|Server
-5|Path
-6|Default
+3|Default
+4|Scheme
+5|Server
+6|Path
 7|Name
 8|Token
 9|TimeStamp

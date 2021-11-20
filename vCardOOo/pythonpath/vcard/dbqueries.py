@@ -374,7 +374,7 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = 'SELECT %s FROM %s WHERE %s' % p
 
     elif name == 'getUser':
-        c = '"User","Scheme","Server","Path","Name","Default"'
+        c = '"User","Default","Scheme","Server","Path","Name"'
         f = '"Users"'
         w = '"Server" = ? AND "Name" = ?'
         query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
@@ -387,6 +387,14 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         w = 'A."User" = ? AND A."Name" = ?'
         query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
 
+    elif name == 'getDefaultAddressbook':
+        c = 'A."Addressbook",G."Group",A."Path",'
+        c += 'A."Name",A."Token" AS "AdrSync",G."Token" AS "GrpSync"'
+        f = '"Users" AS U '
+        f += 'JOIN "Addressbooks" AS A ON U."Default"=A."Addressbook" '
+        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
+        w = 'U."User" = ?'
+        query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
 
     elif name == 'getPerson1':
         c = '"People","Group","Resource","Account","PeopleSync","GroupSync"'
@@ -473,43 +481,69 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
 
     elif name == 'createInsertUser':
         query = """\
-CREATE PROCEDURE "InsertUser"(IN "Scheme" VARCHAR(128),
-                              IN "Server" VARCHAR(128),
-                              IN "Path" VARCHAR(256),
-                              IN "Name" VARCHAR(128),
-                              IN "Default" VARCHAR(128))
+CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
+                              IN SERVER VARCHAR(128),
+                              IN PATH VARCHAR(256),
+                              IN USR VARCHAR(128),
+                              IN URL VARCHAR(256),
+                              IN NAME VARCHAR(128))
   SPECIFIC "InsertUser_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
-    DECLARE "Result" CURSOR WITH RETURN FOR
-      SELECT "User", "Scheme", "Server", "Path", "Name", "Default"
+    DECLARE PK1,PK2 INTEGER DEFAULT NULL;
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT "User","Default","Scheme","Server","Path","Name"
       FROM "Users"
-      WHERE "Server" = "Server" AND "Name" = "Name" FOR READ ONLY;
-    INSERT INTO "Users" ("Scheme","Server","Name","Path","Default")
-      VALUES ("Scheme","Server","Name","Path","Default");
-    OPEN "Result";
+      WHERE "Server"=SERVER AND "Name"=USR FOR READ ONLY;
+    INSERT INTO "Users" ("Scheme","Server","Name","Path") VALUES (SCHEME,SERVER,USR,PATH);
+    SET PK1=IDENTITY();
+    INSERT INTO "Addressbooks" ("User","Path","Name") VALUES (PK1,URL,NAME);
+    SET PK2=IDENTITY();
+    INSERT INTO "Groups" ("Addressbook") VALUES (PK2);
+    UPDATE "Users" SET "Default"=PK2 WHERE "User"=PK1;
+    OPEN RSLT;
+  END"""
+
+    elif name == 'createSelectAddressbook':
+        query = """\
+CREATE PROCEDURE "SelectAddressbook"(IN USR INTEGER,
+                                     IN NAME VARCHAR(128))
+  SPECIFIC "SelectAddressbook_1"
+  READS SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT A."Addressbook", G."Group", A."Path", A."Name",
+      A."Token" AS "AdrSync", G."Token" AS "GrpSync"
+      FROM "Users" AS U
+      JOIN "Addressbooks" AS A ON U."User"=A."User"
+      JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
+      WHERE U."User"=USR AND
+        ((NAME='' AND A."Addressbook"=U."Default") OR
+        (NAME!='' AND A."Name"=NAME))
+      FOR READ ONLY;
+    OPEN RSLT;
   END"""
 
     elif name == 'createInsertAddressbook':
         query = """\
-CREATE PROCEDURE "InsertAddressbook"(IN "User" INTEGER,
-                                     IN "Path" VARCHAR(256),
-                                     IN "Name" VARCHAR(128))
+CREATE PROCEDURE "InsertAddressbook"(IN USR INTEGER,
+                                     IN PATH VARCHAR(256),
+                                     IN NAME VARCHAR(128))
   SPECIFIC "InsertAddressbook_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
-    DECLARE "Result" CURSOR WITH RETURN FOR
-      SELECT A."Addressbook", G."Group", A."Path", A."Name",
-      A."Token" AS "AdrSync", G."Token" AS "GrpSync"
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT A."Addressbook",G."Group",A."Path",A."Name",
+      A."Token" AS "AdrSync",G."Token" AS "GrpSync"
       FROM "Addressbooks" AS A
-      JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL
-      WHERE A."User" = "User" AND A."Name" = "Name" FOR READ ONLY;
-    INSERT INTO "Addressbooks" ("User","Path","Name")
-      VALUES ("User","Path","Name");
+      JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
+      WHERE A."User"=USR AND A."Name"=NAME FOR READ ONLY;
+    INSERT INTO "Addressbooks" ("User","Path","Name") VALUES (USR,PATH,NAME);
     INSERT INTO "Groups" ("Addressbook") VALUES (IDENTITY());
-    OPEN "Result";
+    OPEN RSLT;
   END"""
 
     elif name == 'createInsertUser1':
@@ -698,7 +732,9 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
 
 # Get Procedure Query
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?,?,?)'
+    elif name == 'selectAddressbook':
+        query = 'CALL "SelectAddressbook"(?,?)'
     elif name == 'insertAddressbook':
         query = 'CALL "InsertAddressbook"(?,?,?)'
     elif name == 'mergePeople':
