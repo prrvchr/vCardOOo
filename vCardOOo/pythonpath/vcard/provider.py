@@ -67,6 +67,7 @@ class Provider(unohelper.Base,
         self._server = server
         self._url = '/.well-known/carddav'
         self._headers = ('1', 'access-control', 'addressbook')
+        self._status = 'HTTP/1.1 404 Not Found'
         self._Error = ''
         self.SessionMode = OFFLINE
 
@@ -120,12 +121,14 @@ class Provider(unohelper.Base,
         return redirect, location
 
     def getUserUrl(self, request, user, password, url):
-        data = '''<?xml version="1.0" encoding="utf-8"?>
+        data = '''\
+<?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
   <d:prop>
-    <d:current-user-principal/>
+    <d:current-user-principal />
   </d:prop>
-</d:propfind>'''
+</d:propfind>
+'''
         parameter = self._getRequestParameter('getUser', user, password, url, data)
         parser = DataParser(parameter.Name)
         response = request.getResponse(parameter, parser)
@@ -151,12 +154,14 @@ class Provider(unohelper.Base,
         return True
 
     def getAddressbooksUrl(self, request, user, password, url):
-        data = '''<?xml version="1.0" encoding="utf-8"?>
+        data = '''\
+<?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
   <d:prop>
-    <card:addressbook-home-set xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+    <card:addressbook-home-set xmlns:card="urn:ietf:params:xml:ns:carddav" />
   </d:prop>
-</d:propfind>'''
+</d:propfind>
+'''
         parameter = self._getRequestParameter('getAddressbooksUrl', user, password, url, data)
         parser = DataParser(parameter.Name)
         response = request.getResponse(parameter, parser)
@@ -168,15 +173,19 @@ class Provider(unohelper.Base,
         return url
 
     def getDefaultAddressbook(self, request, user, password, url):
-        data = '''<?xml version="1.0" encoding="utf-8"?>
+        data = '''\
+<?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
   <d:prop>
-    <d:displayname/>
+    <d:displayname />
+    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
+    <d:sync-token />
     <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
     </d:resourcetype>
   </d:prop>
-</d:propfind>'''
+</d:propfind>
+'''
         parameter = self._getRequestParameter('getDefaultAddressbook', user, password, url, data)
         parser = DataParser(parameter.Name)
         response = request.getResponse(parameter, parser)
@@ -184,20 +193,24 @@ class Provider(unohelper.Base,
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1006, 1107, user)
-        url, name = response.Data
+        path, name, tag, token = response.Data
         response.close()
-        return url, name
+        return path, name, tag, token
 
     def getAddressbookUrl(self, request, addressbook, user, password, url):
-        data = '''<?xml version="1.0" encoding="utf-8"?>
+        data = '''\
+<?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
   <d:prop>
-    <d:displayname/>
+    <d:displayname />
+    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
+    <d:sync-token />
     <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
     </d:resourcetype>
   </d:prop>
-</d:propfind>'''
+</d:propfind>
+'''
         parameter = self._getRequestParameter('getAddressbookUrl', user, password, url, data)
         parser = DataParser(parameter.Name, addressbook)
         response = request.getResponse(parameter, parser)
@@ -205,20 +218,24 @@ class Provider(unohelper.Base,
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1006, 1107, user)
-        url, name = response.Data
+        path, name, tag, token = response.Data
         response.close()
-        return url, name
+        return path, name, tag, token
 
     def getAddressbook(self, request, addressbook, user, password, url):
-        data = '''<?xml version="1.0" encoding="utf-8"?>
+        data = '''\
+<?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
   <d:prop>
-    <d:displayname/>
+    <d:displayname />
+    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
+    <d:sync-token />
     <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav"/>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
     </d:resourcetype>
   </d:prop>
-</d:propfind>'''
+</d:propfind>
+'''
         parameter = self._getRequestParameter('getAddressbook', user, password, url, data)
         parser = DataParser(parameter.Name, addressbook)
         response = request.getResponse(parameter, parser)
@@ -230,6 +247,70 @@ class Provider(unohelper.Base,
         response.close()
         return isopen
 
+    def getAddressbookCards(self, request, user, password, url):
+        data = '''\
+<?xml version="1.0"?>
+<card:addressbook-query xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:prop>
+    <d:getetag />
+    <card:address-data />
+  </d:prop>
+</card:addressbook-query>
+'''
+        parameter = self._getRequestParameter('getAddressbookCards', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        cards = response.Data
+        response.close()
+        return cards
+
+    def getModifiedCardByToken(self, request, user, password, url, token):
+        data = '''\
+<?xml version="1.0"?>
+<d:sync-collection xmlns:d="DAV:">
+  <d:sync-token>%s</d:sync-token>
+  <d:sync-level>1</d:sync-level>
+  <d:prop>
+    <d:getetag />
+  </d:prop>
+</d:sync-collection>
+''' % token
+        parameter = self._getRequestParameter('getModifiedCardByToken', user, password, url, data)
+        parser = DataParser(parameter.Name, self._status)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        data = response.Data
+        response.close()
+        return data
+
+    def getModifiedCard(self, request, user, password, url, urls):
+        data = '''\
+<?xml version="1.0"?>
+<card:addressbook-multiget xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
+  <d:prop>
+    <d:getetag />
+    <card:address-data />
+  </d:prop>
+  <d:href>%s</d:href>
+</card:addressbook-multiget>
+''' % '</d:href><d:href>'.join(urls)
+        parameter = self._getRequestParameter('getAddressbookCards', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        cards = response.Data
+        response.close()
+        return cards
 
     def getUserId(self, user):
         return user.getValue('resourceName').split('/').pop()
@@ -250,14 +331,14 @@ class Provider(unohelper.Base,
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
-            parameter.Header = '{"Depth": "0"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
             parameter.NoRedirect = True
         elif method == 'getUser':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
-            parameter.Header = '{"Depth": "0"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
         elif method == 'hasAddressbook':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'OPTIONS'
@@ -267,25 +348,39 @@ class Provider(unohelper.Base,
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
-            parameter.Header = '{"Depth": "0"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
         elif method == 'getDefaultAddressbook':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
-            parameter.Header = '{"Depth": "1"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getAddressbookUrl':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
-            parameter.Header = '{"Depth": "1"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getAddressbook':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (user, password)
             parameter.Data = data
-            parameter.Header = '{"Depth": "1"}'
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+        elif method == 'getAddressbookCards':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'REPORT'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+        elif method == 'getModifiedCardByToken':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'REPORT'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
+
+
         elif method == 'People':
             parameter.Method = 'GET'
             parameter.Url += '/people/me/connections'

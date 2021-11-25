@@ -62,7 +62,7 @@ def getSqlQuery(ctx, name, format=None):
         c1 = '"Table" INTEGER NOT NULL'
         c2 = '"Column" INTEGER NOT NULL'
         c3 = '"TypeName" VARCHAR(100) NOT NULL'
-        c4 = '"TypeLenght" SMALLINT DEFAULT NULL'
+        c4 = '"TypeLenght" BIGINT DEFAULT NULL'
         c5 = '"Default" VARCHAR(100) DEFAULT NULL'
         c6 = '"Options" VARCHAR(100) DEFAULT NULL'
         c7 = '"Primary" BOOLEAN NOT NULL'
@@ -373,28 +373,13 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         p = (s, ' '.join(f), w)
         query = 'SELECT %s FROM %s WHERE %s' % p
 
+
     elif name == 'getUser':
         c = '"User","Default","Scheme","Server","Path","Name"'
         f = '"Users"'
         w = '"Server" = ? AND "Name" = ?'
         query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
 
-    elif name == 'getAddressbook':
-        c = 'A."Addressbook",G."Group",A."Path",'
-        c += 'A."Name",A."Token" AS "AdrSync",G."Token" AS "GrpSync"'
-        f = '"Addressbooks" AS A '
-        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
-        w = 'A."User" = ? AND A."Name" = ?'
-        query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
-
-    elif name == 'getDefaultAddressbook':
-        c = 'A."Addressbook",G."Group",A."Path",'
-        c += 'A."Name",A."Token" AS "AdrSync",G."Token" AS "GrpSync"'
-        f = '"Users" AS U '
-        f += 'JOIN "Addressbooks" AS A ON U."Default"=A."Addressbook" '
-        f += 'JOIN "Groups" AS G ON A."Addressbook" = G."Addressbook" AND G."Name" IS NULL'
-        w = 'U."User" = ?'
-        query = 'SELECT %s FROM %s WHERE %s' % (c, f, w)
 
     elif name == 'getPerson1':
         c = '"People","Group","Resource","Account","PeopleSync","GroupSync"'
@@ -408,6 +393,10 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = 'SELECT "Resource" FROM "Groups" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR'
 
 # Update Queries
+    elif name == 'updateAddressbookToken':
+        query = 'UPDATE "Addressbooks" SET "Token"=?,"Modified"=DEFAULT WHERE "Addressbook"=?'
+
+
     elif name == 'updateUser':
         query = 'UPDATE "Users" SET "Scheme"=?,"Password"=? WHERE "User"=?'
 
@@ -484,9 +473,11 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
 CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
                               IN SERVER VARCHAR(128),
                               IN PATH VARCHAR(256),
-                              IN USR VARCHAR(128),
+                              IN UID VARCHAR(128),
                               IN URL VARCHAR(256),
-                              IN NAME VARCHAR(128))
+                              IN NAME VARCHAR(128),
+                              IN TAG VARCHAR(128),
+                              IN TOKEN VARCHAR(128))
   SPECIFIC "InsertUser_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
@@ -495,10 +486,10 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
     DECLARE RSLT CURSOR WITH RETURN FOR
       SELECT "User","Default","Scheme","Server","Path","Name"
       FROM "Users"
-      WHERE "Server"=SERVER AND "Name"=USR FOR READ ONLY;
-    INSERT INTO "Users" ("Scheme","Server","Name","Path") VALUES (SCHEME,SERVER,USR,PATH);
+      WHERE "Server"=SERVER AND "Name"=UID FOR READ ONLY;
+    INSERT INTO "Users" ("Scheme","Server","Name","Path") VALUES (SCHEME,SERVER,UID,PATH);
     SET PK1=IDENTITY();
-    INSERT INTO "Addressbooks" ("User","Path","Name") VALUES (PK1,URL,NAME);
+    INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (PK1,URL,NAME,TAG,TOKEN);
     SET PK2=IDENTITY();
     INSERT INTO "Groups" ("Addressbook") VALUES (PK2);
     UPDATE "Users" SET "Default"=PK2 WHERE "User"=PK1;
@@ -507,44 +498,76 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
 
     elif name == 'createSelectAddressbook':
         query = """\
-CREATE PROCEDURE "SelectAddressbook"(IN USR INTEGER,
+CREATE PROCEDURE "SelectAddressbook"(IN UID INTEGER,
+                                     IN AID INTEGER,
                                      IN NAME VARCHAR(128))
   SPECIFIC "SelectAddressbook_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT A."Addressbook", G."Group", A."Path", A."Name",
-      A."Token" AS "AdrSync", G."Token" AS "GrpSync"
+      SELECT A."Addressbook", G."Group", A."Path", A."Name",A."Tag",
+      A."Token" AS "AdrSync", G."Token" AS "GrpSync",
+      A."Created"=A."Modified" AS "New"
       FROM "Users" AS U
       JOIN "Addressbooks" AS A ON U."User"=A."User"
       JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
-      WHERE U."User"=USR AND
-        ((NAME='' AND A."Addressbook"=U."Default") OR
-        (NAME!='' AND A."Name"=NAME))
+      WHERE U."User"=UID AND (A."Addressbook"=AID OR
+        (((NAME IS NULL AND A."Addressbook"=U."Default") OR
+        (NAME IS NOT NULL AND A."Name"=NAME))))
       FOR READ ONLY;
     OPEN RSLT;
   END"""
 
     elif name == 'createInsertAddressbook':
         query = """\
-CREATE PROCEDURE "InsertAddressbook"(IN USR INTEGER,
+CREATE PROCEDURE "InsertAddressbook"(IN UID INTEGER,
                                      IN PATH VARCHAR(256),
-                                     IN NAME VARCHAR(128))
+                                     IN NAME VARCHAR(128),
+                                     IN TAG VARCHAR(128),
+                                     IN TOKEN VARCHAR(128))
   SPECIFIC "InsertAddressbook_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT A."Addressbook",G."Group",A."Path",A."Name",
-      A."Token" AS "AdrSync",G."Token" AS "GrpSync"
+      SELECT A."Addressbook",G."Group",A."Path",A."Name",A."Tag",
+      A."Token" AS "AdrSync",G."Token" AS "GrpSync",
+      A."Created"=A."Modified" AS "New"
       FROM "Addressbooks" AS A
       JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
-      WHERE A."User"=USR AND A."Name"=NAME FOR READ ONLY;
-    INSERT INTO "Addressbooks" ("User","Path","Name") VALUES (USR,PATH,NAME);
+      WHERE A."User"=UID AND A."Name"=NAME FOR READ ONLY;
+    INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (UID,PATH,NAME,TAG,TOKEN);
     INSERT INTO "Groups" ("Addressbook") VALUES (IDENTITY());
     OPEN RSLT;
   END"""
+
+    elif name == 'createMergeCard':
+        query = """\
+CREATE PROCEDURE "MergeCard"(IN AID INTEGER,
+                             IN PATH VARCHAR(256),
+                             IN TAG VARCHAR(128),
+                             IN DATA VARCHAR(100000))
+  SPECIFIC "MergeCard_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    MERGE INTO "Cards" USING (VALUES(AID,PATH,TAG,DATA))
+      AS vals(w,x,y,z) ON "Cards"."Addressbook"=vals.w AND "Cards"."Path"=vals.x
+        WHEN MATCHED THEN UPDATE SET "Tag"=vals.y,"Data"=vals.z
+        WHEN NOT MATCHED THEN INSERT ("Addressbook","Path","Tag","Data")
+          VALUES vals.w,vals.x,vals.y,vals.z;
+  END"""
+
+    elif name == 'createDeleteCard':
+        query = """\
+CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
+                              IN URLS VARCHAR(256) ARRAY)
+  SPECIFIC "DeleteCard_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    DELETE FROM "Cards" WHERE "Addressbook"=AID AND "Path" IN (UNNEST(URLS));
+  END"""
+
 
     elif name == 'createInsertUser1':
         query = """\
@@ -732,11 +755,16 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
 
 # Get Procedure Query
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?,?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?,?,?,?,?)'
     elif name == 'selectAddressbook':
-        query = 'CALL "SelectAddressbook"(?,?)'
+        query = 'CALL "SelectAddressbook"(?,?,?)'
     elif name == 'insertAddressbook':
-        query = 'CALL "InsertAddressbook"(?,?,?)'
+        query = 'CALL "InsertAddressbook"(?,?,?,?,?)'
+    elif name == 'mergeCard':
+        query = 'CALL "MergeCard"(?,?,?,?)'
+    elif name == 'deleteCard':
+        query = 'CALL "DeleteCard"(?,?)'
+
     elif name == 'mergePeople':
         query = 'CALL "MergePeople"(?,?,?,?,?)'
     elif name == 'mergeGroup':

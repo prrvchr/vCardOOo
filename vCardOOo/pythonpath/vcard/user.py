@@ -103,12 +103,16 @@ class User(unohelper.Base,
         return self._request.unquoteUrl(url)
 
     def addAddressbook(self, aid):
-        self._addressbooks.append(aid)
+        if aid not in self._addressbooks:
+            self._addressbooks.append(aid)
 
     def removeAddressbook(self, aid):
         if aid in self._addressbooks:
             print("User.removeAddressbook() 1 %s" % (self._addressbooks, ))
             self._addressbooks.remove(aid)
+
+    def getAddressbooks(self):
+        return tuple(self._addressbooks)
 
     def createAddressbook(self, database, name, aid):
         user, password = self.getDataBaseCredential(aid)
@@ -132,6 +136,15 @@ class User(unohelper.Base,
 
     def getAddressbook(self, name, path):
         return self._provider.getAddressbook(self._request, name, self.Name, self.Password, path)
+
+    def getAddressbookCards(self, path):
+        return self._provider.getAddressbookCards(self._request, self.Name, self.Password, path)
+
+    def getModifiedCardByToken(self, path, token):
+        return self._provider.getModifiedCardByToken(self._request, self.Name, self.Password, path, token)
+
+    def getModifiedCard(self, path, urls):
+        return self._provider.getModifiedCard(self._request, self.Name, self.Password, path, urls)
 
     def _isNewUser(self):
         return self._metadata is None
@@ -157,7 +170,7 @@ class User(unohelper.Base,
         print("User._getMetaData() 2 %s" % path)
         path = provider.getAddressbooksUrl(self._request, user, pwd, path)
         print("User._getMetaData() 3 %s" % path)
-        url, name = provider.getDefaultAddressbook(self._request, user, pwd, path)
+        url, name, tag, token = provider.getDefaultAddressbook(self._request, user, pwd, path)
         if url is None or name is None:
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
@@ -165,7 +178,7 @@ class User(unohelper.Base,
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
         print("User._getMetaData() 4 %s" % user)
-        metadata = database.insertUser(scheme, server, path, user, url, name)
+        metadata = database.insertUser(scheme, server, path, user, url, name, tag, token)
         i = 4
         for key in metadata.getKeys():
             print("User._getMetaData() %i %s - %s" % (i, key, metadata.getValue(key)))

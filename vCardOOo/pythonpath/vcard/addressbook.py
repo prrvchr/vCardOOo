@@ -42,17 +42,18 @@ import traceback
 
 
 class AddressBook(unohelper.Base):
-    def __init__(self, ctx, database, user, name):
+    def __init__(self, ctx, database, user, aid=None, name=''):
         self._ctx = ctx
         print("AddressBook.__init__() 1 %s - %s - %s" % (user.Scheme, user.Server, name))
         self.User = user
         name = self.User.unquoteUrl(name)
-        self._metadata = database.selectAddressbook(user.Id, name)
+        self._metadata = database.selectAddressbook(user.Id, aid, name)
         print("AddressBook.__init__() 2 %s - '%s' - %s" % (user.Id, name, self._metadata))
         if self._isNewAddressbook():
             self._metadata = self._getNewAddressbook(database, name)
             self.User.createAddressbook(database, self.Name, self.Id)
-        self.User.addAddressbook(self.Id)
+        if aid is None:
+            self.User.addAddressbook(self.Id)
 
     @property
     def Id(self):
@@ -67,14 +68,29 @@ class AddressBook(unohelper.Base):
     def Name(self):
         return self._metadata.getValue('Name')
     @property
+    def Tag(self):
+        return self._metadata.getValue('Tag')
+    @property
     def AdrSync(self):
         return self._metadata.getValue('AdrSync')
     @property
     def GrpSync(self):
         return self._metadata.getValue('GrpSync')
+    @property
+    def New(self):
+        return self._metadata.getValue('New')
 
     def getDataBaseCredential(self):
         return self.User.getDataBaseCredential(self.Id)
+
+    def getAddressbookCards(self):
+        return self.User.getAddressbookCards(self.Path)
+
+    def getModifiedCardByToken(self):
+        return self.User.getModifiedCardByToken(self.Path, self.AdrSync)
+
+    def getModifiedCard(self, urls):
+        return self.User.getModifiedCard(self.Path, urls)
 
     def _isNewAddressbook(self):
         return self._metadata is None
@@ -82,7 +98,7 @@ class AddressBook(unohelper.Base):
     def _getNewAddressbook(self, database, name):
         if self.User.isOffLine():
             raise self._getSqlException(1004, 1108, self.User.Name)
-        path, name = self.User.getAddressbookUrl(name)
+        path, name, tag, token = self.User.getAddressbookUrl(name)
         if path is None or name is None:
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
@@ -91,7 +107,7 @@ class AddressBook(unohelper.Base):
             #TODO: Raise SqlException with correct message!
             raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
         print("AddressBook._getMetaData() 2 %s" % path)
-        keymap = database.insertAddressbook(self.User.Id, path, name)
+        keymap = database.insertAddressbook(self.User.Id, path, name, tag, token)
         print("AddressBook._getMetaData() 3 %s" % name)
         i = 4
         for key in keymap.getKeys():

@@ -37,6 +37,9 @@ from com.sun.star.sdb.CommandType import QUERY
 
 from com.sun.star.sdbc import XRestDataBase
 
+from com.sun.star.sdbc.DataType import INTEGER
+from com.sun.star.sdbc.DataType import VARCHAR
+
 from .unolib import KeyMap
 
 from .unotool import parseDateTime
@@ -57,6 +60,7 @@ from .dbconfig import g_folder
 from .dbconfig import g_jar
 from .dbconfig import g_role
 
+from .dbtool import Array
 from .dbtool import checkDataBase
 from .dbtool import createDataSource
 from .dbtool import createStaticTable
@@ -198,18 +202,25 @@ class DataBase(unohelper.Base,
         call.close()
         return user
 
-    def selectAddressbook(self, user, name):
+    def selectAddressbook(self, uid, aid, name):
         addressbook = None
         call = self._getCall('selectAddressbook')
-        call.setLong(1, user)
-        call.setString(2, name)
+        call.setInt(1, uid)
+        if aid is None:
+            call.setNull(2, INTEGER)
+        else:
+            call.setInt(2, aid)
+        if name:
+            call.setString(3, name)
+        else:
+            call.setNull(3, VARCHAR)
         result = call.executeQuery()
         if result.next():
             addressbook = getKeyMapFromResult(result)
         call.close()
         return addressbook
 
-    def insertUser(self, scheme, server, path, user, url, name):
+    def insertUser(self, scheme, server, path, user, url, name, tag, token):
         usr = None
         call = self._getCall('insertUser')
         call.setString(1, scheme)
@@ -218,33 +229,46 @@ class DataBase(unohelper.Base,
         call.setString(4, user)
         call.setString(5, url)
         call.setString(6, name)
+        if tag:
+            call.setString(7, tag)
+        else:
+            call.setNull(7, VARCHAR)
+        if token:
+            call.setString(8, token)
+        else:
+            call.setNull(8, VARCHAR)
         result = call.executeQuery()
         if result.next():
             usr = getKeyMapFromResult(result)
         call.close()
         return usr
 
-    def insertAddressbook(self, user, path, name):
-        ab = None
+    def insertAddressbook(self, user, path, name, tag, token):
+        addressbook = None
         call = self._getCall('insertAddressbook')
-        call.setLong(1, user)
+        call.setInt(1, user)
         call.setString(2, path)
         call.setString(3, name)
+        if tag:
+            call.setString(4, tag)
+        else:
+            call.setNull(4, VARCHAR)
+        if token:
+            call.setString(5, token)
+        else:
+            call.setNull(5, VARCHAR)
         result = call.executeQuery()
         if result.next():
-            ab = getKeyMapFromResult(result)
+            addressbook = getKeyMapFromResult(result)
         call.close()
-        return ab
+        return addressbook
 
-    def getDefaultAddressbook(self, user):
-        default = ''
-        call = self._getCall('getDefaultAddressbook')
-        call.setLong(1, user)
-        result = call.executeQuery()
-        if result.next():
-            default = getValueFromResult(result)
+    def updateAddressbookToken(self, aid, token):
+        call = self._getCall('updateAddressbookToken')
+        call.setString(1, token)
+        call.setInt(2, aid)
+        state = call.executeUpdate()
         call.close()
-        return default
 
     def initAddressbook(self, format):
         statement = self.Connection.createStatement()
@@ -289,6 +313,28 @@ class DataBase(unohelper.Base,
         return tuple(fields)
 
 # Procedures called by the Replicator
+    def mergeCard(self, aid, path, etag, data):
+        call = self._getBatchedCall('mergeCard')
+        call.setInt(1, aid)
+        call.setString(2, path)
+        call.setString(3, etag)
+        call.setString(4, data)
+        call.addBatch()
+        return 1
+
+    def deleteCard(self, aid, urls):
+        array = Array('VARCHAR', urls)
+        call = self._getCall('deleteCard')
+        call.setInt(1, aid)
+        call.setArray(2, array)
+        status = call.executeUpdate()
+        print("DataBase.deleteCard() %s" % status)
+        call.close()
+        return len(urls)
+
+
+
+
     def getDefaultType(self):
         default = {}
         call = self._getCall('getDefaultType')

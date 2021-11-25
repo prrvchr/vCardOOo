@@ -40,6 +40,7 @@ from .unotool import getDateTime
 
 from .database import DataBase
 from .dataparser import DataParser
+from .addressbook import AddressBook
 
 from .configuration import g_sync
 from .configuration import g_filter
@@ -55,17 +56,14 @@ import traceback
 
 
 class Replicator(unohelper.Base):
-    def __init__(self, ctx, database, provider, users):
+    def __init__(self, ctx, database, users):
         self._ctx = ctx
-        self.DataBase = database
-        self.Provider = provider
-        self.Users = users
+        self._database = database
+        self._users = users
         self._started = Event()
         self._paused = Event()
         self._disposed = Event()
         self._count = 0
-        self._new = False
-        self._default = self.DataBase.getDefaultType()
         self._thread = Thread(target=self._replicate)
         self._thread.start()
 
@@ -104,9 +102,9 @@ class Replicator(unohelper.Base):
                 if not self._disposed.is_set():
                     print("replicator.run()3 synchronize started ****************************************")
                     self._count = 0
-                    self._synchronize()
-                    self.DataBase.dispose()
-                    print("replicator.run()4 synchronize ended query=%s *******************************************" % self._count)
+                    dltd, mdfd = self._synchronize()
+                    self._database.dispose()
+                    print("replicator.run()4 synchronize ended query=%s deleted=%s modified=%s *******************************************" % (dltd + mdfd, dltd, mdfd))
                     if self._started.is_set():
                         print("replicator.run()5 start waitting *******************************************")
                         self._paused.clear()
@@ -118,43 +116,113 @@ class Replicator(unohelper.Base):
             print(msg)
 
     def _synchronize(self):
-        if self.Provider.isOffLine():
-            msg = getMessage(self._ctx, g_message, 101)
-            logMessage(self._ctx, INFO, msg, 'Replicator', '_synchronize()')
+        dltd = mdfd = 0
+        for user in self._users.values():
+            if self._canceled():
+                break
+            if user.isOffLine():
+                msg = getMessage(self._ctx, g_message, 101)
+                logMessage(self._ctx, INFO, msg, 'Replicator', '_synchronize()')
+            elif not self._canceled():
+                dltd, mdfd = self._syncUser(user, dltd, mdfd)
+        return dltd, mdfd
+
+    def _syncUser(self, user, dltd, mdfd):
+        for aid in user.getAddressbooks():
+            if self._canceled():
+                break
+            addressbook = AddressBook(self._ctx, self._database, user, aid)
+            print("Replicator._syncUser() %s" % (addressbook.New, ))
+            if addressbook.New:
+                cards = addressbook.getAddressbookCards()
+                mdfd += self._mergeCard(addressbook, cards)
+                if not self._canceled():
+                    self._database.updateAddressbookToken(addressbook.Id, addressbook.AdrSync)
+            if not self._canceled():
+                dltd, mdfd = self._pullModifiedCard(addressbook, dltd, mdfd)
+        return dltd, mdfd
+
+    def _mergeCard(self, addressbook, cards):
+        mdfd = 0
+        self._setBatchModeOn()
+        for card in cards:
+            if self._canceled():
+                break
+            print("Replicator._mergeCard() %s" % (card, ))
+            mdfd += self._database.mergeCard(addressbook.Id, *card)
+        if not self._canceled():
+            self._database.executeBatchCall()
+        self._setBatchModeOff()
+        return mdfd
+
+    def _pullModifiedCard(self, addressbook, dltd, mdfd):
+        if addressbook.AdrSync is not None:
+            dltd, mdfd = self._pullModifiedCardByToken(addressbook, dltd, mdfd)
+        elif addressbook.Tag is not None:
+            dltd, mdfd = self._pullModifiedCardByTag(addressbook, dltd, mdfd)
         else:
-            self._syncData()
+            print("Replicator._pullModifiedCard() Error %s" % (addressbook.Name, ))
+        return dltd, mdfd
+
+    def _pullModifiedCardByToken(self, addressbook, dltd, mdfd):
+        print("Replicator._pullModifiedCardByToken() %s" % (addressbook.Name, ))
+        token, modified, deleted = addressbook.getModifiedCardByToken()
+        if addressbook.AdrSync != token:
+            if deleted:
+                dltd += self._database.deleteCard(addressbook.Id, deleted)
+            if modified:
+                cards = addressbook.getModifiedCard(modified)
+                mdfd += self._mergeCard(addressbook, cards)
+            self._database.updateAddressbookToken(addressbook.Id, token)
+        return dltd, mdfd
+
+    def _pullModifiedCardByTag(self, addressbook, dltd, mdfd):
+        print("Replicator._pullModifiedCardByTag() %s" % (addressbook.Name, ))
+        return dltd, mdfd
+
+    def _setBatchModeOn(self):
+        self._database.setLoggingChanges(False)
+        self._database.saveChanges()
+        self._database.Connection.setAutoCommit(False)
+
+    def _setBatchModeOff(self):
+        self._database.Connection.commit()
+        self._database.setLoggingChanges(True)
+        self._database.saveChanges()
+        self._database.Connection.setAutoCommit(True)
+
 
     def _syncData(self):
         result = KeyMap()
         timestamp = getDateTime(False)
 
-        self.DataBase.setLoggingChanges(False)
-        self.DataBase.saveChanges()
-        self.DataBase.Connection.setAutoCommit(False)
+        self._database.setLoggingChanges(False)
+        self._database.saveChanges()
+        self._database.Connection.setAutoCommit(False)
 
         for user in self.Users.values():
             if not self._canceled():
                 msg = getMessage(self._ctx, g_message, 111, user.Account)
                 logMessage(self._ctx, INFO, msg, 'Replicator', '_synchronize()')
-                result.setValue(user.Account, self._syncUser(user, timestamp))
+                result.setValue(user.Account, self._syncUser1(user, timestamp))
                 msg = getMessage(self._ctx, g_message, 112, user.Account)
                 logMessage(self._ctx, INFO, msg, 'Replicator', '_synchronize()')
         if not self._canceled():
-            self.DataBase.executeBatchCall()
-            self.DataBase.Connection.commit()
+            self._database.executeBatchCall()
+            self._database.Connection.commit()
             for account in result.getKeys():
                 user = self.Users[account]
                 user.MetaData += result.getValue(account)
                 print("Replicator._syncData(): %s" % (user.MetaData, ))
                 self._syncConnection(user, timestamp)
-        self.DataBase.executeBatchCall()
+        self._database.executeBatchCall()
 
-        self.DataBase.Connection.commit()
-        self.DataBase.setLoggingChanges(True)
-        self.DataBase.saveChanges()
-        self.DataBase.Connection.setAutoCommit(True)
+        self._database.Connection.commit()
+        self._database.setLoggingChanges(True)
+        self._database.saveChanges()
+        self._database.Connection.setAutoCommit(True)
 
-    def _syncUser(self, user, timestamp):
+    def _syncUser1(self, user, timestamp):
         result = KeyMap()
         try:
             if self._canceled():
@@ -178,8 +246,8 @@ class Replicator(unohelper.Base):
                   'Skip': ('Type', 'metadata')}
         pages = update = delete = 0
         parameter = self.Provider.getRequestParameter(method['Name'], user)
-        parser = DataParser(self.DataBase, self.Provider, method['Name'])
-        map = self.DataBase.getFieldsMap(method['Name'], False)
+        parser = DataParser(self._database, self.Provider, method['Name'])
+        map = self._database.getFieldsMap(method['Name'], False)
         enumerator = user.Request.getEnumeration(parameter, parser)
         while not self._canceled() and enumerator.hasMoreElements():
             response = enumerator.nextElement()
@@ -204,8 +272,8 @@ class Replicator(unohelper.Base):
                   'Deleted': (('metadata','deleted'), True)}
         pages = update = delete = 0
         parameter = self.Provider.getRequestParameter(method['Name'], user)
-        parser = DataParser(self.DataBase, self.Provider, method['Name'])
-        map = self.DataBase.getFieldsMap(method['Name'], False)
+        parser = DataParser(self._database, self.Provider, method['Name'])
+        map = self._database.getFieldsMap(method['Name'], False)
         enumerator = user.Request.getEnumeration(parameter, parser)
         while not self._canceled() and enumerator.hasMoreElements():
             response = enumerator.nextElement()
@@ -224,19 +292,19 @@ class Replicator(unohelper.Base):
     def _syncConnection(self, user, timestamp):
         token = None
         pages = update = delete = 0
-        groups = self.DataBase.getUpdatedGroups(user, 'contactGroups/')
+        groups = self._database.getUpdatedGroups(user, 'contactGroups/')
         if groups.Count > 0:
             for group in groups:
                 name = group.getValue('Name')
                 group = group.getValue('Group')
-                self.DataBase.createGroupView(user, name, group)
+                self._database.createGroupView(user, name, group)
             print("replicator._syncConnection(): %s" % ','.join(groups.getKeys()))
             method = {'Name': 'Connection',
                       'PrimaryKey': 'Group',
                       'ResourceFilter': ()}
             parameter = self.Provider.getRequestParameter(method['Name'], groups)
-            parser = DataParser(self.DataBase, self.Provider, method['Name'])
-            map = self.DataBase.getFieldsMap(method['Name'], False)
+            parser = DataParser(self._database, self.Provider, method['Name'])
+            map = self._database.getFieldsMap(method['Name'], False)
             request = user.Request.getRequest(parameter, parser)
             response = request.execute()
             if response.IsPresent:
@@ -257,7 +325,7 @@ class Replicator(unohelper.Base):
         for key in data.getKeys():
             field = map.getValue(key).getValue('Type')
             if field == 'Field':
-                token = self.DataBase.updateSyncToken(user, key, data, timestamp)
+                token = self._database.updateSyncToken(user, key, data, timestamp)
             elif field != 'Header':
                 u, d = self._mergeResponse(method, user, map, key, data.getValue(key), timestamp, field)
                 update += u
@@ -299,7 +367,7 @@ class Replicator(unohelper.Base):
     def _mergePeople(self, method, resource, user, map, data, timestamp):
         update = delete = 0
         deleted = self._filterResponse(data, *method['Deleted'])
-        update, delete = self.DataBase.mergePeople(user, resource, timestamp, deleted)
+        update, delete = self._database.mergePeople(user, resource, timestamp, deleted)
         for key in data.getKeys():
             if key == method['PrimaryKey']:
                 continue
@@ -311,11 +379,11 @@ class Replicator(unohelper.Base):
         update = delete = 0
         name = data.getDefaultValue('Name', '')
         deleted = self._filterResponse(data, *method['Deleted'])
-        update, delete = self.DataBase.mergeGroup(user, resource, name, timestamp, deleted)
+        update, delete = self._database.mergeGroup(user, resource, name, timestamp, deleted)
         return update, delete
 
     def _mergeConnection(self, method, resource, user, map, data, timestamp):
-        update = self.DataBase.mergeConnection(user, resource, timestamp)
+        update = self._database.mergeConnection(user, resource, timestamp)
         return update, 0
 
     def _mergePeopleData(self, method, map, resource, key, data, timestamp, field):
@@ -332,5 +400,5 @@ class Replicator(unohelper.Base):
                     if label in method['Skip']:
                         continue
                     value = data.getValue(label)
-                    update += self.DataBase.mergePeopleData(key, resource, typename, label, value, timestamp)
+                    update += self._database.mergePeopleData(key, resource, typename, label, value, timestamp)
         return update

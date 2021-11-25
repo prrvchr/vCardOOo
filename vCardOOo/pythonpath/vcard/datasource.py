@@ -74,12 +74,10 @@ class DataSource(unohelper.Base,
         self._count = 0
         self._users = {}
         self._listener = EventListener(self)
-        #self._provider = Provider(ctx)
         self._database = DataBase(ctx)
-        #self._replicator = Replicator(ctx, self._database, self._provider, self._connections)
-        #listener = TerminateListener(self._replicator)
-        #desktop = getDesktop(ctx)
-        #desktop.addTerminateListener(listener)
+        self._replicator = Replicator(ctx, self._database, self._users)
+        listener = TerminateListener(self._replicator)
+        getDesktop(ctx).addTerminateListener(listener)
 
 # XRestDataSource
     def getConnection(self, user, password):
@@ -109,11 +107,11 @@ class DataSource(unohelper.Base,
         else:
             user = User(self._ctx, self._database, scheme, server, name, password)
             self._users[uid] = user
-        a = AddressBook(self._ctx, self._database, user, addressbook)
+        a = AddressBook(self._ctx, self._database, user, None, addressbook)
         name, password = a.getDataBaseCredential()
         # User and/or AddressBook has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
-        #self._replicator.start()
+        self._replicator.start()
         return name, password
 
     def _getUrlParts(self, location):

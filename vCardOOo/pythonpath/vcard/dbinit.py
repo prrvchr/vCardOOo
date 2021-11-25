@@ -258,4 +258,6 @@ def getStaticTables():
 def getQueries():
     return (('createInsertUser', None),
             ('createInsertAddressbook', None),
-            ('createSelectAddressbook', None))
+            ('createSelectAddressbook', None),
+            ('createMergeCard', None),
+            ('createDeleteCard', None))
