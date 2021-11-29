@@ -36,6 +36,7 @@ from .dbconfig  import g_class
 from .dbconfig  import g_folder
 from .dbconfig  import g_jar
 
+from .logger import LogManager
 from .logger import clearLogger
 from .logger import getLoggerSetting
 from .logger import getLoggerUrl
