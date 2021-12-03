@@ -36,18 +36,20 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from .unolib import KeyMap
 
+from .unotool import getConfiguration
 from .unotool import getDateTime
 
 from .database import DataBase
 from .dataparser import DataParser
 from .addressbook import AddressBook
 
-from .configuration import g_sync
+from .configuration import g_identifier
 from .configuration import g_filter
 
+from .logger import Pool
 from .logger import logMessage
 from .logger import getMessage
-g_message = 'replicator'
+g_message = 'Replicator'
 
 from threading import Thread
 from threading import Event
@@ -91,41 +93,51 @@ class Replicator(unohelper.Base):
     def _canceled1(self):
         return self._disposed.is_set() or not self._started.is_set()
 
+    def _getReplicateTimeout(self):
+        configuration = getConfiguration(self._ctx, g_identifier, False)
+        timeout = configuration.getByName('ReplicateTimeout')
+        return timeout
+
     def _replicate(self):
         print("replicator.run()1")
         try:
             print("replicator.run()1 begin ****************************************")
+            logger = Pool(self._ctx).getLogger('Replicator')
             while not self._disposed.is_set():
                 print("replicator.run()2 wait to start ****************************************")
                 self._started.wait()
                 if not self._disposed.is_set():
                     print("replicator.run()3 synchronize started ****************************************")
-                    dltd, mdfd = self._synchronize()
+                    dltd, mdfd = self._synchronize(logger)
                     self._database.dispose()
+                    format = dltd + mdfd, mdfd, dltd
+                    logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
                     print("replicator.run()4 synchronize ended query=%s deleted=%s modified=%s *******************************************" % (dltd + mdfd, dltd, mdfd))
                     if self._started.is_set():
                         print("replicator.run()5 start waitting *******************************************")
                         self._paused.clear()
-                        self._paused.wait(g_sync)
+                        timeout = self._getReplicateTimeout()
+                        self._paused.wait(timeout)
                         print("replicator.run()5 end waitting *******************************************")
             print("replicator.run()6 canceled *******************************************")
         except Exception as e:
             msg = "Replicator run(): Error: %s" % traceback.print_exc()
             print(msg)
 
-    def _synchronize(self):
+    def _synchronize(self, logger):
         dltd = mdfd = 0
         for user in self._users.values():
             if self._canceled():
                 break
             if user.isOffLine():
-                msg = getMessage(self._ctx, g_message, 101)
-                logMessage(self._ctx, INFO, msg, 'Replicator', '_synchronize()')
+                logger.logResource(INFO, 111, None, 'Replicator', '_synchronize()')
             elif not self._canceled():
-                dltd, mdfd = self._syncUser(user, dltd, mdfd)
+                logger.logResource(INFO, 112, user.Name, 'Replicator', '_synchronize()')
+                dltd, mdfd = self._syncUser(logger, user, dltd, mdfd)
+                logger.logResource(INFO, 113, user.Name, 'Replicator', '_synchronize()')
         return dltd, mdfd
 
-    def _syncUser(self, user, dltd, mdfd):
+    def _syncUser(self, logger, user, dltd, mdfd):
         for aid in user.getAddressbooks():
             if self._canceled():
                 break

@@ -1,5 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!--
+#!
+# -*- coding: utf_8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -23,16 +25,45 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<oor:component-schema
-  xml:lang="en-US"
-  xmlns:oor="http://openoffice.org/2001/registry"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  oor:package="io.github.prrvchr"
-  oor:name="vCardOOo">
-    <component>
-        <prop oor:name="AddressBookName" oor:type="xs:string" oor:localized="true"/>
-        <prop oor:name="ReplicateTimeout" oor:type="xs:short"/>
-    </component>
-</oor:component-schema>
+"""
+
+import unohelper
+
+from ..unotool import getConfiguration
+from ..unotool import getResourceLocation
+from ..unotool import getSimpleFile
+
+from ..dbconfig  import g_folder
+
+from ..configuration import g_host
+from ..configuration import g_identifier
+
+import traceback
+
+
+class OptionsModel(unohelper.Base):
+    def __init__(self, ctx):
+        self._ctx = ctx
+        self._configuration = getConfiguration(ctx, g_identifier, True)
+        folder = g_folder + '/' + g_host
+        location = getResourceLocation(ctx, g_identifier, folder)
+        self._url = location + '.odb'
+        self._factor = 60
+
+# OptionsModel getter methods
+    def getTimeout(self):
+        timeout = self._configuration.getByName('ReplicateTimeout')
+        return timeout / self._factor
+
+    def hasDatasource(self):
+        return getSimpleFile(self._ctx).exists(self._url)
+
+    def getDatasourceUrl(self):
+        return self._url
+
+# OptionsModel setter methods
+    def setTimeout(self, timeout):
+        timeout = timeout * self._factor
+        self._configuration.replaceByName('ReplicateTimeout', timeout)
+        if self._configuration.hasPendingChanges():
+            self._configuration.commitChanges()

@@ -1,5 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!--
+#!
+# -*- coding: utf_8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -23,16 +25,52 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<oor:component-schema
-  xml:lang="en-US"
-  xmlns:oor="http://openoffice.org/2001/registry"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  oor:package="io.github.prrvchr"
-  oor:name="vCardOOo">
-    <component>
-        <prop oor:name="AddressBookName" oor:type="xs:string" oor:localized="true"/>
-        <prop oor:name="ReplicateTimeout" oor:type="xs:short"/>
-    </component>
-</oor:component-schema>
+"""
+
+import unohelper
+
+from .optionsmodel import OptionsModel
+from .optionsview import OptionsView
+
+from ..unotool import getDesktop
+
+from ..logger import LogManager
+
+from ..configuration import g_extension
+from ..configuration import g_identifier
+
+import os
+import sys
+import traceback
+
+
+class OptionsManager(unohelper.Base):
+    def __init__(self, ctx):
+        self._ctx = ctx
+        self._model = OptionsModel(ctx)
+        self._view = None
+        self._logger = None
+
+    def initialize(self, window):
+        timeout = self._model.getTimeout()
+        enabled = self._model.hasDatasource()
+        self._view = OptionsView(window, timeout, enabled)
+        version  = ' '.join(sys.version.split())
+        path = os.pathsep.join(sys.path)
+        loggers = ('Driver', 'Replicator')
+        infos = {111: version, 112: path}
+        self._logger = LogManager(self._ctx, window.Peer, g_extension, loggers, infos)
+
+    def saveSetting(self):
+        timeout = self._view.getTimeout()
+        self._model.setTimeout(timeout)
+        self._logger.saveLoggerSetting()
+
+    def reloadSetting(self):
+        timeout = self._model.getTimeout()
+        self._view.setTimeout(timeout)
+        self._logger.setLoggerSetting()
+
+    def viewData(self):
+        url = self._model.getDatasourceUrl()
+        getDesktop(self._ctx).loadComponentFromURL(url, '_default', 0, ())

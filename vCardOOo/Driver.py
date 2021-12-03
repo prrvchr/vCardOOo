@@ -43,6 +43,7 @@ from com.sun.star.sdbcx import XDataDefinitionSupplier
 from com.sun.star.sdbcx import XDropCatalog
 
 from vcard import DataSource
+from vcard import Pool
 
 from vcard import getDriverPropertyInfos
 from vcard import getResourceLocation
@@ -77,8 +78,8 @@ class Driver(unohelper.Base,
     def __init__(self, ctx):
         self._ctx = ctx
         self._supportedProtocol = 'sdbc:address:vcard'
-        msg = getMessage(ctx, g_message, 101)
-        logMessage(ctx, INFO, msg, 'Driver', '__init__()')
+        self._logger = Pool(ctx).getLogger('Driver')
+        self._logger.logResource(INFO, 101, None, 'Driver', '__init__()')
 
     _datasource = None
 
@@ -102,37 +103,34 @@ class Driver(unohelper.Base,
 # XDriver
     def connect(self, url, infos):
         try:
-            msg = getMessage(self._ctx, g_message, 111, url)
-            logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
+            self._logger.logResource(INFO, 111, url, 'Driver', 'connect()')
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                raise self._getSqlException(112, 1101, url)
+                e = self._getSqlException(112, 1101, url)
+                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                raise e
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server, addressbook = self._getUrlParts(location)
             if not server:
-                #TODO: Raise SqlException with correct message!
-                raise self._getSqlException(1104, 1101, url)
+                e = self._getSqlException(112, 1101, url)
+                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                raise e
             user, pwd = self._getUserCredential(infos)
-            print("Driver.connect() 1 %s - %s - '%s' - %s - %s" % (scheme, server, addressbook, user, pwd))
-            msg = getMessage(self._ctx, g_message, 114, g_host)
-            logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
+            if not user or not pwd:
+                e = self._getSqlException(113, 1102, user)
+                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                raise e
             name, pwd = self.DataSource.getConnectionCredential(scheme, server, addressbook, user, pwd)
-            msg = getMessage(self._ctx, g_message, 118, user)
-            logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             connection = self.DataSource.getConnection(name, pwd)
-            msg = getMessage(self._ctx, g_message, 119, user)
-            logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
             version = connection.getMetaData().getDriverVersion()
-            msg = getMessage(self._ctx, g_message, 120, (version, name))
-            logMessage(self._ctx, INFO, msg, 'Driver', 'connect()')
-            print("Driver.connect() 2 %s - %s - %s - %s" % (server, name, pwd, version))
+            format = (version, name)
+            self._logger.logResource(INFO, 114, format, 'Driver', 'connect()')
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            msg = getMessage(self._ctx, g_message, 121, (e, traceback.print_exc()))
-            logMessage(self._ctx, SEVERE, msg, 'Driver', 'connect()')
-            print(msg)
+            format = (e, traceback.print_exc())
+            self._logger.logResource(SEVERE, 115, format, 'Driver', 'connect()')
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -152,8 +150,9 @@ class Driver(unohelper.Base,
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1104, 1101, location)
+            e = self._getSqlException(112, 1101, location)
+            self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+            raise e
         scheme = url.Protocol
         server = url.Server
         addressbook = url.Name

@@ -1,0 +1,12 @@
+#ifndef __io_github_prrvchr_carddav_cardsync_idl__
+#define __io_github_prrvchr_carddav_cardsync_idl__
+
+#include <com/sun/star/task/XJob.idl>
+module io { module github { module prrvchr { module carddav { 	
+
+	service CardSync : com::sun::star::task::XJob {
+
+	};
+
+ }; }; }; };
+#endif

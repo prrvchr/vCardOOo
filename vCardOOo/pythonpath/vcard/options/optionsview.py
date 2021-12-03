@@ -1,5 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!--
+#!
+# -*- coding: utf_8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -23,16 +25,30 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<oor:component-schema
-  xml:lang="en-US"
-  xmlns:oor="http://openoffice.org/2001/registry"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  oor:package="io.github.prrvchr"
-  oor:name="vCardOOo">
-    <component>
-        <prop oor:name="AddressBookName" oor:type="xs:string" oor:localized="true"/>
-        <prop oor:name="ReplicateTimeout" oor:type="xs:short"/>
-    </component>
-</oor:component-schema>
+"""
+
+import unohelper
+
+import traceback
+
+
+class OptionsView(unohelper.Base):
+    def __init__(self, window, timeout, enabled):
+        self._window = window
+        self._getTimeout().Value = timeout
+        self._getDatasource().Model.Enabled = enabled
+
+# OptionsView getter methods
+    def getTimeout(self):
+        return int(self._getTimeout().Value)
+
+# OptionsView setter methods
+    def setTimeout(self, timeout):
+        self._getTimeout().Value = timeout
+
+# OptionsView private control methods
+    def _getTimeout(self):
+        return self._window.getControl('NumericField1')
+
+    def _getDatasource(self):
+        return self._window.getControl('CommandButton1')

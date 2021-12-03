@@ -30,7 +30,7 @@
                         <value>%origin%/vCardOOo/OptionsDialog.xdl</value>
                     </prop>
                     <prop oor:name="EventHandlerService">
-                        <value>io.github.prrvchr.vCardOOo.OptionsDialog</value>
+                        <value>io.github.prrvchr.vCardOOo.OptionsHandler</value>
                     </prop>
                 </node>
             </node>

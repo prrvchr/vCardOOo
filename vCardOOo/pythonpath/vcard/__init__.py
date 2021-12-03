@@ -36,6 +36,7 @@ from .dbconfig  import g_class
 from .dbconfig  import g_folder
 from .dbconfig  import g_jar
 
+from .logger import Pool
 from .logger import LogManager
 from .logger import clearLogger
 from .logger import getLoggerSetting
@@ -45,6 +46,8 @@ from .logger import logMessage
 from .logger import setLoggerSetting
 
 from .datasource import DataSource
+
+from .options import OptionsManager
 
 from .dbtool import getDriverPropertyInfos
 from .dbtool import getSqlException

@@ -1,5 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!--
+#!
+# -*- coding: utf-8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -23,16 +25,6 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<oor:component-schema
-  xml:lang="en-US"
-  xmlns:oor="http://openoffice.org/2001/registry"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  oor:package="io.github.prrvchr"
-  oor:name="vCardOOo">
-    <component>
-        <prop oor:name="AddressBookName" oor:type="xs:string" oor:localized="true"/>
-        <prop oor:name="ReplicateTimeout" oor:type="xs:short"/>
-    </component>
-</oor:component-schema>
+"""
+
+from .optionsmanager import OptionsManager
