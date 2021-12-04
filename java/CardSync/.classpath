@@ -8,7 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="build"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.libreoffice.ide.eclipse.java.OOO_CONTAINER/LibreOffice 7.2"/>
 	<classpathentry kind="lib" path="lib/vinnie-2.0.2.jar"/>
+	<classpathentry kind="con" path="org.libreoffice.ide.eclipse.java.OOO_CONTAINER/LibreOffice 7.2"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
