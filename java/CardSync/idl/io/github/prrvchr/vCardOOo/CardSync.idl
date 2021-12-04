@@ -2,7 +2,8 @@
 #define __io_github_prrvchr_carddav_cardsync_idl__
 
 #include <com/sun/star/task/XJob.idl>
-module io { module github { module prrvchr { module carddav { 	
+
+module io { module github { module prrvchr { module vCardOOo { 	
 
 	service CardSync : com::sun::star::task::XJob {
 

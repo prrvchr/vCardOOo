@@ -2,23 +2,24 @@ package io.github.prrvchr.comp.carddav;
 
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.lib.uno.helper.Factory;
+import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.lib.uno.helper.WeakBase;
 
 
-public final class CardSyncImpl extends WeakBase
+public final class CardSync extends WeakBase
    implements com.sun.star.lang.XServiceInfo,
-              io.github.prrvchr.carddav.XCardSync
+              com.sun.star.task.XJob
 {
     @SuppressWarnings("unused")
 	private final XComponentContext m_xContext;
-    private static final String m_implementationName = CardSyncImpl.class.getName();
+    private static final String m_implementationName = CardSync.class.getName();
     private static final String[] m_serviceNames = {
-        "io.github.prrvchr.carddav.CardSync" };
+        "io.github.prrvchr.vCardOOo.CardSync" };
 
 
-    public CardSyncImpl( XComponentContext context )
+    public CardSync( XComponentContext context )
     {
         m_xContext = context;
     };
@@ -27,7 +28,7 @@ public final class CardSyncImpl extends WeakBase
         XSingleComponentFactory xFactory = null;
 
         if ( sImplementationName.equals( m_implementationName ) )
-            xFactory = Factory.createComponentFactory(CardSyncImpl.class, m_serviceNames);
+            xFactory = Factory.createComponentFactory(CardSync.class, m_serviceNames);
         return xFactory;
     }
 
@@ -35,6 +36,11 @@ public final class CardSyncImpl extends WeakBase
         return Factory.writeRegistryServiceInfo(m_implementationName,
                                                 m_serviceNames,
                                                 xRegistryKey);
+    }
+
+    // com.sun.star.task.XJob:
+    public Object execute(NamedValue[] values) {
+         return null;
     }
 
     // com.sun.star.lang.XServiceInfo:
