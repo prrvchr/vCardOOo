@@ -62,7 +62,7 @@ import traceback
 class Replicator(unohelper.Base):
     def __init__(self, ctx, database, users):
         self._ctx = ctx
-        self._cardsync = '%s.CardSync' % g_identitfier
+        self._cardsync = '%s.CardSync' % g_identifier
         self._database = database
         self._users = users
         self._started = Event()
