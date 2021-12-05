@@ -114,7 +114,7 @@ implements XJob
 		{
 			NamedValue argument = arguments[i];
 			System.out.println("CardSync._getConnection() 2 " + argument.Name);
-			if (argument.Name == "DynamicData")
+			if (argument.Name.equals("DynamicData"))
 			{
 				System.out.println("CardSync._getConnection() 3");
 				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(argument.Value);
@@ -124,7 +124,7 @@ implements XJob
 				{
 					NamedValue value = data[j];
 					System.out.println("CardSync._getConnection() 5 " + value.Name);
-					if (value.Name == "Connection")
+					if (value.Name.equals("Connection"))
 					{
 						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
 						break;
