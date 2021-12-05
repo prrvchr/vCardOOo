@@ -98,6 +98,7 @@ class Provider(unohelper.Base):
 
     def getDiscoveryUrl(self, request, user, password, url):
         parameter = self._getRequestParameter('getUrl', user, password, url)
+        print("Provider.getDiscoveryUrl() Name: %s - Url: %s" % (parameter.Name, parameter.Url))
         response = request.getResponse(parameter, None)
         if not response.Ok or not response.IsRedirect:
             response.close()
