@@ -25,11 +25,15 @@
 */
 package io.github.prrvchr.comp.carddav;
 
+import java.io.IOException;
+
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
+import com.sun.star.sdbc.SQLException;
+import com.sun.star.sdbc.XConnection;
 import com.sun.star.task.XJob;
 
 import io.github.prrvchr.comp.lang.ServiceComponent;
@@ -79,18 +83,51 @@ implements XJob
 	}
 
 	// com.sun.star.task.XJob:
-	public Object execute(NamedValue[] values)
+	public Object execute(NamedValue[] arguments)
 	{
 		System.out.println("CardSync.execute() 1");
-		int len = values.length;
-		for (int i = 0; i < len; i++)
+		XConnection connection = _getConnection(arguments);
+		try
 		{
-			NamedValue value = values[i];
-			System.out.println("CardSync.execute() 2 Name: " + value.Name + " - Value: " + value.Value.toString());
+			String name = connection.getMetaData().getUserName();
+			String version = connection.getMetaData().getDriverVersion();
+			System.out.println("CardSync.execute() 2 Name: " + name + " - Version: " + version);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
 		}
 		System.out.println("CardSync.execute() 3");
 		return null;
 	}
 
-
+	private XConnection _getConnection(NamedValue[] arguments)
+	{
+		System.out.println("CardSync._getConnection() 1");
+		XConnection connection = null;
+		int len = arguments.length;
+		for (int i = 0; i < len; i++)
+		{
+			NamedValue argument = arguments[i];
+			if (argument.Name.equals("DynamicData"))
+			{
+				NamedValue[] data = (NamedValue[]) argument.Value;
+				len = data.length;
+				for (int j = 0; j < len; j++)
+				{
+					NamedValue value = data[j];
+					if (value.Name.equals("Connection"))
+					{
+						connection = (XConnection) value.Value;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		System.out.println("CardSync._getConnection() 2");
+		return connection;
+	}
+	
+	
 }
