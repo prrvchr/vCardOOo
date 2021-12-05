@@ -35,7 +35,6 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from com.sun.star.sdb.CommandType import QUERY
 
-from com.sun.star.sdbc import XRestDataSource
 
 from .configuration import g_identifier
 from .configuration import g_group
@@ -67,8 +66,7 @@ from .configuration import g_scheme
 import traceback
 
 
-class DataSource(unohelper.Base,
-                 XRestDataSource):
+class DataSource(unohelper.Base):
     def __init__(self, ctx):
         self._ctx = ctx
         self._count = 0

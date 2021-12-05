@@ -32,14 +32,6 @@ import unohelper
 
 from com.sun.star.ucb.ConnectionMode import OFFLINE
 from com.sun.star.ucb.ConnectionMode import ONLINE
-from com.sun.star.auth.RestRequestTokenType import TOKEN_NONE
-from com.sun.star.auth.RestRequestTokenType import TOKEN_URL
-from com.sun.star.auth.RestRequestTokenType import TOKEN_REDIRECT
-from com.sun.star.auth.RestRequestTokenType import TOKEN_QUERY
-from com.sun.star.auth.RestRequestTokenType import TOKEN_JSON
-from com.sun.star.auth.RestRequestTokenType import TOKEN_SYNC
-
-from com.sun.star.sdbc import XRestProvider
 
 from .dataparser import DataParser
 
@@ -59,8 +51,7 @@ g_message = 'datasource'
 import json
 
 
-class Provider(unohelper.Base,
-               XRestProvider):
+class Provider(unohelper.Base):
     def __init__(self, ctx, scheme, server):
         self._ctx = ctx
         self._scheme = scheme
@@ -381,51 +372,6 @@ class Provider(unohelper.Base,
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
 
 
-        elif method == 'People':
-            parameter.Method = 'GET'
-            parameter.Url += '/people/me/connections'
-            fields = '"personFields": "%s"' % ','.join(data.Fields)
-            sources = '"sources": "READ_SOURCE_TYPE_CONTACT"'
-            page = '"pageSize": %s' % g_page
-            sync = data.PeopleSync
-            if sync:
-                token = '"syncToken": "%s"' % sync
-            else:
-                token = '"requestSyncToken": true'
-            parameter.Query = '{%s, %s, %s, %s}' % (fields, sources, page, token)
-            token = uno.createUnoStruct('com.sun.star.auth.RestRequestToken')
-            token.Type = TOKEN_QUERY | TOKEN_SYNC
-            token.Field = 'nextPageToken'
-            token.Value = 'pageToken'
-            token.SyncField = 'nextSyncToken'
-            enumerator = uno.createUnoStruct('com.sun.star.auth.RestRequestEnumerator')
-            enumerator.Field = 'connections'
-            enumerator.Token = token
-            parameter.Enumerator = enumerator
-        elif method == 'Group':
-            parameter.Method = 'GET'
-            parameter.Url += '/contactGroups'
-            page = '"pageSize": %s' % g_page
-            query = [page]
-            sync = data.GroupSync
-            if sync:
-                query.append('"syncToken": "%s"' % sync)
-            parameter.Query = '{%s}' % ','.join(query)
-            token = uno.createUnoStruct('com.sun.star.auth.RestRequestToken')
-            token.Type = TOKEN_QUERY | TOKEN_SYNC
-            token.Field = 'nextPageToken'
-            token.Value = 'pageToken'
-            token.SyncField = 'nextSyncToken'
-            enumerator = uno.createUnoStruct('com.sun.star.auth.RestRequestEnumerator')
-            enumerator.Field = 'contactGroups'
-            enumerator.Token = token
-            parameter.Enumerator = enumerator
-        elif method == 'Connection':
-            parameter.Method = 'GET'
-            parameter.Url += '/contactGroups:batchGet'
-            resources = '","'.join(data.getKeys())
-            parameter.Query = '{"resourceNames": ["%s"], "maxMembers": %s}' % (resources, g_member)
-        return parameter
 
     def _checkAddressbookHeader(self, headers):
         for headers in self._headers:

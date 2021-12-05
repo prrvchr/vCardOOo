@@ -36,8 +36,6 @@ from com.sun.star.logging.LogLevel import SEVERE
 from com.sun.star.ucb.ConnectionMode import OFFLINE
 from com.sun.star.ucb.ConnectionMode import ONLINE
 
-from com.sun.star.sdbc import XRestUser
-
 from .provider import Provider
 
 from .oauth2lib import getRequest
@@ -57,8 +55,7 @@ def getUserId(server, name):
     return server + '/' + name
 
 
-class User(unohelper.Base,
-           XRestUser):
+class User(unohelper.Base):
     def __init__(self, ctx, database, scheme, server, name, pwd=''):
         self._ctx = ctx
         self._password = pwd
