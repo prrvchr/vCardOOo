@@ -317,8 +317,10 @@ class Provider(unohelper.Base):
         return tuple(groups)
 
     def _getRequestParameter(self, method, user, password, url=None, data=None):
+        print("Provider._getRequestParameter() 1")
         parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
         parameter.Name = method
+        print("Provider._getRequestParameter() 2 %s" % parameter.Name)
         if method == 'getUrl':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
