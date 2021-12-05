@@ -30,6 +30,8 @@ import java.io.IOException;
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.Type;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
@@ -113,14 +115,14 @@ implements XJob
 			NamedValue argument = arguments[i];
 			if (argument.Name == "DynamicData")
 			{
-				NamedValue[] data = (NamedValue[]) argument.Value;
+				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(argument.Value);
 				int dlen = data.length;
 				for (int j = 0; j < dlen; j++)
 				{
 					NamedValue value = data[j];
 					if (value.Name == "Connection")
 					{
-						connection = (XConnection) value.Value;
+						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
 						break;
 					}
 				}
