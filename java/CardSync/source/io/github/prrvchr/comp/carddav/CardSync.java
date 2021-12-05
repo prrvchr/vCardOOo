@@ -105,18 +105,18 @@ implements XJob
 	{
 		System.out.println("CardSync._getConnection() 1");
 		XConnection connection = null;
-		int len = arguments.length;
-		for (int i = 0; i < len; i++)
+		int alen = arguments.length;
+		for (int i = 0; i < alen; i++)
 		{
 			NamedValue argument = arguments[i];
-			if (argument.Name.equals("DynamicData"))
+			if (argument.Name == "DynamicData")
 			{
 				NamedValue[] data = (NamedValue[]) argument.Value;
-				len = data.length;
-				for (int j = 0; j < len; j++)
+				int dlen = data.length;
+				for (int j = 0; j < dlen; j++)
 				{
 					NamedValue value = data[j];
-					if (value.Name.equals("Connection"))
+					if (value.Name == "Connection")
 					{
 						connection = (XConnection) value.Value;
 						break;
