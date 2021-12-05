@@ -116,7 +116,7 @@ class Replicator(unohelper.Base):
                     if total > 0:
                         url = 'vnd.sun.star.job:service=%s' % self._cardsync 
                         arguments = getNamedValueSet({'Connection': self._database.Connection})
-                        executeDispatch(self._ctx, url, arguments)
+                        executeDispatch(self._ctx, url)
                     self._database.dispose()
                     format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
