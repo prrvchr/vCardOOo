@@ -120,7 +120,7 @@ class Replicator(unohelper.Base):
                     self._database.dispose()
                     format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
-                    print("replicator.run()4 synchronize ended query=%s deleted=%s modified=%s *******************************************" % (dltd + mdfd, dltd, mdfd))
+                    print("replicator.run()4 synchronize ended query=%s modified=%s deleted=%s *******************************************" % format)
                     if self._started.is_set():
                         print("replicator.run()5 start waitting *******************************************")
                         self._paused.clear()

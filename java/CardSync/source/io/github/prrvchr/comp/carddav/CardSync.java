@@ -113,6 +113,7 @@ implements XJob
 		for (int i = 0; i < alen; i++)
 		{
 			NamedValue argument = arguments[i];
+			System.out.println("CardSync._getConnection() 2 " + argument.Name);
 			if (argument.Name == "DynamicData")
 			{
 				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(argument.Value);
@@ -120,6 +121,7 @@ implements XJob
 				for (int j = 0; j < dlen; j++)
 				{
 					NamedValue value = data[j];
+					System.out.println("CardSync._getConnection() 3 " + value.Name);
 					if (value.Name == "Connection")
 					{
 						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
@@ -129,7 +131,7 @@ implements XJob
 				break;
 			}
 		}
-		System.out.println("CardSync._getConnection() 2");
+		System.out.println("CardSync._getConnection() 4");
 		return connection;
 	}
 	
