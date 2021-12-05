@@ -55,7 +55,8 @@ import com.sun.star.registry.XRegistryKey;
  * @author Cedric Bosdonnat aka. cedricbosdo
  *
  */
-public class RegistrationHandler {
+public class RegistrationHandler
+{
 	
 	/**
      * Get a component factory for the implementations handled by this class.

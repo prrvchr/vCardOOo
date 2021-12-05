@@ -1,65 +1,87 @@
+/*
+╔════════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                    ║
+║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
+║                                                                                    ║
+║   Permission is hereby granted, free of charge, to any person obtaining            ║
+║   a copy of this software and associated documentation files (the "Software"),     ║
+║   to deal in the Software without restriction, including without limitation        ║
+║   the rights to use, copy, modify, merge, publish, distribute, sublicense,         ║
+║   and/or sell copies of the Software, and to permit persons to whom the Software   ║
+║   is furnished to do so, subject to the following conditions:                      ║
+║                                                                                    ║
+║   The above copyright notice and this permission notice shall be included in       ║
+║   all copies or substantial portions of the Software.                              ║
+║                                                                                    ║
+║   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,                  ║
+║   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES                  ║
+║   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.        ║
+║   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY             ║
+║   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,             ║
+║   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE       ║
+║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
+║                                                                                    ║
+╚════════════════════════════════════════════════════════════════════════════════════╝
+*/
 package io.github.prrvchr.comp.carddav;
 
-import com.sun.star.uno.XComponentContext;
-import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
+import com.sun.star.lib.uno.helper.Factory;
+import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
-import com.sun.star.lib.uno.helper.WeakBase;
+import com.sun.star.task.XJob;
 
+import io.github.prrvchr.comp.lang.ServiceComponent;
 
-public final class CardSync extends WeakBase
-   implements com.sun.star.lang.XServiceInfo,
-              com.sun.star.task.XJob
+public final class CardSync
+extends ServiceComponent
+implements XJob
 {
-    @SuppressWarnings("unused")
 	private final XComponentContext m_xContext;
-    private static final String m_implementationName = CardSync.class.getName();
-    private static final String[] m_serviceNames = {
-        "io.github.prrvchr.vCardOOo.CardSync" };
+	private static final String m_name = CardSync.class.getName();
+	private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
+                                                "com.sun.star.task.Job"};
+	private static final String m_identifier = "io.github.prrvchr.vCardOOo";
 
+	public CardSync(XComponentContext context)
+	{
+		m_xContext = context;
+	};
 
-    public CardSync( XComponentContext context )
-    {
-        m_xContext = context;
-    };
+	// com.sun.star.lang.XServiceInfo:
+	@Override
+	public String _getImplementationName()
+	{
+		return m_name;
+	}
+	@Override
+	public String[] _getServiceNames()
+	{
+		return m_services;
+	}
 
-    public static XSingleComponentFactory __getComponentFactory( String sImplementationName ) {
-        XSingleComponentFactory xFactory = null;
+	// UNO Service Registration:
+	public static XSingleComponentFactory __getComponentFactory(String name)
+	{
+		XSingleComponentFactory xFactory = null;
+		if ( name.equals(m_name))
+		{
+			xFactory = Factory.createComponentFactory(CardSync.class, m_services);
+		}
+		return xFactory;
+	}
 
-        if ( sImplementationName.equals( m_implementationName ) )
-            xFactory = Factory.createComponentFactory(CardSync.class, m_serviceNames);
-        return xFactory;
-    }
+	public static boolean __writeRegistryServiceInfo(XRegistryKey key)
+	{
+		return Factory.writeRegistryServiceInfo(m_name, m_services, key);
+	}
 
-    public static boolean __writeRegistryServiceInfo( XRegistryKey xRegistryKey ) {
-        return Factory.writeRegistryServiceInfo(m_implementationName,
-                                                m_serviceNames,
-                                                xRegistryKey);
-    }
+	// com.sun.star.task.XJob:
+	public Object execute(NamedValue[] values)
+	{
+		return null;
+	}
 
-    // com.sun.star.task.XJob:
-    public Object execute(NamedValue[] values) {
-         return null;
-    }
-
-    // com.sun.star.lang.XServiceInfo:
-    public String getImplementationName() {
-         return m_implementationName;
-    }
-
-    public boolean supportsService( String sService ) {
-        int len = m_serviceNames.length;
-
-        for( int i=0; i < len; i++) {
-            if (sService.equals(m_serviceNames[i]))
-                return true;
-        }
-        return false;
-    }
-
-    public String[] getSupportedServiceNames() {
-        return m_serviceNames;
-    }
 
 }
