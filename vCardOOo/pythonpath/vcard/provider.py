@@ -85,20 +85,8 @@ class Provider(unohelper.Base):
         self._server = url.Server
         return self._scheme, self._server
 
-    def transcode(self, name, value):
-        if name == 'People':
-            value = self._getResource('people', value)
-        elif name == 'Group':
-            value = self._getResource('contactGroups', value)
-        return value
-    def transform(self, name, value):
-        #if name == 'Resource' and value.startswith('people'):
-        #    value = value.split('/').pop()
-        return value
-
     def getDiscoveryUrl(self, request, user, password, url):
         parameter = self._getRequestParameter('getUrl', user, password, url)
-        print("Provider.getDiscoveryUrl() Name: %s - Url: %s" % (parameter.Name, parameter.Url))
         response = request.getResponse(parameter, None)
         if not response.Ok or not response.IsRedirect:
             response.close()
@@ -304,23 +292,9 @@ class Provider(unohelper.Base):
         response.close()
         return cards
 
-    def getUserId(self, user):
-        return user.getValue('resourceName').split('/').pop()
-        #return user.getValue('resourceName')
-    def getItemId(self, item):
-        return item.getDefaultValue('resourceName', '').split('/').pop()
-
-    def _getResource(self, resource, keys):
-        groups = []
-        for k in keys:
-            groups.append('%s/%s' % (resource, k))
-        return tuple(groups)
-
     def _getRequestParameter(self, method, user, password, url=None, data=None):
-        print("Provider._getRequestParameter() 1")
         parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
         parameter.Name = method
-        print("Provider._getRequestParameter() 2 %s" % parameter.Name)
         if method == 'getUrl':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
@@ -373,8 +347,7 @@ class Provider(unohelper.Base):
             parameter.Auth = (user, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
-
-
+        return parameter
 
     def _checkAddressbookHeader(self, headers):
         for headers in self._headers:
