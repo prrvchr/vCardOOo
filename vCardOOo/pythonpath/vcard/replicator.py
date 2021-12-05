@@ -36,8 +36,10 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from .unolib import KeyMap
 
+from .unotool import executeDispatch
 from .unotool import getConfiguration
 from .unotool import getDateTime
+from .unotool import getNamedValueSet
 
 from .database import DataBase
 from .dataparser import DataParser
@@ -60,6 +62,7 @@ import traceback
 class Replicator(unohelper.Base):
     def __init__(self, ctx, database, users):
         self._ctx = ctx
+        self._cardsync = '%s.CardSync' % g_identitfier
         self._database = database
         self._users = users
         self._started = Event()
@@ -109,8 +112,13 @@ class Replicator(unohelper.Base):
                 if not self._disposed.is_set():
                     print("replicator.run()3 synchronize started ****************************************")
                     dltd, mdfd = self._synchronize(logger)
+                    total = dltd + mdfd
+                    if total > 0:
+                        url = 'vnd.sun.star.job:service=%s' % self._cardsync 
+                        arguments = getNamedValueSet({'Connection': self._database.Connection})
+                        executeDispatch(self._ctx, url, arguments)
                     self._database.dispose()
-                    format = dltd + mdfd, mdfd, dltd
+                    format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
                     print("replicator.run()4 synchronize ended query=%s deleted=%s modified=%s *******************************************" % (dltd + mdfd, dltd, mdfd))
                     if self._started.is_set():

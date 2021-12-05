@@ -55,6 +55,7 @@ implements XJob
 	{
 		return m_name;
 	}
+
 	@Override
 	public String[] _getServiceNames()
 	{
@@ -80,6 +81,14 @@ implements XJob
 	// com.sun.star.task.XJob:
 	public Object execute(NamedValue[] values)
 	{
+		System.out.println("CardSync.execute() 1");
+		int len = values.length;
+		for (int i = 0; i < len; i++)
+		{
+			NamedValue value = values[i];
+			System.out.println("CardSync.execute() 2 Name: " + value.Name + " - Value: " + value.Value.toString());
+		}
+		System.out.println("CardSync.execute() 3");
 		return null;
 	}
 
