@@ -89,15 +89,17 @@ implements XJob
 		XConnection connection = _getConnection(arguments);
 		try
 		{
+			System.out.println("CardSync.execute() 2");
 			String name = connection.getMetaData().getUserName();
+			System.out.println("CardSync.execute() 3");
 			String version = connection.getMetaData().getDriverVersion();
-			System.out.println("CardSync.execute() 2 Name: " + name + " - Version: " + version);
+			System.out.println("CardSync.execute() 4 Name: " + name + " - Version: " + version);
 		}
 		catch (SQLException e)
 		{
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 3");
+		System.out.println("CardSync.execute() 5");
 		return null;
 	}
 
