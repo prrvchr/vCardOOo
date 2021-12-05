@@ -116,12 +116,14 @@ implements XJob
 			System.out.println("CardSync._getConnection() 2 " + argument.Name);
 			if (argument.Name == "DynamicData")
 			{
+				System.out.println("CardSync._getConnection() 3");
 				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(argument.Value);
 				int dlen = data.length;
+				System.out.println("CardSync._getConnection() 4");
 				for (int j = 0; j < dlen; j++)
 				{
 					NamedValue value = data[j];
-					System.out.println("CardSync._getConnection() 3 " + value.Name);
+					System.out.println("CardSync._getConnection() 5 " + value.Name);
 					if (value.Name == "Connection")
 					{
 						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
@@ -131,7 +133,7 @@ implements XJob
 				break;
 			}
 		}
-		System.out.println("CardSync._getConnection() 4");
+		System.out.println("CardSync._getConnection() 6");
 		return connection;
 	}
 	
