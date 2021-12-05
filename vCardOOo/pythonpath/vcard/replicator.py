@@ -39,7 +39,7 @@ from .unolib import KeyMap
 from .unotool import executeDispatch
 from .unotool import getConfiguration
 from .unotool import getDateTime
-from .unotool import getNamedValueSet
+from .unotool import getPropertyValueSet
 
 from .database import DataBase
 from .dataparser import DataParser
@@ -115,8 +115,8 @@ class Replicator(unohelper.Base):
                     total = dltd + mdfd
                     if total > 0:
                         url = 'vnd.sun.star.job:service=%s' % self._cardsync 
-                        arguments = getNamedValueSet({'Connection': self._database.Connection})
-                        executeDispatch(self._ctx, url)
+                        arguments = getPropertyValueSet({'Connection': self._database.Connection})
+                        executeDispatch(self._ctx, url, arguments)
                     self._database.dispose()
                     format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
