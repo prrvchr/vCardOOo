@@ -109,31 +109,28 @@ implements XJob
 	{
 		System.out.println("CardSync._getConnection() 1");
 		XConnection connection = null;
-		int alen = arguments.length;
-		for (int i = 0; i < alen; i++)
+		int i = arguments.length;
+		for (int j = 0; j < i; j++)
 		{
-			NamedValue argument = arguments[i];
-			System.out.println("CardSync._getConnection() 2 " + argument.Name);
-			if (argument.Name.equals("DynamicData"))
+			if (arguments[j].Name.equals("DynamicData"))
 			{
+				System.out.println("CardSync._getConnection() 2");
+				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(arguments[j].Value);
+				int k = data.length;
 				System.out.println("CardSync._getConnection() 3");
-				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(argument.Value);
-				int dlen = data.length;
-				System.out.println("CardSync._getConnection() 4");
-				for (int j = 0; j < dlen; j++)
+				for (int l = 0; l < k; l++)
 				{
-					NamedValue value = data[j];
-					System.out.println("CardSync._getConnection() 5 " + value.Name);
-					if (value.Name.equals("Connection"))
+					if (data[l].Name.equals("Connection"))
 					{
-						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
+						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), data[l].Value);
+						System.out.println("CardSync._getConnection() 4");
 						break;
 					}
 				}
 				break;
 			}
 		}
-		System.out.println("CardSync._getConnection() 6");
+		System.out.println("CardSync._getConnection() 5");
 		return connection;
 	}
 	
