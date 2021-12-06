@@ -156,7 +156,7 @@ public final class DataBase
 
 	private static void _closeCall(XPreparedStatement call) throws SQLException
 	{
-		XCloseable closeable = (XCloseable) call;
+		XCloseable closeable = (XCloseable)UnoRuntime.queryInterface(XCloseable.class, call);
 		closeable.close();
 	}
 
