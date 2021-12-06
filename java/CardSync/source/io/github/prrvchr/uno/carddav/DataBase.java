@@ -39,6 +39,7 @@ import com.sun.star.sdbc.XPreparedStatement;
 import com.sun.star.sdbc.XResultSet;
 import com.sun.star.sdbc.XResultSetMetaDataSupplier;
 import com.sun.star.sdbc.XRow;
+import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.DateTime;
 
 
@@ -69,7 +70,7 @@ public final class DataBase
 			System.out.println("DataBase.getChangedCards() 1");
 			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
 			System.out.println("DataBase.getChangedCards() 2");
-			XParameters parameters = (XParameters) call;
+			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
 			parameters.setTimestamp(1, first);
 			System.out.println("DataBase.getChangedCards() 4");
@@ -91,9 +92,9 @@ public final class DataBase
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
 	{
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
-		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) result;
+		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
-		XRow row = (XRow) result;
+		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
 		while(result.next())
 		{
 			Map<String, Object> map = new HashMap<String, Object>();
