@@ -23,14 +23,14 @@
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 */
-package io.github.prrvchr.comp.carddav;
+package io.github.prrvchr.ooo.carddav;
 
 import java.io.InputStream;
 
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.registry.XRegistryKey;
 
-import io.github.prrvchr.comp.RegistrationHelper;
+import io.github.prrvchr.ooo.RegistrationHelper;
 
 
 public class RegistrationHandler

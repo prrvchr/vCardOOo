@@ -23,9 +23,8 @@
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 */
-package io.github.prrvchr.comp.carddav;
+package io.github.prrvchr.ooo.carddav;
 
-import java.io.IOException;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
@@ -33,21 +32,24 @@ import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.XComponentContext;
+
+import io.github.prrvchr.ooo.lang.ServiceComponent;
+
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
 import com.sun.star.sdbc.XConnection;
 import com.sun.star.task.XJob;
 
-import io.github.prrvchr.comp.lang.ServiceComponent;
-
 public final class CardSync
 extends ServiceComponent
 implements XJob
 {
+	@SuppressWarnings("unused")
 	private final XComponentContext m_xContext;
 	private static final String m_name = CardSync.class.getName();
 	private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
                                                 "com.sun.star.task.Job"};
+	@SuppressWarnings("unused")
 	private static final String m_identifier = "io.github.prrvchr.vCardOOo";
 
 	public CardSync(XComponentContext context)
@@ -107,30 +109,25 @@ implements XJob
 
 	private XConnection _getConnection(NamedValue[] arguments)
 	{
-		System.out.println("CardSync._getConnection() 1");
 		XConnection connection = null;
 		int i = arguments.length;
 		for (int j = 0; j < i; j++)
 		{
 			if (arguments[j].Name.equals("DynamicData"))
 			{
-				System.out.println("CardSync._getConnection() 2");
 				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(arguments[j].Value);
 				int k = data.length;
-				System.out.println("CardSync._getConnection() 3");
 				for (int l = 0; l < k; l++)
 				{
 					if (data[l].Name.equals("Connection"))
 					{
 						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), data[l].Value);
-						System.out.println("CardSync._getConnection() 4");
 						break;
 					}
 				}
 				break;
 			}
 		}
-		System.out.println("CardSync._getConnection() 5");
 		return connection;
 	}
 	
