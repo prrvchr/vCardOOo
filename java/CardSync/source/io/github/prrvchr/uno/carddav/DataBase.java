@@ -63,16 +63,28 @@ public final class DataBase
 
 	public List<Map<String, Object>> getChangedCards(DateTime first, DateTime last) throws SQLException
 	{
-		System.out.println("CardSync.getChangedCards() 1");
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
-		XParameters parameters = (XParameters) call;
-		parameters.setTimestamp(1, first);
-		parameters.setTimestamp(2, last);
-		XResultSet result = call.executeQuery();
-		System.out.println("CardSync.getChangedCards() 2");
-		List<Map<String, Object>>maps = _getResult(result);
-		_closeCall(call);
-		System.out.println("CardSync.getChangedCards() 3");
+		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
+		try
+		{
+			System.out.println("DataBase.getChangedCards() 1");
+			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
+			System.out.println("DataBase.getChangedCards() 2");
+			XParameters parameters = (XParameters) call;
+			System.out.println("DataBase.getChangedCards() 3");
+			parameters.setTimestamp(1, first);
+			System.out.println("DataBase.getChangedCards() 4");
+			parameters.setTimestamp(2, last);
+			XResultSet result = call.executeQuery();
+			System.out.println("DataBase.getChangedCards() 5");
+			maps = _getResult(result);
+			_closeCall(call);
+			System.out.println("DataBase.getChangedCards() 6");
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error happened: " + e.getMessage());
+			e.printStackTrace();
+		}
 		return maps;
 	}
 
