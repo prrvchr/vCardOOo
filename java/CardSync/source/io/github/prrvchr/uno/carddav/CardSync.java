@@ -111,21 +111,24 @@ implements XJob
 			List<Map<String, Object>> maps = database.getChangedCards(first, last);
 			System.out.println("CardSync.execute() 5");
 			int i = maps.size();
+			System.out.println("CardSync.execute() 6");
 			for (int j = 0; j < i; j++)
 			{
+				System.out.println("CardSync.execute() 7");
 				Map<String, Object> map = maps.get(j);
 				for (Map.Entry<String, Object> entry: map.entrySet())
 				{
-					System.out.println("CardSync.execute() 6 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
+					System.out.println("CardSync.execute() 8 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
 				}
 			}
-			System.out.println("CardSync.execute() 7");
+			System.out.println("CardSync.execute() 9");
 		}
-		catch (SQLException e)
+		catch (Exception e)
 		{
+			System.out.println("Error happened: " + e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 8");
+		System.out.println("CardSync.execute() 10");
 		return null;
 	}
 
