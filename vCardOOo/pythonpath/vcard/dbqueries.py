@@ -578,7 +578,7 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
+      SELECT C."Card",'Inserted' AS "Method",C."Start" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
         ON C."Card" = P."Card"
