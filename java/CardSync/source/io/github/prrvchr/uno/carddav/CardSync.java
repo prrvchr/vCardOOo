@@ -124,7 +124,7 @@ implements XJob
 		{
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 5");
+		System.out.println("CardSync.execute() 7");
 		return null;
 	}
 
