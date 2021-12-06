@@ -105,17 +105,12 @@ public final class DataBase
 				String dbtype = metadata.getMetaData().getColumnTypeName(i);
 				Object value = _getValueFromResult(row, dbtype, i);
 				map.put(name, value);
-				if (name.equals("Data"))
-				{
-					System.out.println("DataBase._getResult() 2 Name: " + name);
-				}
-				else
-				{
-					System.out.println("DataBase._getResult() 2 Name: " + name + " - Value: " + value.toString());
-				}
+				System.out.println("DataBase._getResult() 2");
 			}
 			maps.add(map);
+			System.out.println("DataBase._getResult() 3");
 		}
+		System.out.println("DataBase._getResult() 4");
 		return maps;
 	}
 
@@ -133,32 +128,45 @@ public final class DataBase
 			{
 				value = row.getBoolean(index);
 			}
-			else if (dbtype == "TINYINT"){
+			else if (dbtype == "TINYINT")
+			{
 				value = row.getShort(index);
 			}
-			else if (dbtype == "SMALLINT"){
+			else if (dbtype == "SMALLINT")
+			{
 				value = row.getShort(index);
 			}
-			else if (dbtype == "INTEGER"){
+			else if (dbtype == "INTEGER")
+			{
 				value = row.getInt(index);
 			}
-			else if (dbtype == "BIGINT"){
+			else if (dbtype == "BIGINT")
+			{
 				value = row.getLong(index);
 			}
-			else if (dbtype == "FLOAT"){
+			else if (dbtype == "FLOAT")
+			{
 				value = row.getFloat(index);
 			}
-			else if (dbtype == "DOUBLE"){
+			else if (dbtype == "DOUBLE")
+			{
 				value = row.getDouble(index);
 			}
-			else if (dbtype == "TIMESTAMP"){
+			else if (dbtype == "TIMESTAMP")
+			{
 				value = row.getTimestamp(index);
 			}
-			else if (dbtype == "TIME"){
+			else if (dbtype == "TIME")
+			{
 				value = row.getTime(index);
 			}
-			else if (dbtype == "DATE"){
+			else if (dbtype == "DATE")
+			{
 				value = row.getDate(index);
+			}
+			if(row.wasNull())
+			{
+				value = null;
 			}
 		}
 		catch (SQLException e) {e.getStackTrace();}
