@@ -116,19 +116,21 @@ implements XJob
 			{
 				System.out.println("CardSync.execute() 7");
 				Map<String, Object> map = maps.get(j);
+				System.out.println("CardSync.execute() 8");
 				for (Map.Entry<String, Object> entry: map.entrySet())
 				{
-					System.out.println("CardSync.execute() 8 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
+					System.out.println("CardSync.execute() 9");
+					System.out.println("CardSync.execute() 10: " + entry.getKey());
 				}
 			}
-			System.out.println("CardSync.execute() 9");
+			System.out.println("CardSync.execute() 11");
 		}
 		catch (Exception e)
 		{
 			System.out.println("Error happened: " + e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 10");
+		System.out.println("CardSync.execute() 12");
 		return null;
 	}
 
