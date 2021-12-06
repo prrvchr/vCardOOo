@@ -23,33 +23,113 @@
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 */
-package io.github.prrvchr.ooo.carddav;
+package io.github.prrvchr.uno.carddav;
 
-import java.io.InputStream;
 
+import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
+import com.sun.star.lib.uno.helper.Factory;
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.Type;
+import com.sun.star.uno.XComponentContext;
+
+import io.github.prrvchr.uno.lang.ServiceComponent;
+
 import com.sun.star.registry.XRegistryKey;
+import com.sun.star.sdbc.SQLException;
+import com.sun.star.sdbc.XConnection;
+import com.sun.star.task.XJob;
 
-import io.github.prrvchr.ooo.RegistrationHelper;
-
-
-public class RegistrationHandler
+public final class CardSync
+extends ServiceComponent
+implements XJob
 {
+	@SuppressWarnings("unused")
+	private final XComponentContext m_xContext;
+	private static final String m_name = CardSync.class.getName();
+	private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
+                                                "com.sun.star.task.Job"};
+	@SuppressWarnings("unused")
+	private static final String m_identifier = "io.github.prrvchr.vCardOOo";
 
+	public CardSync(XComponentContext context)
+	{
+		m_xContext = context;
+	};
+
+	// com.sun.star.lang.XServiceInfo:
+	@Override
+	public String _getImplementationName()
+	{
+		return m_name;
+	}
+
+	@Override
+	public String[] _getServiceNames()
+	{
+		return m_services;
+	}
+
+	// UNO Service Registration:
 	public static XSingleComponentFactory __getComponentFactory(String name)
 	{
-		return RegistrationHelper.__getComponentFactory(getInputStream(), name);
+		XSingleComponentFactory xFactory = null;
+		if (name.equals(m_name))
+		{
+			xFactory = Factory.createComponentFactory(CardSync.class, m_services);
+		}
+		return xFactory;
 	}
 
 	public static boolean __writeRegistryServiceInfo(XRegistryKey key)
 	{
-		return RegistrationHelper.__writeRegistryServiceInfo(getInputStream(), key);
+		return Factory.writeRegistryServiceInfo(m_name, m_services, key);
 	}
 
-	private static InputStream getInputStream()
+	// com.sun.star.task.XJob:
+	public Object execute(NamedValue[] arguments)
 	{
-		return RegistrationHandler.class.getResourceAsStream("RegistrationHandler.classes");
+		System.out.println("CardSync.execute() 1");
+		XConnection connection = _getConnection(arguments);
+		try
+		{
+			System.out.println("CardSync.execute() 2");
+			String name = connection.getMetaData().getUserName();
+			System.out.println("CardSync.execute() 3");
+			String version = connection.getMetaData().getDriverVersion();
+			System.out.println("CardSync.execute() 4 Name: " + name + " - Version: " + version);
+		}
+		catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
+		System.out.println("CardSync.execute() 5");
+		return null;
 	}
 
-
+	private XConnection _getConnection(NamedValue[] arguments)
+	{
+		XConnection connection = null;
+		int i = arguments.length;
+		for (int j = 0; j < i; j++)
+		{
+			if (arguments[j].Name.equals("DynamicData"))
+			{
+				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(arguments[j].Value);
+				int k = data.length;
+				for (int l = 0; l < k; l++)
+				{
+					if (data[l].Name.equals("Connection"))
+					{
+						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), data[l].Value);
+						break;
+					}
+				}
+				break;
+			}
+		}
+		return connection;
+	}
+	
+	
 }
