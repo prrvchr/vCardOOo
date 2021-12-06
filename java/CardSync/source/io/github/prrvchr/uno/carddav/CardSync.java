@@ -106,9 +106,9 @@ implements XJob
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 4 Name: " + name + " - Version: " + version);
 			long ts = System.currentTimeMillis();
-			DateTime start = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
-			DateTime stop = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));;
-			List<Map<String, Object>> maps = database.getChangedCards(start, stop);
+			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
+			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));;
+			List<Map<String, Object>> maps = database.getChangedCards(first, last);
 			int i = maps.size();
 			for (int j = 0; j < i; j++)
 			{

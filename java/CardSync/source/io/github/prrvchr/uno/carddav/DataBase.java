@@ -61,13 +61,13 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	public List<Map<String, Object>> getChangedCards(DateTime start, DateTime stop) throws SQLException
+	public List<Map<String, Object>> getChangedCards(DateTime first, DateTime last) throws SQLException
 	{
 		System.out.println("CardSync.getChangedCards() 1");
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
 		XParameters parameters = (XParameters) call;
-		parameters.setTimestamp(1, start);
-		parameters.setTimestamp(2, stop);
+		parameters.setTimestamp(1, first);
+		parameters.setTimestamp(2, last);
 		XResultSet result = call.executeQuery();
 		System.out.println("CardSync.getChangedCards() 2");
 		List<Map<String, Object>>maps = _getResult(result);

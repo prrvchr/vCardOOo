@@ -571,27 +571,27 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN START TIMESTAMP(6),
-                                      IN STOP TIMESTAMP(6))
+CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
+                                      IN LAST TIMESTAMP(6))
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
       (SELECT C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF STOP + SESSION_TIMEZONE() AS C
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM START + SESSION_TIMEZONE() TO STOP + SESSION_TIMEZONE() AS P
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST + SESSION_TIMEZONE() AS P
         ON C."Card" = P."Card" AND C."Start" = P."Stop")
       UNION
       (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF STOP + SESSION_TIMEZONE() AS C
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF START + SESSION_TIMEZONE() AS P
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
         ON C."Card" = P."Card"
       WHERE P."Card" IS NULL)
       UNION
       (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF START + SESSION_TIMEZONE() AS P
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF STOP + SESSION_TIMEZONE() AS C
+      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
         ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       ORDER BY "Order"
