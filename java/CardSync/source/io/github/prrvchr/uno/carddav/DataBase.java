@@ -96,7 +96,7 @@ public final class DataBase
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
 		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
-		while(result.next())
+		while(result != null && result.next())
 		{
 			Map<String, Object> map = new HashMap<String, Object>();
 			for (int i = 1; i <= len; i++)
