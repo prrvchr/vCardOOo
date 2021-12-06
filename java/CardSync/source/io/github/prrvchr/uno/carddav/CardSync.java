@@ -26,14 +26,21 @@
 package io.github.prrvchr.uno.carddav;
 
 
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.XComponentContext;
+import com.sun.star.util.DateTime;
 
 import io.github.prrvchr.uno.lang.ServiceComponent;
+import io.github.prrvchr.uno.helper.UnoHelper;
 
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
@@ -90,14 +97,28 @@ implements XJob
 	public Object execute(NamedValue[] arguments)
 	{
 		System.out.println("CardSync.execute() 1");
-		XConnection connection = _getConnection(arguments);
+		DataBase database = new DataBase(_getConnection(arguments));
 		try
 		{
 			System.out.println("CardSync.execute() 2");
-			String name = connection.getMetaData().getUserName();
+			String name = database.getUserName();
 			System.out.println("CardSync.execute() 3");
-			String version = connection.getMetaData().getDriverVersion();
+			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 4 Name: " + name + " - Version: " + version);
+			long ts = System.currentTimeMillis();
+			DateTime start = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
+			DateTime stop = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));;
+			List<Map<String, Object>> maps = database.getChangedCards(start, stop);
+			int i = maps.size();
+			for (int j = 0; j < i; j++)
+			{
+				Map<String, Object> map = maps.get(j);
+				for (Map.Entry<String, Object> entry: map.entrySet())
+				{
+					System.out.println("CardSync.execute() 5 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
+				}
+			}
+			System.out.println("CardSync.execute() 6");
 		}
 		catch (SQLException e)
 		{

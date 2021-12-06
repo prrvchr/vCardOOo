@@ -260,4 +260,5 @@ def getQueries():
             ('createInsertAddressbook', None),
             ('createSelectAddressbook', None),
             ('createMergeCard', None),
-            ('createDeleteCard', None))
+            ('createDeleteCard', None),
+            ('createSelectChangedCards', None))
