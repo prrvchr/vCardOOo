@@ -106,7 +106,7 @@ public final class DataBase
 				String dbtype = metadata.getMetaData().getColumnTypeName(i);
 				Object value = _getValueFromResult(row, dbtype, i);
 				map.put(name, value);
-				System.out.println("DataBase._getResult() 2");
+				System.out.println("DataBase._getResult() 2: Name: " + name + " - Type: " + dbtype);
 			}
 			maps.add(j, map);
 			j++;

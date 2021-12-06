@@ -122,7 +122,7 @@ implements XJob
 					System.out.println("CardSync.execute() 9");
 					if (entry.getKey().equals("Data"))
 					{
-						System.out.print("CardSync.execute() 10: " + entry.getKey());
+						System.out.print("CardSync.execute() 10: " + entry.getKey() + " - Value: " + entry.getValue());
 					}
 					else
 					{
