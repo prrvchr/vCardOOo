@@ -123,47 +123,51 @@ public final class DataBase
 		Object value = null;
 		try
 		{
-			if (dbtype == "VARCHAR")
+			if (dbtype.equals("VARCHAR"))
 			{
 				value = row.getString(index);
 			}
-			else if (dbtype == "BOOLEAN")
+			else if (dbtype.equals("CHARACTER"))
+			{
+				value = row.getString(index);
+			}
+			else if (dbtype.equals("BOOLEAN"))
 			{
 				value = row.getBoolean(index);
 			}
-			else if (dbtype == "TINYINT")
+			else if (dbtype.equals("TINYINT"))
 			{
 				value = row.getShort(index);
 			}
-			else if (dbtype == "SMALLINT")
+			else if (dbtype.equals("SMALLINT"))
 			{
 				value = row.getShort(index);
 			}
-			else if (dbtype == "INTEGER")
+			else if (dbtype.equals("INTEGER"))
 			{
 				value = row.getInt(index);
 			}
-			else if (dbtype == "BIGINT")
+			else if (dbtype.equals("BIGINT"))
 			{
 				value = row.getLong(index);
 			}
-			else if (dbtype == "FLOAT")
+			else if (dbtype.equals("FLOAT"))
 			{
 				value = row.getFloat(index);
 			}
-			else if (dbtype == "DOUBLE")
+			else if (dbtype.equals("DOUBLE"))
 			{
 				value = row.getDouble(index);
 			}
-			else if (dbtype == "TIMESTAMP")
+			else if (dbtype.startsWith("TIMESTAMP"))
 			{
 				value = row.getTimestamp(index);
 			}
-			else if (dbtype == "TIME")
+			else if (dbtype.equals("TIME"))
 			{
 				value = row.getTime(index);
 			}
-			else if (dbtype == "DATE")
+			else if (dbtype.equals("DATE"))
 			{
 				value = row.getDate(index);
 			}
