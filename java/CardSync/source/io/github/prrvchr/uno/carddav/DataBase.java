@@ -109,6 +109,7 @@ public final class DataBase
 				System.out.println("DataBase._getResult() 2");
 			}
 			maps.add(j, map);
+			j++;
 			
 			System.out.println("DataBase._getResult() 3");
 		}
