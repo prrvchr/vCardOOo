@@ -92,6 +92,7 @@ public final class DataBase
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
 	{
 		System.out.println("DataBase._getResult() 1");
+		int j = 0;
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
@@ -107,7 +108,8 @@ public final class DataBase
 				map.put(name, value);
 				System.out.println("DataBase._getResult() 2");
 			}
-			maps.add(map);
+			maps.add(j, map);
+			
 			System.out.println("DataBase._getResult() 3");
 		}
 		System.out.println("DataBase._getResult() 4");
