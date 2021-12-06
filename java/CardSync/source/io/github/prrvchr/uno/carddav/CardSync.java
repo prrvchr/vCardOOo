@@ -120,7 +120,14 @@ implements XJob
 				for (Map.Entry<String, Object> entry: map.entrySet())
 				{
 					System.out.println("CardSync.execute() 9");
-					System.out.println("CardSync.execute() 10: " + entry.getKey());
+					if (entry.getKey().equals("Data"))
+					{
+						System.out.print("CardSync.execute() 10: " + entry.getKey());
+					}
+					else
+					{
+						System.out.println("CardSync.execute() 10: " + entry.getKey() + " - Value: " + entry.getValue());
+					}
 				}
 			}
 			System.out.println("CardSync.execute() 11");
