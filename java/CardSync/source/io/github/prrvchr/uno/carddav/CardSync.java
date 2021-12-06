@@ -109,22 +109,23 @@ implements XJob
 			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
 			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));;
 			List<Map<String, Object>> maps = database.getChangedCards(first, last);
+			System.out.println("CardSync.execute() 5");
 			int i = maps.size();
 			for (int j = 0; j < i; j++)
 			{
 				Map<String, Object> map = maps.get(j);
 				for (Map.Entry<String, Object> entry: map.entrySet())
 				{
-					System.out.println("CardSync.execute() 5 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
+					System.out.println("CardSync.execute() 6 Key: " + entry.getKey() + " - Value: " + entry.getValue().toString());
 				}
 			}
-			System.out.println("CardSync.execute() 6");
+			System.out.println("CardSync.execute() 7");
 		}
 		catch (SQLException e)
 		{
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 7");
+		System.out.println("CardSync.execute() 8");
 		return null;
 	}
 
