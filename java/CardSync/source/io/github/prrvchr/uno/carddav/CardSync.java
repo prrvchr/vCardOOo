@@ -108,29 +108,17 @@ implements XJob
 			long ts = System.currentTimeMillis();
 			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
 			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));;
-			List<Map<String, Object>> maps = database.getChangedCards(first, last);
+			List<Map<String, Object>> cards = database.getChangedCards(first, last);
 			System.out.println("CardSync.execute() 5");
-			int i = maps.size();
+			int i = cards.size();
 			System.out.println("CardSync.execute() 6");
 			for (int j = 0; j < i; j++)
 			{
 				System.out.println("CardSync.execute() 7");
-				Map<String, Object> map = maps.get(j);
+				_syncCard(cards.get(j));
 				System.out.println("CardSync.execute() 8");
-				for (Map.Entry<String, Object> entry: map.entrySet())
-				{
-					System.out.println("CardSync.execute() 9");
-					if (entry.getKey().equals("Data"))
-					{
-						System.out.print("CardSync.execute() 10: " + entry.getKey() + " - Value: " + entry.getValue());
-					}
-					else
-					{
-						System.out.println("CardSync.execute() 10: " + entry.getKey() + " - Value: " + entry.getValue());
-					}
-				}
 			}
-			System.out.println("CardSync.execute() 11");
+			System.out.println("CardSync.execute() 9");
 		}
 		catch (Exception e)
 		{
@@ -164,6 +152,14 @@ implements XJob
 		}
 		return connection;
 	}
-	
+
+	private void _syncCard(Map<String, Object> card)
+	{
+		int id = (int) card.get("Card");
+		String data = (String) card.get("Data");
+		String Method = (String) card.get("Method");
+		DateTime Order = (DateTime) card.get("Order");
+		
+	}
 	
 }
