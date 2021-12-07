@@ -603,8 +603,6 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
         ON C."Card" = P."Card" AND C."Start" = P."Stop")
       ORDER BY "Order"
       FOR READ ONLY;
-    SET FIRST = (SELECT "Modified" FROM "Users" WHERE "User"=0);
-    SET LAST = LOCALTIMESTAMP;
     OPEN RSLT;
   END"""
 
