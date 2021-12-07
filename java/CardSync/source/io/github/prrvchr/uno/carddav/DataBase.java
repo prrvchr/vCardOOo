@@ -77,7 +77,7 @@ public final class DataBase
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
-			DateTime updated = row.getTimestamp(3);
+			DateTime updated = row.getTimestamp(2);
 			System.out.println("DataBase.getChangedCards() 5 " + updated);
 			maps = _getResult(result);
 			_closeCall(call);
