@@ -578,8 +578,8 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
-                                      INOUT LAST TIMESTAMP(6))
+CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                      INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
