@@ -62,24 +62,26 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	public List<Map<String, Object>> getChangedCards(DateTime first, DateTime last) throws SQLException
+	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
 			System.out.println("DataBase.getChangedCards() 1");
-			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
+			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?)");
 			System.out.println("DataBase.getChangedCards() 2");
-			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+			//XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
-			parameters.setTimestamp(1, first);
-			System.out.println("DataBase.getChangedCards() 4");
-			parameters.setTimestamp(2, last);
+			//parameters.setTimestamp(1, first);
+			//System.out.println("DataBase.getChangedCards() 4");
+			//parameters.setTimestamp(2, last);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 5");
-			maps = _getResult(result);
+			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
+			DateTime updated = row.getTimestamp(1);
+			maps = _getResult(result, row);
 			_closeCall(call);
-			System.out.println("DataBase.getChangedCards() 6");
+			System.out.println("DataBase.getChangedCards() 6 " + updated);
 		}
 		catch (Exception e)
 		{
@@ -104,14 +106,13 @@ public final class DataBase
 		return 1;
 	}
 
-	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
+	private static List<Map<String, Object>> _getResult(XResultSet result, XRow row) throws SQLException
 	{
 		System.out.println("DataBase._getResult() 1");
 		int j = 0;
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
-		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
 		while(result != null && result.next())
 		{
 			Map<String, Object> map = new HashMap<String, Object>();

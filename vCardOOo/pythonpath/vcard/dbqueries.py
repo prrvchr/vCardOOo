@@ -578,31 +578,34 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
-                                      IN LAST TIMESTAMP(6))
+CREATE PROCEDURE "SelectChangedCards"(OUT UPDATED TIMESTAMP(6))
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
+    DECLARE FIRST TIMESTAMP(6);
+    DECLARE LAST TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP;
     DECLARE RSLT CURSOR WITH RETURN FOR
       (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C
         ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       UNION
       (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
         ON C."Card"=P."Card"
       WHERE P."Card" IS NULL)
       UNION
       (SELECT C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM CURRENT_TIMESTAMP - 1 YEAR TO CURRENT_TIMESTAMP AS P
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM CURRENT_TIMESTAMP - 1 YEAR TO LAST AS P
         ON C."Card" = P."Card" AND C."Start" = P."Stop")
       ORDER BY "Order"
       FOR READ ONLY;
+    SET FIRST = (SELECT "Modified" FROM "Users" WHERE "User"=0);
+    SET UPDATED = LAST;
     OPEN RSLT;
   END"""
 

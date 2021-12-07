@@ -26,10 +26,18 @@
 package io.github.prrvchr.uno.carddav;
 
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.github.mangstadt.vinnie.VObjectProperty;
+import com.github.mangstadt.vinnie.io.Context;
+import com.github.mangstadt.vinnie.io.SyntaxRules;
+import com.github.mangstadt.vinnie.io.VObjectDataAdapter;
+import com.github.mangstadt.vinnie.io.VObjectReader;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
@@ -37,15 +45,14 @@ import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.XComponentContext;
+import com.sun.star.registry.XRegistryKey;
+import com.sun.star.sdbc.XConnection;
+import com.sun.star.task.XJob;
 import com.sun.star.util.DateTime;
 
 import io.github.prrvchr.uno.lang.ServiceComponent;
 import io.github.prrvchr.uno.helper.UnoHelper;
 
-import com.sun.star.registry.XRegistryKey;
-import com.sun.star.sdbc.SQLException;
-import com.sun.star.sdbc.XConnection;
-import com.sun.star.task.XJob;
 
 public final class CardSync
 extends ServiceComponent
@@ -153,7 +160,7 @@ implements XJob
 		return connection;
 	}
 
-	private void _syncCard(DataBase database, Map<String, Object> card)
+	private void _syncCard(DataBase database, Map<String, Object> card) throws IOException
 	{
 		int deleted = 0;
 		int updated = 0;
@@ -167,16 +174,50 @@ implements XJob
 			System.out.println("CardSync._syncCard() Delete");
 			deleted += database.deleteCard(id);
 		}
-		else if (method.equals("Updated"))
+		else
 		{
-			System.out.println("CardSync._syncCard() Updated");
-			updated += database.updateCard(id);
-		}
-		else if (method.equals("Inserted"))
-		{
-			System.out.println("CardSync._syncCard() Inserted");
-			inserted += database.insertCard(id);
+			_parseCard(id, method, data);
 		}
 	}
-	
+
+	private void _parseCard(int id, String method, String data) throws IOException
+	{
+		
+		Reader reader = new StringReader(data);
+		SyntaxRules rules = SyntaxRules.vcard();
+		VObjectReader vobjectReader = new VObjectReader(reader, rules);
+		vobjectReader.parse(new VObjectDataAdapter()
+		{
+			private boolean inVCard = false;
+
+			public void onComponentBegin(String name, Context context)
+			{
+				if (context.getParentComponents().isEmpty() && "VCARD".equals(name))
+				{
+					inVCard = true;
+				}
+			}
+
+			public void onComponentEnd(String name, Context context)
+			{
+				if (context.getParentComponents().isEmpty())
+				{
+					//end of vCard, stop parsing
+					context.stop();
+				}
+			}
+
+			public void onProperty(VObjectProperty property, Context context)
+			{
+				if (inVCard)
+				{
+					System.out.println(property.getName() + " = " + property.getValue());
+				}
+			}
+		});
+		vobjectReader.close();
+		
+	}
+
+
 }
