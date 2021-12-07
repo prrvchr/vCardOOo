@@ -79,7 +79,7 @@ public final class DataBase
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
 			DateTime updated = row.getTimestamp(3);
 			System.out.println("DataBase.getChangedCards() 5 " + updated);
-			maps = _getResult(result, row);
+			maps = _getResult(result);
 			_closeCall(call);
 			System.out.println("DataBase.getChangedCards() 6 " + updated);
 		}
@@ -106,13 +106,14 @@ public final class DataBase
 		return 1;
 	}
 
-	private static List<Map<String, Object>> _getResult(XResultSet result, XRow row) throws SQLException
+	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
 	{
 		System.out.println("DataBase._getResult() 1");
 		int j = 0;
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
+		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
 		while(result != null && result.next())
 		{
 			Map<String, Object> map = new HashMap<String, Object>();
