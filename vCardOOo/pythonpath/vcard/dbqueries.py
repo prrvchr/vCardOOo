@@ -586,24 +586,24 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
       (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
+      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST AS P
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C
         ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       UNION
       (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST AS P
         ON C."Card"=P."Card"
       WHERE P."Card" IS NULL)
       UNION
       (SELECT C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST AS P
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST TO LAST AS P
         ON C."Card" = P."Card" AND C."Start" = P."Stop")
       ORDER BY "Order"
       FOR READ ONLY;
-    SET FIRST = (SELECT "Modified" FROM "Users" WHERE "User"=0);
+    SET FIRST = CURRENT_TIMESTAMP - 1 YEAR;
     SET LAST = CURRENT_TIMESTAMP;
     OPEN RSLT;
   END"""
