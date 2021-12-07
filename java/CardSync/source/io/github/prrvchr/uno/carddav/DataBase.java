@@ -62,7 +62,7 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	public List<Map<String, Object>> getChangedCards(DateTime first) throws SQLException
+	public List<Map<String, Object>> getChangedCards(DateTime first, DateTime last) throws SQLException
 	{
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
@@ -73,11 +73,11 @@ public final class DataBase
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
 			parameters.setTimestamp(1, first);
-			//parameters.setTimestamp(2, last);
+			parameters.setTimestamp(2, last);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
-			DateTime updated = row.getTimestamp(2);
+			DateTime updated = row.getTimestamp(3);
 			System.out.println("DataBase.getChangedCards() 5 " + updated);
 			maps = _getResult(result, row);
 			_closeCall(call);
