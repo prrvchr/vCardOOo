@@ -36,6 +36,7 @@ from .unotool import getSimpleFile
 
 from .dbconfig import g_folder
 from .dbconfig import g_version
+from .dbconfig import g_superuser
 
 from .dbqueries import getSqlQuery
 
@@ -261,4 +262,5 @@ def getQueries():
             ('createSelectAddressbook', None),
             ('createMergeCard', None),
             ('createDeleteCard', None),
-            ('createSelectChangedCards', None))
+            ('createSelectChangedCards', None),
+            ('insertSuperUser', g_superuser))

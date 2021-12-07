@@ -89,6 +89,21 @@ public final class DataBase
 		return maps;
 	}
 
+	public int deleteCard(int id)
+	{
+		return 1;
+	}
+
+	public int insertCard(int id)
+	{
+		return 1;
+	}
+
+	public int updateCard(int id)
+	{
+		return 1;
+	}
+
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
 	{
 		System.out.println("DataBase._getResult() 1");

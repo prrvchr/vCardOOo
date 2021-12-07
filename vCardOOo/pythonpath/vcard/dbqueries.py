@@ -443,6 +443,13 @@ SELECT %s FROM "Groups" WHERE "GroupSync"=FALSE AND "People"=? AND "Resource"<>?
 TRUNCATE TABLE "Groups" VERSIONING TO TIMESTAMP'%(TimeStamp)s'"""
         query = q % format
 
+# Insert Queries
+    elif name == 'insertSuperUser':
+        q = """\
+INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES ('%s','%s','%s','%s');
+"""
+        query = q % format
+
 # Create Procedure Query
     elif name == 'createSelectGroup':
         query = """\
@@ -487,7 +494,7 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
       SELECT "User","Default","Scheme","Server","Path","Name"
       FROM "Users"
       WHERE "Server"=SERVER AND "Name"=UID FOR READ ONLY;
-    INSERT INTO "Users" ("Scheme","Server","Name","Path") VALUES (SCHEME,SERVER,UID,PATH);
+    INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES (SCHEME,SERVER,PATH,UID);
     SET PK1=IDENTITY();
     INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (PK1,URL,NAME,TAG,TOKEN);
     SET PK2=IDENTITY();
@@ -578,6 +585,12 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
+      (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
+        ON P."Card" = C."Card"
+      WHERE C."Card" IS NULL)
+      UNION
       (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
@@ -588,12 +601,6 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
       FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
       INNER JOIN "Cards" FOR SYSTEM_TIME FROM CURRENT_TIMESTAMP - 1 YEAR TO CURRENT_TIMESTAMP AS P
         ON C."Card" = P."Card" AND C."Start" = P."Stop")
-      UNION
-      (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP - 1 YEAR AS P
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP AS C
-        ON P."Card" = C."Card"
-      WHERE C."Card" IS NULL)
       ORDER BY "Order"
       FOR READ ONLY;
     OPEN RSLT;

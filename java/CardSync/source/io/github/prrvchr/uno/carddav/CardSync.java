@@ -115,7 +115,7 @@ implements XJob
 			for (int j = 0; j < i; j++)
 			{
 				System.out.println("CardSync.execute() 7");
-				_syncCard(cards.get(j));
+				_syncCard(database, cards.get(j));
 				System.out.println("CardSync.execute() 8");
 			}
 			System.out.println("CardSync.execute() 9");
@@ -153,13 +153,30 @@ implements XJob
 		return connection;
 	}
 
-	private void _syncCard(Map<String, Object> card)
+	private void _syncCard(DataBase database, Map<String, Object> card)
 	{
+		int deleted = 0;
+		int updated = 0;
+		int inserted = 0;
 		int id = (int) card.get("Card");
 		String data = (String) card.get("Data");
-		String Method = (String) card.get("Method");
-		DateTime Order = (DateTime) card.get("Order");
-		
+		String method = (String) card.get("Method");
+		DateTime order = (DateTime) card.get("Order");
+		if (method.equals("Deleted"))
+		{
+			System.out.println("CardSync._syncCard() Delete");
+			deleted += database.deleteCard(id);
+		}
+		else if (method.equals("Updated"))
+		{
+			System.out.println("CardSync._syncCard() Updated");
+			updated += database.updateCard(id);
+		}
+		else if (method.equals("Inserted"))
+		{
+			System.out.println("CardSync._syncCard() Inserted");
+			inserted += database.insertCard(id);
+		}
 	}
 	
 }
