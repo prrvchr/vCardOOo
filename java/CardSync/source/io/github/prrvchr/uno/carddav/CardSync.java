@@ -190,10 +190,11 @@ implements XJob
 		//WriteContext context = new WriteContext(VCardVersion.V3_0, null, true);
 		for (VCardProperty property : card)
 		{
-			VCardPropertyScribe scribe = index.getPropertyScribe(property);
+			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
 			String name = scribe.getPropertyName();
+			Class<?> clazz = scribe.getPropertyClass();
 			//String value = scribe.writeText(property, context);
-			System.out.println("CardSync._parseCard() Method: " + method + " - Name: " + name);
+			System.out.println("CardSync._parseCard() Card: " + id + " - Method: " + method + " - Name: " + name + " - Class: " + clazz.getClass().getName());
 		}
 	
 
