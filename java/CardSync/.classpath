@@ -10,5 +10,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.libreoffice.ide.eclipse.java.OOO_CONTAINER/LibreOffice 7.2"/>
 	<classpathentry kind="lib" path="libs/vinnie-2.0.2.jar"/>
+	<classpathentry kind="lib" path="libs/ez-vcard-0.11.3.jar"/>
+	<classpathentry kind="lib" path="libs/freemarker-2.3.31.jar"/>
+	<classpathentry kind="lib" path="libs/jackson-core-2.12.5.jar"/>
+	<classpathentry kind="lib" path="libs/jsoup-1.14.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

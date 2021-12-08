@@ -27,17 +27,14 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.sql.Timestamp;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.github.mangstadt.vinnie.VObjectProperty;
-import com.github.mangstadt.vinnie.io.Context;
-import com.github.mangstadt.vinnie.io.SyntaxRules;
-import com.github.mangstadt.vinnie.io.VObjectDataAdapter;
-import com.github.mangstadt.vinnie.io.VObjectReader;
+import ezvcard.Ezvcard;
+import ezvcard.parameter.VCardParameters;
+import ezvcard.property.VCardProperty;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
@@ -182,41 +179,14 @@ implements XJob
 
 	private void _parseCard(int id, String method, String data) throws IOException
 	{
-		
-		Reader reader = new StringReader(data);
-		SyntaxRules rules = SyntaxRules.vcard();
-		VObjectReader vobjectReader = new VObjectReader(reader, rules);
-		vobjectReader.parse(new VObjectDataAdapter()
+		Iterator<VCardProperty> iterator = Ezvcard.parse(data).first().iterator();
+		while (iterator.hasNext())
 		{
-			private boolean inVCard = false;
-
-			public void onComponentBegin(String name, Context context)
-			{
-				if (context.getParentComponents().isEmpty() && "VCARD".equals(name))
-				{
-					inVCard = true;
-				}
-			}
-
-			public void onComponentEnd(String name, Context context)
-			{
-				if (context.getParentComponents().isEmpty())
-				{
-					//end of vCard, stop parsing
-					context.stop();
-				}
-			}
-
-			public void onProperty(VObjectProperty property, Context context)
-			{
-				if (inVCard)
-				{
-					System.out.println(property.getName() + " = " + property.getValue());
-				}
-			}
-		});
-		vobjectReader.close();
-	
+			VCardProperty property = iterator.next();
+			System.out.println("CardSync._parseCard() VCardProperty.toString(): " + property.toString());
+			VCardParameters parameters = property.getParameters();
+			System.out.println("CardSync._parseCard() VCardParameters.toString(): " + parameters.toString());
+		}
 	}
 
 
