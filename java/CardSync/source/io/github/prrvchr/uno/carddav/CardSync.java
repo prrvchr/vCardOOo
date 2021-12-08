@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
+import ezvcard.VCard;
+import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.io.scribe.VCardPropertyScribe;
 import ezvcard.parameter.VCardParameters;
 import ezvcard.property.VCardProperty;
 
@@ -179,14 +182,21 @@ implements XJob
 
 	private void _parseCard(int id, String method, String data) throws IOException
 	{
-		Iterator<VCardProperty> iterator = Ezvcard.parse(data).first().iterator();
-		while (iterator.hasNext())
+		VCard card = Ezvcard.parse(data).first();
+		//Iterator<VCardProperty> iterator = Ezvcard.parse(data).first().iterator();
+		//VCardProperty property = iterator.next();
+		
+		ScribeIndex index = new ScribeIndex();
+		//WriteContext context = new WriteContext(VCardVersion.V3_0, null, true);
+		for (VCardProperty property : card)
 		{
-			VCardProperty property = iterator.next();
-			System.out.println("CardSync._parseCard() VCardProperty.toString(): " + property.toString());
-			VCardParameters parameters = property.getParameters();
-			System.out.println("CardSync._parseCard() VCardParameters.toString(): " + parameters.toString());
+			VCardPropertyScribe scribe = index.getPropertyScribe(property);
+			String name = scribe.getPropertyName();
+			//String value = scribe.writeText(property, context);
+			System.out.println("CardSync._parseCard() Method: " + method + " - Name: " + name);
 		}
+	
+
 	}
 
 
