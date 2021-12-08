@@ -192,9 +192,9 @@ implements XJob
 		{
 			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
 			String name = scribe.getPropertyName();
-			Class<?> clazz = scribe.getPropertyClass();
+			Class<? extends VCardProperty> clazz = scribe.getPropertyClass();
 			//String value = scribe.writeText(property, context);
-			System.out.println("CardSync._parseCard() Card: " + id + " - Method: " + method + " - Name: " + name + " - Class: " + clazz.getClass().getName());
+			System.out.println("CardSync._parseCard() Card: " + id + " - Method: " + method + " - Name: " + name + " - Class: " + clazz.getName());
 		}
 	
 
