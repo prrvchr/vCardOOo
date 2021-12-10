@@ -28,12 +28,15 @@ package io.github.prrvchr.uno.carddav;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.property.Address;
+import ezvcard.property.Email;
+import ezvcard.property.Telephone;
+import ezvcard.property.Title;
 import ezvcard.property.VCardProperty;
 
 import com.sun.star.beans.NamedValue;
@@ -157,8 +160,11 @@ implements XJob
 
 	private void _syncCard(DataBase database, int id, String method, String data) throws IOException
 	{
+		@SuppressWarnings("unused")
 		int deleted = 0;
+		@SuppressWarnings("unused")
 		int updated = 0;
+		@SuppressWarnings("unused")
 		int inserted = 0;
 		if (!method.equals("Deleted"))
 		{
@@ -170,7 +176,7 @@ implements XJob
 	{
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
-		for (VCardProperty property : card)
+		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
 			if ("FN".equals(name)) _parseFormattedName(card, id, method);
@@ -183,27 +189,46 @@ implements XJob
 
 	private void _parseFormattedName(VCard card, int id, String method)
 	{
-		System.out.println("CardSync._parseFormattedName()");
+
+		String name = card.getFormattedName().getValue();
+		System.out.println("CardSync._parseFormattedName() " + name);
 	}
 
 	private void _parseAddress(VCard card, int id, String method)
 	{
-		System.out.println("CardSync._parseAddress()");
+		for (Address address: card.getAddresses())
+		{
+			String street = address.getStreetAddress();
+			String city = address.getLocality();
+			System.out.println("CardSync._parseAddress() Street: " + street + " - City: " + city);
+		}
 	}
 
 	private void _parseEmail(VCard card, int id, String method)
 	{
-		System.out.println("CardSync._parseEmail()");
+		for (Email email: card.getEmails())
+		{
+			String value = email.getValue();
+			System.out.println("CardSync._parseEmail() " + value);
+		}
 	}
 
 	private void _parseTelephone(VCard card, int id, String method)
 	{
-		System.out.println("CardSync._parseTelephone()");
+		for (Telephone telephone: card.getTelephoneNumbers())
+		{
+			String value = telephone.getText();
+			System.out.println("CardSync._parseTelephone() " + value);
+		}
 	}
 
 	private void _parseTitle(VCard card, int id, String method)
 	{
-		System.out.println("CardSync._parseTitle()");
+		for (Title title: card.getTitles())
+		{
+			String value = title.getValue();
+			System.out.println("CardSync._parseTitle() " + value);
+		}
 	}
 
 
