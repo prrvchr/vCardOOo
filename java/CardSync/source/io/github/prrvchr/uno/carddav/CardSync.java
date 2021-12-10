@@ -34,6 +34,7 @@ import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
 import ezvcard.property.Address;
+import ezvcard.property.Categories;
 import ezvcard.property.Email;
 import ezvcard.property.Telephone;
 import ezvcard.property.Title;
@@ -180,10 +181,11 @@ implements XJob
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
 			if ("FN".equals(name)) _parseFormattedName(card, id, method);
-			else if ("ADR".equals(name)) _parseAddress(card, id, method);
-			else if ("EMAIL".equals(name)) _parseEmail(card, id, method);
-			else if ("TEL".equals(name)) _parseTelephone(card, id, method);
-			else if ("TITLE".equals(name)) _parseTitle(card, id, method);
+			else if ("ADR".equals(name)) _parseAddresses(card, id, method);
+			else if ("EMAIL".equals(name)) _parseEmails(card, id, method);
+			else if ("TEL".equals(name)) _parseTelephones(card, id, method);
+			else if ("TITLE".equals(name)) _parseTitles(card, id, method);
+			else if ("CATEGORIES".equals(name)) _parseCategories(card, id, method);
 			else System.out.println("CardSync._parseCard() " + name);
 		}
 	}
@@ -195,7 +197,7 @@ implements XJob
 		System.out.println("CardSync._parseFormattedName() '" + name + "'");
 	}
 
-	private void _parseAddress(VCard card, int id, String method)
+	private void _parseAddresses(VCard card, int id, String method)
 	{
 		for (Address address: card.getAddresses())
 		{
@@ -205,7 +207,7 @@ implements XJob
 		}
 	}
 
-	private void _parseEmail(VCard card, int id, String method)
+	private void _parseEmails(VCard card, int id, String method)
 	{
 		for (Email email: card.getEmails())
 		{
@@ -214,7 +216,7 @@ implements XJob
 		}
 	}
 
-	private void _parseTelephone(VCard card, int id, String method)
+	private void _parseTelephones(VCard card, int id, String method)
 	{
 		for (Telephone telephone: card.getTelephoneNumbers())
 		{
@@ -223,7 +225,7 @@ implements XJob
 		}
 	}
 
-	private void _parseTitle(VCard card, int id, String method)
+	private void _parseTitles(VCard card, int id, String method)
 	{
 		for (Title title: card.getTitles())
 		{
@@ -232,5 +234,15 @@ implements XJob
 		}
 	}
 
+	private void _parseCategories(VCard card, int id, String method)
+	{
+		for (Categories categories: card.getCategoriesList())
+		{
+			for (String category: categories.getValues())
+			{
+				System.out.println("CardSync._parseTitle() " + category);
+			}
+		}
+	}
 
 }
