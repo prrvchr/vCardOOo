@@ -191,7 +191,7 @@ implements XJob
 	{
 
 		String name = card.getFormattedName().getValue();
-		System.out.println("CardSync._parseFormattedName() " + name);
+		System.out.println("CardSync._parseFormattedName() '" + name + "'");
 	}
 
 	private void _parseAddress(VCard card, int id, String method)
