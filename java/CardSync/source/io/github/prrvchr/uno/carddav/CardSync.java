@@ -184,6 +184,7 @@ implements XJob
 			else if ("EMAIL".equals(name)) _parseEmail(card, id, method);
 			else if ("TEL".equals(name)) _parseTelephone(card, id, method);
 			else if ("TITLE".equals(name)) _parseTitle(card, id, method);
+			else System.out.println("CardSync._parseCard() " + name);
 		}
 	}
 
