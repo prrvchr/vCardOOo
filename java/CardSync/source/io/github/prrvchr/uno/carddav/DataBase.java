@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.star.beans.NamedValue;
 import com.sun.star.sdbc.SQLException;
 import com.sun.star.sdbc.XCloseable;
 import com.sun.star.sdbc.XConnection;
@@ -39,6 +40,8 @@ import com.sun.star.sdbc.XPreparedStatement;
 import com.sun.star.sdbc.XResultSet;
 import com.sun.star.sdbc.XResultSetMetaDataSupplier;
 import com.sun.star.sdbc.XRow;
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.DateTime;
 
@@ -50,6 +53,11 @@ public final class DataBase
 	public DataBase(XConnection connection)
 	{
 		m_xConnection = connection;
+	};
+
+	public DataBase(NamedValue[] arguments)
+	{
+		m_xConnection = _getConnection(arguments);
 	};
 
 	public String getUserName() throws SQLException
@@ -104,6 +112,28 @@ public final class DataBase
 	public int updateCard(int id)
 	{
 		return 1;
+	}
+
+	private XConnection _getConnection(NamedValue[] arguments)
+	{
+		XConnection connection = null;
+		for (NamedValue argument: arguments)
+		{
+			if (argument.Name.equals("DynamicData"))
+			{
+				NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
+				for (NamedValue value: values)
+				{
+					if (value.Name.equals("Connection"))
+					{
+						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
+						break;
+					}
+				}
+				break;
+			}
+		}
+		return connection;
 	}
 
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException

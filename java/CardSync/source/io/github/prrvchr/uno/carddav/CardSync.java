@@ -105,7 +105,7 @@ implements XJob
 	public Object execute(NamedValue[] arguments)
 	{
 		System.out.println("CardSync.execute() 1");
-		DataBase database = new DataBase(_getConnection(arguments));
+		DataBase database = new DataBase(arguments);
 		try
 		{
 			System.out.println("CardSync.execute() 2");
@@ -133,30 +133,6 @@ implements XJob
 		}
 		System.out.println("CardSync.execute() 7");
 		return null;
-	}
-
-	private XConnection _getConnection(NamedValue[] arguments)
-	{
-		XConnection connection = null;
-		int i = arguments.length;
-		for (int j = 0; j < i; j++)
-		{
-			if (arguments[j].Name.equals("DynamicData"))
-			{
-				NamedValue[] data = (NamedValue[]) AnyConverter.toArray(arguments[j].Value);
-				int k = data.length;
-				for (int l = 0; l < k; l++)
-				{
-					if (data[l].Name.equals("Connection"))
-					{
-						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), data[l].Value);
-						break;
-					}
-				}
-				break;
-			}
-		}
-		return connection;
 	}
 
 	private void _syncCard(DataBase database, int id, String method, String data) throws IOException
