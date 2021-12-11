@@ -203,7 +203,7 @@ implements XJob
 		{
 			String street = address.getStreetAddress();
 			String city = address.getLocality();
-			System.out.println("CardSync._parseAddress() Street: " + street + " - City: " + city);
+			System.out.println("CardSync._parseAddresses() Street: " + street + " - City: " + city);
 		}
 	}
 
@@ -212,7 +212,7 @@ implements XJob
 		for (Email email: card.getEmails())
 		{
 			String value = email.getValue();
-			System.out.println("CardSync._parseEmail() " + value);
+			System.out.println("CardSync._parseEmails() " + value);
 		}
 	}
 
@@ -221,7 +221,7 @@ implements XJob
 		for (Telephone telephone: card.getTelephoneNumbers())
 		{
 			String value = telephone.getText();
-			System.out.println("CardSync._parseTelephone() " + value);
+			System.out.println("CardSync._parseTelephones() " + value);
 		}
 	}
 
@@ -230,7 +230,7 @@ implements XJob
 		for (Title title: card.getTitles())
 		{
 			String value = title.getValue();
-			System.out.println("CardSync._parseTitle() " + value);
+			System.out.println("CardSync._parseTitles() " + value);
 		}
 	}
 
@@ -240,7 +240,7 @@ implements XJob
 		{
 			for (String category: categories.getValues())
 			{
-				System.out.println("CardSync._parseTitle() " + category);
+				System.out.println("CardSync._parseCategories() " + category);
 			}
 		}
 	}
