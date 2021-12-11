@@ -50,14 +50,14 @@ public final class DataBase
 {
 	private final XConnection m_xConnection;
 
+	public DataBase(NamedValue[] arguments)
+	{
+		this(_getConnection(arguments));
+	};
+
 	public DataBase(XConnection connection)
 	{
 		m_xConnection = connection;
-	};
-
-	public DataBase(NamedValue[] arguments)
-	{
-		m_xConnection = _getConnection(arguments);
 	};
 
 	public String getUserName() throws SQLException
@@ -112,28 +112,6 @@ public final class DataBase
 	public int updateCard(int id)
 	{
 		return 1;
-	}
-
-	private XConnection _getConnection(NamedValue[] arguments)
-	{
-		XConnection connection = null;
-		for (NamedValue argument: arguments)
-		{
-			if (argument.Name.equals("DynamicData"))
-			{
-				NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
-				for (NamedValue value: values)
-				{
-					if (value.Name.equals("Connection"))
-					{
-						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
-						break;
-					}
-				}
-				break;
-			}
-		}
-		return connection;
 	}
 
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
@@ -231,6 +209,28 @@ public final class DataBase
 	{
 		XCloseable closeable = (XCloseable)UnoRuntime.queryInterface(XCloseable.class, call);
 		closeable.close();
+	}
+
+	private static XConnection _getConnection(NamedValue[] arguments)
+	{
+		XConnection connection = null;
+		for (NamedValue argument: arguments)
+		{
+			if (argument.Name.equals("DynamicData"))
+			{
+				NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
+				for (NamedValue value: values)
+				{
+					if (value.Name.equals("Connection"))
+					{
+						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
+						break;
+					}
+				}
+				break;
+			}
+		}
+		return connection;
 	}
 
 

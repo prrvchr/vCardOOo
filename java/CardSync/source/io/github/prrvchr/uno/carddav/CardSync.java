@@ -43,11 +43,8 @@ import ezvcard.property.VCardProperty;
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
-import com.sun.star.uno.AnyConverter;
-import com.sun.star.uno.Type;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
-import com.sun.star.sdbc.XConnection;
 import com.sun.star.task.XJob;
 import com.sun.star.util.DateTime;
 
@@ -117,12 +114,10 @@ implements XJob
 			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
 			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));
 			System.out.println("CardSync.execute() 5");
-			for (Map<String, Object> card: database.getChangedCards(first, last))
+			for (Map<String, Object> result: database.getChangedCards(first, last))
 			{
-				int id = (int) card.get("Card");
-				String method = (String) card.get("Method");
-				String data = (String) card.get("Data");
-				_syncCard(database, id, method, data);
+				String method = (String) result.get("Method");
+				if (!method.equals("Deleted")) _parseCard(database, result, method);
 			}
 			System.out.println("CardSync.execute() 6");
 		}
@@ -135,45 +130,32 @@ implements XJob
 		return null;
 	}
 
-	private void _syncCard(DataBase database, int id, String method, String data) throws IOException
+	private void _parseCard(DataBase database, Map<String, Object> result, String method) throws IOException
 	{
-		@SuppressWarnings("unused")
-		int deleted = 0;
-		@SuppressWarnings("unused")
-		int updated = 0;
-		@SuppressWarnings("unused")
-		int inserted = 0;
-		if (!method.equals("Deleted"))
-		{
-			_parseCard(id, method, data);
-		}
-	}
-
-	private void _parseCard(int id, String method, String data) throws IOException
-	{
+		String data = (String) result.get("Data");
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
-			if ("FN".equals(name)) _parseFormattedName(card, id, method);
-			else if ("ADR".equals(name)) _parseAddresses(card, id, method);
-			else if ("EMAIL".equals(name)) _parseEmails(card, id, method);
-			else if ("TEL".equals(name)) _parseTelephones(card, id, method);
-			else if ("TITLE".equals(name)) _parseTitles(card, id, method);
-			else if ("CATEGORIES".equals(name)) _parseCategories(card, id, method);
+			if ("FN".equals(name)) _parseFormattedName(card, result, method);
+			else if ("ADR".equals(name)) _parseAddresses(card, result, method);
+			else if ("EMAIL".equals(name)) _parseEmails(card, result, method);
+			else if ("TEL".equals(name)) _parseTelephones(card, result, method);
+			else if ("TITLE".equals(name)) _parseTitles(card, result, method);
+			else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
 			else System.out.println("CardSync._parseCard() " + name);
 		}
 	}
 
-	private void _parseFormattedName(VCard card, int id, String method)
+	private void _parseFormattedName(VCard card, Map<String, Object> result, String method)
 	{
 
 		String name = card.getFormattedName().getValue();
 		System.out.println("CardSync._parseFormattedName() '" + name + "'");
 	}
 
-	private void _parseAddresses(VCard card, int id, String method)
+	private void _parseAddresses(VCard card, Map<String, Object> result, String method)
 	{
 		for (Address address: card.getAddresses())
 		{
@@ -183,7 +165,7 @@ implements XJob
 		}
 	}
 
-	private void _parseEmails(VCard card, int id, String method)
+	private void _parseEmails(VCard card, Map<String, Object> result, String method)
 	{
 		for (Email email: card.getEmails())
 		{
@@ -192,7 +174,7 @@ implements XJob
 		}
 	}
 
-	private void _parseTelephones(VCard card, int id, String method)
+	private void _parseTelephones(VCard card, Map<String, Object> result, String method)
 	{
 		for (Telephone telephone: card.getTelephoneNumbers())
 		{
@@ -201,7 +183,7 @@ implements XJob
 		}
 	}
 
-	private void _parseTitles(VCard card, int id, String method)
+	private void _parseTitles(VCard card, Map<String, Object> result, String method)
 	{
 		for (Title title: card.getTitles())
 		{
@@ -210,15 +192,18 @@ implements XJob
 		}
 	}
 
-	private void _parseCategories(VCard card, int id, String method)
+	private void _parseCategories(DataBase database, VCard card, Map<String, Object> result, String method)
 	{
 		for (Categories categories: card.getCategoriesList())
 		{
 			for (String category: categories.getValues())
 			{
-				System.out.println("CardSync._parseCategories() " + category);
+				//database.updateGroup(category, card);
+				int user = (int) result.get("User");
+				System.out.println("CardSync._parseCategories() User: " + user + " - Group: " + category);
 			}
 		}
 	}
+
 
 }

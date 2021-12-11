@@ -585,22 +585,25 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
+      (SELECT U."User",P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF FIRST AS P
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C
-        ON P."Card" = C."Card"
+      JOIN "Addressbooks" AS A ON P."Addressbook"=A."Addressbook"
+      JOIN "Users" AS U ON A."User"=U."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       UNION
-      (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
+      (SELECT U."User",C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST AS P
-        ON C."Card"=P."Card"
+      JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
+      JOIN "Users" AS U ON A."User"=U."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST AS P ON C."Card"=P."Card"
       WHERE P."Card" IS NULL)
       UNION
-      (SELECT C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
+      (SELECT U."User",C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST TO LAST AS P
-        ON C."Card" = P."Card" AND C."Start" = P."Stop")
+      JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
+      JOIN "Users" AS U ON A."User"=U."User"
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST TO LAST AS P ON C."Card"=P."Card" AND C."Start"=P."Stop")
       ORDER BY "Order"
       FOR READ ONLY;
     SET FIRST = CURRENT_TIMESTAMP - 1 YEAR;
