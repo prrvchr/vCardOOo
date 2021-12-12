@@ -28,14 +28,20 @@ package io.github.prrvchr.uno.carddav;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.parameter.EmailType;
+import ezvcard.parameter.TelephoneType;
 import ezvcard.property.Address;
 import ezvcard.property.Categories;
 import ezvcard.property.Email;
+import ezvcard.property.FormattedName;
+import ezvcard.property.Organization;
+import ezvcard.property.StructuredName;
 import ezvcard.property.Telephone;
 import ezvcard.property.Title;
 import ezvcard.property.VCardProperty;
@@ -101,25 +107,22 @@ implements XJob
 	// com.sun.star.task.XJob:
 	public Object execute(NamedValue[] arguments)
 	{
-		System.out.println("CardSync.execute() 1");
 		DataBase database = new DataBase(arguments);
 		try
 		{
-			System.out.println("CardSync.execute() 2");
 			String name = database.getUserName();
-			System.out.println("CardSync.execute() 3");
 			String version = database.getDriverVersion();
-			System.out.println("CardSync.execute() 4 Name: " + name + " - Version: " + version);
+			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
 			long ts = System.currentTimeMillis();
 			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
 			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));
-			System.out.println("CardSync.execute() 5");
+			System.out.println("CardSync.execute() 2");
 			for (Map<String, Object> result: database.getChangedCards(first, last))
 			{
 				String method = (String) result.get("Method");
 				if (!method.equals("Deleted")) _parseCard(database, result, method);
 			}
-			System.out.println("CardSync.execute() 6");
+			System.out.println("CardSync.execute() 3");
 		}
 		catch (Exception e)
 		{
@@ -138,9 +141,11 @@ implements XJob
 		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
-			if ("FN".equals(name)) _parseFormattedName(card, result, method);
-			else if ("ADR".equals(name)) _parseAddresses(card, result, method);
+			if ("FN".equals(name)) _parseFormattedNames(card, result, method);
+			else if ("N".equals(name)) _parseStructuredNames(card, result, method);
 			else if ("EMAIL".equals(name)) _parseEmails(card, result, method);
+			else if ("ORG".equals(name)) _parseOrganizations(card, result, method);
+			else if ("ADR".equals(name)) _parseAddresses(card, result, method);
 			else if ("TEL".equals(name)) _parseTelephones(card, result, method);
 			else if ("TITLE".equals(name)) _parseTitles(card, result, method);
 			else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
@@ -148,11 +153,47 @@ implements XJob
 		}
 	}
 
-	private void _parseFormattedName(VCard card, Map<String, Object> result, String method)
+	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)
 	{
+		for (FormattedName name: card.getFormattedNames())
+		{
+			
+			String fullname = name.getValue();
+			System.out.println("CardSync._parseFormattedNames() '" + fullname + "'");
+		}
+	}
 
-		String name = card.getFormattedName().getValue();
-		System.out.println("CardSync._parseFormattedName() '" + name + "'");
+	private void _parseStructuredNames(VCard card, Map<String, Object> result, String method)
+	{
+		for (StructuredName name: card.getStructuredNames())
+		{
+			String firstname = name.getGiven();
+			String lastname = name.getFamily();
+			System.out.println("CardSync._parseStructuredNames() Fisrt Name: " + firstname + " - Last Name: " + lastname);
+		}
+	}
+
+	private void _parseEmails(VCard card, Map<String, Object> result, String method)
+	{
+		for (Email email: card.getEmails())
+		{
+			String value = email.getValue();
+			for (EmailType type: email.getTypes())
+			{
+				System.out.println("CardSync._parseEmails() N°: " + value + " - Type: " + type.getValue());
+			}
+		}
+	}
+
+	private void _parseOrganizations(VCard card, Map<String, Object> result, String method)
+	{
+		for (Organization organization: card.getOrganizations())
+		{
+			for (String value: organization.getValues())
+			{
+				System.out.println("CardSync._parseOrganizations() " + value);
+			}
+		}
 	}
 
 	private void _parseAddresses(VCard card, Map<String, Object> result, String method)
@@ -165,21 +206,15 @@ implements XJob
 		}
 	}
 
-	private void _parseEmails(VCard card, Map<String, Object> result, String method)
-	{
-		for (Email email: card.getEmails())
-		{
-			String value = email.getValue();
-			System.out.println("CardSync._parseEmails() " + value);
-		}
-	}
-
 	private void _parseTelephones(VCard card, Map<String, Object> result, String method)
 	{
 		for (Telephone telephone: card.getTelephoneNumbers())
 		{
 			String value = telephone.getText();
-			System.out.println("CardSync._parseTelephones() " + value);
+			for (TelephoneType type: telephone.getTypes())
+			{
+				System.out.println("CardSync._parseTelephones() N°: " + value + " - Type: " + type.getValue());
+			}
 		}
 	}
 
