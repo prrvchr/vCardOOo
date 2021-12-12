@@ -146,14 +146,13 @@ def getTablesAndStatements(ctx, connection, version=g_version):
             view = data.getValue('View')
             versioned = data.getValue('Versioned')
             column = data.getValue('Column')
-            definition = '"%s"' % column
-            definition += ' %s' % data.getValue('Type')
-            lenght = data.getValue('Lenght')
-            definition += '(%s)' % lenght if lenght else ''
+            definition = '"%s" %s' % (column, data.getValue('Type'))
             default = data.getValue('Default')
-            definition += ' DEFAULT %s' % default if default else ''
+            if default:
+                definition += ' DEFAULT %s' % default
             options = data.getValue('Options')
-            definition += ' %s' % options if options else ''
+            if options:
+                definition += ' %s' % options
             columns.append(definition)
             if data.getValue('Primary'):
                 primary.append('"%s"' % column)
