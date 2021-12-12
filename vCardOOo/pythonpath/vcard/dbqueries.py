@@ -61,20 +61,19 @@ def getSqlQuery(ctx, name, format=None):
     elif name == 'createTableTableColumn':
         c1 = '"Table" INTEGER NOT NULL'
         c2 = '"Column" INTEGER NOT NULL'
-        c3 = '"TypeName" VARCHAR(100) NOT NULL'
-        c4 = '"TypeLenght" BIGINT DEFAULT NULL'
-        c5 = '"Default" VARCHAR(100) DEFAULT NULL'
-        c6 = '"Options" VARCHAR(100) DEFAULT NULL'
-        c7 = '"Primary" BOOLEAN NOT NULL'
-        c8 = '"Unique" BOOLEAN NOT NULL'
-        c9 = '"ForeignTable" INTEGER DEFAULT NULL'
-        c10 = '"ForeignColumn" INTEGER DEFAULT NULL'
+        c3 = '"Type" VARCHAR(100) NOT NULL'
+        c4 = '"Default" VARCHAR(100) DEFAULT NULL'
+        c5 = '"Options" VARCHAR(100) DEFAULT NULL'
+        c6 = '"Primary" BOOLEAN NOT NULL'
+        c7 = '"Unique" BOOLEAN NOT NULL'
+        c8 = '"ForeignTable" INTEGER DEFAULT NULL'
+        c9 = '"ForeignColumn" INTEGER DEFAULT NULL'
         k1 = 'PRIMARY KEY("Table","Column")'
         k2 = 'CONSTRAINT "ForeignTableColumnTable" FOREIGN KEY("Table") REFERENCES '
         k2 += '"Tables"("Table") ON DELETE CASCADE ON UPDATE CASCADE'
         k3 = 'CONSTRAINT "ForeignTableColumnColumn" FOREIGN KEY("Column") REFERENCES '
         k3 += '"Columns"("Column") ON DELETE CASCADE ON UPDATE CASCADE'
-        c = (c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, k1, k2, k3)
+        c = (c1, c2, c3, c4, c5, c6, c7, c8, c9, k1, k2, k3)
         query = 'CREATE TEXT TABLE IF NOT EXISTS "TableColumn"(%s)' % ','.join(c)
 
     elif name == 'createTableSettings':

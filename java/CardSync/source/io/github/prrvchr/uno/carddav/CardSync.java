@@ -28,7 +28,6 @@ package io.github.prrvchr.uno.carddav;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
