@@ -27,7 +27,6 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
@@ -54,7 +53,6 @@ import com.sun.star.task.XJob;
 import com.sun.star.util.DateTime;
 
 import io.github.prrvchr.uno.lang.ServiceComponent;
-import io.github.prrvchr.uno.helper.UnoHelper;
 
 
 public final class CardSync
@@ -112,11 +110,11 @@ implements XJob
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
-			long ts = System.currentTimeMillis();
-			DateTime first = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts - 100000000));
-			DateTime last = UnoHelper.getUnoDateTime(new DateTime(), new Timestamp(ts));
+			//long ts = System.currentTimeMillis();
+			DateTime first = database.getFirstTimestamp();
+			//DateTime last = UnoHelper.getUnoDateTime(new Timestamp(ts));
 			System.out.println("CardSync.execute() 2");
-			for (Map<String, Object> result: database.getChangedCards(first, last))
+			for (Map<String, Object> result: database.getChangedCards(first))
 			{
 				String method = (String) result.get("Method");
 				if (!method.equals("Deleted")) _parseCard(database, result, method);

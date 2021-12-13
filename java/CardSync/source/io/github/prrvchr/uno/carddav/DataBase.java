@@ -48,7 +48,7 @@ import com.sun.star.util.DateTime;
 
 public final class DataBase
 {
-	private final XConnection m_xConnection;
+	private XConnection m_xConnection;
 
 	public DataBase(NamedValue[] arguments)
 	{
@@ -70,7 +70,23 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	public List<Map<String, Object>> getChangedCards(DateTime first, DateTime last) throws SQLException
+	public DateTime getFirstTimestamp() throws SQLException
+	{
+		DateTime timestamp = new DateTime();
+		String query = "SELECT \"Modified\" FROM \"Users\" WHERE \"User\"=?";
+		XPreparedStatement call = m_xConnection.prepareStatement(query);
+		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+		parameters.setInt(1, 0);
+		XResultSet result = call.executeQuery();
+		if(result != null && result.next())
+		{
+			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
+			timestamp = row.getTimestamp(1);
+		}
+		return timestamp;
+	}
+	
+	public List<Map<String, Object>> getChangedCards(DateTime first) throws SQLException
 	{
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
@@ -81,7 +97,7 @@ public final class DataBase
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
 			parameters.setTimestamp(1, first);
-			parameters.setTimestamp(2, last);
+			parameters.setTimestamp(2, first);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
