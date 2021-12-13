@@ -49,6 +49,7 @@ import com.sun.star.util.DateTime;
 public final class DataBase
 {
 	private XConnection m_xConnection;
+	private DateTime m_timestamp;
 
 	public DataBase(NamedValue[] arguments)
 	{
@@ -70,7 +71,7 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	public DateTime getFirstTimestamp() throws SQLException
+	private DateTime _getTimestamp() throws SQLException
 	{
 		DateTime timestamp = new DateTime();
 		String query = "SELECT \"Modified\" FROM \"Users\" WHERE \"User\"=?";
@@ -86,8 +87,19 @@ public final class DataBase
 		return timestamp;
 	}
 	
-	public List<Map<String, Object>> getChangedCards(DateTime first) throws SQLException
+	public void setTimestamp() throws SQLException
 	{
+		String query = "UPDATE \"Users\" SET \"Modified\"=? WHERE \"User\"=?";
+		XPreparedStatement call = m_xConnection.prepareStatement(query);
+		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+		parameters.setTimestamp(1, m_timestamp);
+		parameters.setInt(2, 0);
+		call.executeUpdate();
+	}
+	
+	public List<Map<String, Object>> getChangedCards() throws SQLException
+	{
+		DateTime timestamp = _getTimestamp();
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
@@ -96,16 +108,16 @@ public final class DataBase
 			System.out.println("DataBase.getChangedCards() 2");
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
-			parameters.setTimestamp(1, first);
-			parameters.setTimestamp(2, first);
+			parameters.setTimestamp(1, timestamp);
+			parameters.setTimestamp(2, timestamp);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
-			DateTime updated = row.getTimestamp(2);
-			System.out.println("DataBase.getChangedCards() 5 " + updated);
+			m_timestamp = row.getTimestamp(2);
+			System.out.println("DataBase.getChangedCards() 5 " + m_timestamp);
 			maps = _getResult(result);
 			_closeCall(call);
-			System.out.println("DataBase.getChangedCards() 6 " + updated);
+			System.out.println("DataBase.getChangedCards() 6 " + m_timestamp);
 		}
 		catch (Exception e)
 		{

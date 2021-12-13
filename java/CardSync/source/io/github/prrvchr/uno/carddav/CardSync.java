@@ -110,23 +110,20 @@ implements XJob
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
-			//long ts = System.currentTimeMillis();
-			DateTime first = database.getFirstTimestamp();
-			//DateTime last = UnoHelper.getUnoDateTime(new Timestamp(ts));
-			System.out.println("CardSync.execute() 2");
-			for (Map<String, Object> result: database.getChangedCards(first))
+			for (Map<String, Object> result: database.getChangedCards())
 			{
 				String method = (String) result.get("Method");
 				if (!method.equals("Deleted")) _parseCard(database, result, method);
 			}
-			System.out.println("CardSync.execute() 3");
+			database.setTimestamp();
+			System.out.println("CardSync.execute() 2");
 		}
 		catch (Exception e)
 		{
 			System.out.println("Error happened: " + e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("CardSync.execute() 7");
+		System.out.println("CardSync.execute() 3");
 		return null;
 	}
 
