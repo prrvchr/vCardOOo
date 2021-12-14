@@ -168,9 +168,9 @@ def getSqlQuery(ctx, name, format=None):
         query = 'CREATE CACHED TABLE IF NOT EXISTS "%s"(%s)' % format
 
     elif name == 'getPeriodColumns':
-        query = '"Start" TIMESTAMP GENERATED ALWAYS AS ROW START,'
-        query += '"Stop" TIMESTAMP GENERATED ALWAYS AS ROW END,'
-        query += 'PERIOD FOR SYSTEM_TIME("Start","Stop")'
+        query = '"RowStart" TIMESTAMP(6) WITH TIME ZONE GENERATED ALWAYS AS ROW START,'
+        query += '"RowEnd" TIMESTAMP(6) WITH TIME ZONE GENERATED ALWAYS AS ROW END,'
+        query += 'PERIOD FOR SYSTEM_TIME("RowStart","RowEnd")'
 
     elif name == 'getSystemVersioning':
         query = ' WITH SYSTEM VERSIONING'
