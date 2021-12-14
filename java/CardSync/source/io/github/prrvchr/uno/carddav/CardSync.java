@@ -50,7 +50,6 @@ import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.task.XJob;
-import com.sun.star.util.DateTime;
 
 import io.github.prrvchr.uno.lang.ServiceComponent;
 

@@ -100,10 +100,10 @@ public final class DataBase
 	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
 		DateTime timestamp = _getTimestamp();
+		printTimestamp("DataBase", "getChangedCards", 1, timestamp);
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
-			System.out.println("DataBase.getChangedCards() 1");
 			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
 			System.out.println("DataBase.getChangedCards() 2");
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
@@ -114,19 +114,24 @@ public final class DataBase
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
 			m_timestamp = row.getTimestamp(2);
-			System.out.println("DataBase.getChangedCards() 5 " + m_timestamp);
+			printTimestamp("DataBase", "getChangedCards", 5, m_timestamp);
 			maps = _getResult(result);
 			_closeCall(call);
-			System.out.println("DataBase.getChangedCards() 6 " + m_timestamp);
 		}
 		catch (Exception e)
 		{
 			System.out.println("Error happened: " + e.getMessage());
 			e.printStackTrace();
 		}
+		System.out.println("DataBase.getChangedCards() 6");
 		return maps;
 	}
 
+	public void printTimestamp(String clazz, String method, int num, DateTime timestamp)
+	{
+		System.out.println(clazz + "." + method + "() " + num + " Timestamp: " + timestamp.Year + "-" + timestamp.Month + "-" + timestamp.Day + "T" + timestamp.Hours + ":" + timestamp.Minutes + ":" + timestamp.Seconds + "." + timestamp.NanoSeconds + "Z");
+	}
+	
 	public int deleteCard(int id)
 	{
 		return 1;
