@@ -583,21 +583,21 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(9),
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT U."User",P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
+      (SELECT U."User",P."Card",NULL AS "Data",'Deleted' AS "Method",P."RowEnd" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
       JOIN "Addressbooks" AS A ON P."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       UNION
-      (SELECT U."User",C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
+      (SELECT U."User",C."Card",C."Data",'Inserted' AS "Method",C."RowStart" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
       JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P ON C."Card"=P."Card"
       WHERE P."Card" IS NULL)
       UNION
-      (SELECT U."User",C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
+      (SELECT U."User",C."Card",C."Data",'Updated' AS "Method",P."RowEnd" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
       JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
