@@ -112,6 +112,7 @@ public class UnoHelper
 		return info;
 	}
 
+
 	public static Properties getConnectionProperties(PropertyValue[] infos)
 	{
 		System.out.println("UnoHelper.getProperties() 1 ");
@@ -266,26 +267,7 @@ public class UnoHelper
 		return value;
 	}
 
-<<<<<<< HEAD
-	@SuppressWarnings("deprecation")
-	public static DateTime getUnoDateTime(java.sql.Timestamp timestamp)
-	{
-		DateTime value = new DateTime();
-		value.Day = (short) timestamp.getDay();
-		value.Month = (short) timestamp.getMonth();
-		value.Year = (short) timestamp.getYear();
-		value.Hours = (short) timestamp.getHours();
-		value.Minutes = (short) timestamp.getMinutes();
-		value.Seconds =  (short) timestamp.getSeconds();
-		value.NanoSeconds = timestamp.getNanos();
-		return value;
-	}
-	
-	
-	@SuppressWarnings("deprecation")
-=======
 
->>>>>>> refs/subrepo/uno/fetch
 	public static java.sql.Timestamp getJavaDateTime(DateTime timestamp)
 	{
 		LocalDateTime localdatetime = LocalDateTime.of(timestamp.Year, timestamp.Month, timestamp.Day, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, timestamp.NanoSeconds);
