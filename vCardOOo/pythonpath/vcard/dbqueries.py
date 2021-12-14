@@ -576,8 +576,8 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
-                                      OUT LAST TIMESTAMP(6))
+CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(9),
+                                      OUT LAST TIMESTAMP(9))
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
@@ -587,24 +587,24 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
       FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
       JOIN "Addressbooks" AS A ON P."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(6) + SESSION_TIMEZONE() AS C ON P."Card" = C."Card"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C ON P."Card" = C."Card"
       WHERE C."Card" IS NULL)
       UNION
       (SELECT U."User",C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(6) + SESSION_TIMEZONE() AS C
+      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
       JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P ON C."Card"=P."Card"
       WHERE P."Card" IS NULL)
       UNION
       (SELECT U."User",C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(6) + SESSION_TIMEZONE() AS C
+      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
       JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
       JOIN "Users" AS U ON A."User"=U."User"
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LOCALTIMESTAMP(6) + SESSION_TIMEZONE() AS P ON C."Card"=P."Card" AND C."Start"=P."Stop")
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS P ON C."Card"=P."Card" AND C."Start"=P."Stop")
       ORDER BY "Order"
       FOR READ ONLY;
-    SET LAST = LOCALTIMESTAMP(6);
+    SET LAST = LOCALTIMESTAMP(9);
     OPEN RSLT;
   END"""
 
