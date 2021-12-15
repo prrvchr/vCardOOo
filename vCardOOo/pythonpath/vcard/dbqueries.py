@@ -576,65 +576,38 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(9),
-                                      OUT LAST TIMESTAMP(9))
-  SPECIFIC "SelectChangedCards_1"
-  READS SQL DATA
-  DYNAMIC RESULT SETS 1
-  BEGIN ATOMIC
-    DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT U."User",P."Card",NULL AS "Data",'Deleted' AS "Method",P."RowEnd" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
-      JOIN "Addressbooks" AS A ON P."Addressbook"=A."Addressbook"
-      JOIN "Users" AS U ON A."User"=U."User"
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C ON P."Card" = C."Card"
-      WHERE C."Card" IS NULL)
-      UNION
-      (SELECT U."User",C."Card",C."Data",'Inserted' AS "Method",C."RowStart" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
-      JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
-      JOIN "Users" AS U ON A."User"=U."User"
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P ON C."Card"=P."Card"
-      WHERE P."Card" IS NULL)
-      UNION
-      (SELECT U."User",C."Card",C."Data",'Updated' AS "Method",P."RowEnd" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS C
-      JOIN "Addressbooks" AS A ON C."Addressbook"=A."Addressbook"
-      JOIN "Users" AS U ON A."User"=U."User"
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LOCALTIMESTAMP(9) + SESSION_TIMEZONE() AS P ON C."Card"=P."Card" AND C."RowStart"=P."RowEnd")
-      ORDER BY "Order"
-      FOR READ ONLY;
-    SET LAST = LOCALTIMESTAMP(9);
-    OPEN RSLT;
-  END"""
-
-    elif name == 'createSelectChangedCards1':
-        query = """\
 CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
-                                      IN LAST TIMESTAMP(6))
+                                      INOUT LAST TIMESTAMP(6))
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT C."Card",C."Data",'Updated' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST + SESSION_TIMEZONE() AS P
-        ON C."Card" = P."Card" AND C."Start" = P."Stop")
+      (SELECT U."User",P1."Card",NULL AS "Data",'Deleted' AS "Method",P1."RowEnd" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P1
+      JOIN "Addressbooks" AS A1 ON P1."Addressbook"=A1."Addressbook"
+      JOIN "Users" AS U1 ON A1."User"=U1."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C1
+        ON P1."Card" = C1."Card"
+      WHERE C1."Card" IS NULL)
       UNION
-      (SELECT C."Card",C."Data",'Inserted' AS "Method",C."Start" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
-        ON C."Card" = P."Card"
-      WHERE P."Card" IS NULL)
+      (SELECT U2."User",C2."Card",C2."Data",'Inserted' AS "Method",C2."RowStart" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C2
+      JOIN "Addressbooks" AS A2 ON C2."Addressbook"=A2."Addressbook"
+      JOIN "Users" AS U2 ON A2."User"=U2."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P2
+        ON C2."Card"=P2."Card"
+      WHERE P2."Card" IS NULL)
       UNION
-      (SELECT P."Card",NULL AS "Data",'Deleted' AS "Method",P."Stop" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C
-        ON P."Card" = C."Card"
-      WHERE C."Card" IS NULL)
+      (SELECT U3."User",C3."Card",C3."Data",'Updated' AS "Method",P3."RowEnd" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C3
+      JOIN "Addressbooks" AS A3 ON C3."Addressbook"=A3."Addressbook"
+      JOIN "Users" AS U3 ON A3."User"=U3."User"
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST + SESSION_TIMEZONE() AS P3
+        ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
+    SET LAST = LOCALTIMESTAMP(6);
     OPEN RSLT;
   END"""
 
