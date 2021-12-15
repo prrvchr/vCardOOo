@@ -26,6 +26,8 @@
 package io.github.prrvchr.uno.carddav;
 
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,8 @@ import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.util.DateTime;
+
+import io.github.prrvchr.uno.helper.UnoHelper;
 
 
 public final class DataBase
@@ -99,22 +103,23 @@ public final class DataBase
 	
 	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
-		DateTime timestamp = _getTimestamp();
-		printTimestamp("DataBase", "getChangedCards", 1, timestamp);
+		DateTime first = _getTimestamp();
+		DateTime last = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
+		printTimestamp("DataBase", "getChangedCards", 1, first);
+		printTimestamp("DataBase", "getChangedCards", 2, last);
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
 			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
-			System.out.println("DataBase.getChangedCards() 2");
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
-			parameters.setTimestamp(1, timestamp);
-			parameters.setTimestamp(2, timestamp);
+			parameters.setTimestamp(1, first);
+			parameters.setTimestamp(2, last);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
-			timestamp = row.getTimestamp(1);
-			printTimestamp("DataBase", "getChangedCards", 5, timestamp);
+			first = row.getTimestamp(1);
+			printTimestamp("DataBase", "getChangedCards", 5, first);
 			m_timestamp = row.getTimestamp(2);
 			printTimestamp("DataBase", "getChangedCards", 6, m_timestamp);
 			maps = _getResult(result);

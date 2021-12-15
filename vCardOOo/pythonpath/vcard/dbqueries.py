@@ -607,7 +607,6 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
         ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
-    SET LAST = CURRENT_TIMESTAMP;
     OPEN RSLT;
   END"""
 
