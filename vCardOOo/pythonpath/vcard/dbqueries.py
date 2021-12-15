@@ -576,7 +576,7 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
+CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
                                       INOUT LAST TIMESTAMP(6))
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
@@ -608,6 +608,7 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
       ORDER BY "Order"
       FOR READ ONLY;
     SET LAST = LOCALTIMESTAMP(6);
+    SET LAST = LOCALTIMESTAMP(6) - 5 MINUTE;
     OPEN RSLT;
   END"""
 

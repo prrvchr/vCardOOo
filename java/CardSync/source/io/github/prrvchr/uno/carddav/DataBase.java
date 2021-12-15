@@ -113,8 +113,10 @@ public final class DataBase
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
+			timestamp = row.getTimestamp(1);
+			printTimestamp("DataBase", "getChangedCards", 5, timestamp);
 			m_timestamp = row.getTimestamp(2);
-			printTimestamp("DataBase", "getChangedCards", 5, m_timestamp);
+			printTimestamp("DataBase", "getChangedCards", 6, m_timestamp);
 			maps = _getResult(result);
 			_closeCall(call);
 		}
@@ -123,7 +125,7 @@ public final class DataBase
 			System.out.println("Error happened: " + e.getMessage());
 			e.printStackTrace();
 		}
-		System.out.println("DataBase.getChangedCards() 6");
+		System.out.println("DataBase.getChangedCards() 7");
 		return maps;
 	}
 
