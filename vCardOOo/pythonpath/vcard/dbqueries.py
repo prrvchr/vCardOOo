@@ -587,12 +587,12 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
       FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P1
       JOIN "Addressbooks" AS A1 ON P1."Addressbook"=A1."Addressbook"
       JOIN "Users" AS U1 ON A1."User"=U1."User"
-      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C1
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C1
         ON P1."Card" = C1."Card"
       WHERE C1."Card" IS NULL)
       UNION
       (SELECT U2."User",C2."Card",C2."Data",'Inserted' AS "Method",C2."RowStart" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C2
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C2
       JOIN "Addressbooks" AS A2 ON C2."Addressbook"=A2."Addressbook"
       JOIN "Users" AS U2 ON A2."User"=U2."User"
       LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P2
@@ -600,15 +600,14 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
       WHERE P2."Card" IS NULL)
       UNION
       (SELECT U3."User",C3."Card",C3."Data",'Updated' AS "Method",P3."RowEnd" AS "Order"
-      FROM "Cards" FOR SYSTEM_TIME AS OF LAST + SESSION_TIMEZONE() AS C3
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C3
       JOIN "Addressbooks" AS A3 ON C3."Addressbook"=A3."Addressbook"
       JOIN "Users" AS U3 ON A3."User"=U3."User"
-      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST + SESSION_TIMEZONE() AS P3
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST + SESSION_TIMEZONE() TO LAST AS P3
         ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
-    SET LAST = LOCALTIMESTAMP;
-    SET FIRST = LAST - 2 MINUTE;
+    SET LAST = CURRENT_TIMESTAMP;
     OPEN RSLT;
   END"""
 
