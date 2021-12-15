@@ -109,6 +109,7 @@ public final class DataBase
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
 			parameters.setTimestamp(1, timestamp);
+			parameters.setTimestamp(2, timestamp);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
