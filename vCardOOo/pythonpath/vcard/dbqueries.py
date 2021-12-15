@@ -583,7 +583,7 @@ CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6),
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT U."User",P1."Card",NULL AS "Data",'Deleted' AS "Method",P1."RowEnd" AS "Order"
+      (SELECT U1."User",P1."Card",NULL AS "Data",'Deleted' AS "Method",P1."RowEnd" AS "Order"
       FROM "Cards" FOR SYSTEM_TIME AS OF FIRST + SESSION_TIMEZONE() AS P1
       JOIN "Addressbooks" AS A1 ON P1."Addressbook"=A1."Addressbook"
       JOIN "Users" AS U1 ON A1."User"=U1."User"
