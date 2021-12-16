@@ -108,12 +108,12 @@ public final class DataBase
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
-			execute("DECLARE FIRST TIMESTAMP(6) WITH TIME ZONE DEFAULT NULL");
+			execute("DECLARE FIRST TIMESTAMP(6) WITH TIME ZONE DEFAULT NULL;");
 			System.out.println("DataBase.getChangedCards() 2");
-			execute("DECLARE LAST TIMESTAMP(6) WITH TIME ZONE DEFAULT NULL");
-			executeUpdate("CALL \"UpdateUser\"(FIRST, LAST)");
+			execute("DECLARE LAST TIMESTAMP(6) WITH TIME ZONE DEFAULT NULL;");
+			executeUpdate("CALL \"UpdateUser\"(FIRST, LAST);");
 			System.out.println("DataBase.getChangedCards() 3");
-			String query = "CALL \"SelectChangedCards\"(FIRST, LAST)";
+			String query = "CALL \"SelectChangedCards\"(FIRST, LAST);";
 			System.out.println("DataBase.getChangedCards() 4");
 			XPreparedStatement call = m_xConnection.prepareStatement(query);
 			XResultSet result = call.executeQuery();
