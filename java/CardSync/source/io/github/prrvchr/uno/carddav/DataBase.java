@@ -108,9 +108,9 @@ public final class DataBase
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
-			String query = "DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;\n"
-						 + "CALL \"UpdateUser\"(FIRST, LAST);\n"
-						 + "CALL \"SelectChangedCards\"(FIRST, LAST)";
+			execute("DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;");
+			executeUpdate("CALL \"UpdateUser\"(FIRST, LAST);");
+			String query =  "CALL \"SelectChangedCards\"(FIRST, LAST);";
 			XPreparedStatement call = m_xConnection.prepareStatement(query);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 2");
@@ -127,8 +127,20 @@ public final class DataBase
 		return maps;
 	}
 
+	public void execute(String query) throws SQLException
+	{
+		XPreparedStatement call = m_xConnection.prepareStatement(query);
+		call.execute();
+		_closeCall(call);
+	}
 
-
+	public void executeUpdate(String query) throws SQLException
+	{
+		XPreparedStatement call = m_xConnection.prepareStatement(query);
+		call.executeUpdate();
+		_closeCall(call);
+	}
+	
 	public List<Map<String, Object>> getChangedCards1() throws SQLException
 	{
 		DateTime first = _getTimestamp();
