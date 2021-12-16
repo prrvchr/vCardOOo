@@ -28,6 +28,7 @@ package io.github.prrvchr.uno.carddav;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,7 @@ public final class DataBase
 		DateTime last = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
 		printTimestamp("DataBase", "getChangedCards", 1, first);
 		printTimestamp("DataBase", "getChangedCards", 2, last);
+		String firstformated = 
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
@@ -152,6 +154,11 @@ public final class DataBase
 	public int updateCard(int id)
 	{
 		return 1;
+	}
+
+	private static DateTimeFormatter _getDateTimeFormatter()
+	{
+		return DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.nXXX");
 	}
 
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException

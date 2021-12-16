@@ -579,7 +579,7 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
 CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
                                       INOUT LAST TIMESTAMP(6))
   SPECIFIC "SelectChangedCards_1"
-  READS SQL DATA
+  MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
@@ -607,6 +607,8 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6),
         ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
+    UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
+    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
     OPEN RSLT;
   END"""
 
