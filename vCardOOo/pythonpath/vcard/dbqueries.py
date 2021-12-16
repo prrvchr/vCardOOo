@@ -582,11 +582,13 @@ CALL "SelectChangedCards"(FIRST, LAST)"""
 
     elif name == 'createUpdateUser':
         query = """\
-CREATE PROCEDURE "UpdateUser"()
+CREATE PROCEDURE "UpdateUser"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE,
+                              OUT LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "UpdateUser_1"
   MODIFIES SQL DATA
   BEGIN ATOMIC
     UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
+    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
   END"""
 
     elif name == 'createSelectChangedCards':
