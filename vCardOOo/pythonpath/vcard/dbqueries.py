@@ -593,8 +593,8 @@ CREATE PROCEDURE "UpdateUser"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE,
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
-                                      IN LAST TIMESTAMP(6) WITH TIME ZONE)
+CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                      INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedCards_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
