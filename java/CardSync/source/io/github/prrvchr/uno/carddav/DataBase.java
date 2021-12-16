@@ -109,14 +109,17 @@ public final class DataBase
 		try
 		{
 			execute("DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;");
+			System.out.println("DataBase.getChangedCards() 2");
 			executeUpdate("CALL \"UpdateUser\"(FIRST, LAST);");
-			String query =  "CALL \"SelectChangedCards\"(FIRST, LAST);";
+			System.out.println("DataBase.getChangedCards() 3");
+			String query = "CALL \"SelectChangedCards\"(FIRST, LAST);";
+			System.out.println("DataBase.getChangedCards() 4");
 			XPreparedStatement call = m_xConnection.prepareStatement(query);
 			XResultSet result = call.executeQuery();
-			System.out.println("DataBase.getChangedCards() 2");
+			System.out.println("DataBase.getChangedCards() 5");
 			maps = _getResult(result);
 			_closeCall(call);
-			System.out.println("DataBase.getChangedCards() 3");
+			System.out.println("DataBase.getChangedCards() 6");
 		}
 		catch (Exception e)
 		{
