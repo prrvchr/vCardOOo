@@ -108,9 +108,9 @@ public final class DataBase
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
-			String query = "DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;"
-						+ "CALL \"UpdateUser\"(FIRST, LAST);"
-						+ "CALL \"SelectChangedCards\"(FIRST, LAST)";
+			String query = "DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;\n"
+						 + "CALL \"UpdateUser\"(FIRST, LAST);\n"
+						 + "CALL \"SelectChangedCards\"(FIRST, LAST)";
 			XPreparedStatement call = m_xConnection.prepareStatement(query);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 2");
