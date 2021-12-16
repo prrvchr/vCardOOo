@@ -573,8 +573,59 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
     DELETE FROM "Cards" WHERE "Addressbook"=AID AND "Path" IN (UNNEST(URLS));
   END"""
 
+    elif name == 'getChangedCards':
+        query = """\
+CALL "UpdateUser"();
+DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;
+SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
+CALL "SelectChangedCards"(FIRST, LAST)"""
+
+    elif name == 'createUpdateUser':
+        query = """\
+CREATE PROCEDURE "UpdateUser"()
+  SPECIFIC "UpdateUser_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
+  END"""
 
     elif name == 'createSelectChangedCards':
+        query = """\
+CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                      IN LAST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "SelectChangedCards_1"
+  READS SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      (SELECT U1."User",P1."Card",NULL AS "Data",'Deleted' AS "Method",P1."RowEnd" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF FIRST AS P1
+      JOIN "Addressbooks" AS A1 ON P1."Addressbook"=A1."Addressbook"
+      JOIN "Users" AS U1 ON A1."User"=U1."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF LAST AS C1
+        ON P1."Card" = C1."Card"
+      WHERE C1."Card" IS NULL)
+      UNION
+      (SELECT U2."User",C2."Card",C2."Data",'Inserted' AS "Method",C2."RowStart" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C2
+      JOIN "Addressbooks" AS A2 ON C2."Addressbook"=A2."Addressbook"
+      JOIN "Users" AS U2 ON A2."User"=U2."User"
+      LEFT JOIN "Cards" FOR SYSTEM_TIME AS OF FIRST AS P2
+        ON C2."Card"=P2."Card"
+      WHERE P2."Card" IS NULL)
+      UNION
+      (SELECT U3."User",C3."Card",C3."Data",'Updated' AS "Method",P3."RowEnd" AS "Order"
+      FROM "Cards" FOR SYSTEM_TIME AS OF LAST AS C3
+      JOIN "Addressbooks" AS A3 ON C3."Addressbook"=A3."Addressbook"
+      JOIN "Users" AS U3 ON A3."User"=U3."User"
+      INNER JOIN "Cards" FOR SYSTEM_TIME FROM FIRST TO LAST AS P3
+        ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
+      ORDER BY "Order"
+      FOR READ ONLY;
+    OPEN RSLT;
+  END"""
+
+    elif name == 'createSelectChangedCards1':
         query = """\
 CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
                                       INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
@@ -609,6 +660,7 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
       FOR READ ONLY;
     UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
     SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
+    UPDATE "Users" SET "Created"=LAST WHERE "User"=0;
     OPEN RSLT;
   END"""
 

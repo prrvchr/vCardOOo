@@ -101,14 +101,41 @@ public final class DataBase
 		parameters.setInt(2, 0);
 		call.executeUpdate();
 	}
-	
+
 	public List<Map<String, Object>> getChangedCards() throws SQLException
+	{
+		System.out.println("DataBase.getChangedCards() 1");
+		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
+		try
+		{
+			String query = "CALL \"UpdateUser\"();\n"
+					+ "DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;\n"
+					+ "SET (FIRST, LAST) = (SELECT \"Created\", \"Modified\" FROM \"Users\" WHERE \"User\"=0);\n"
+					+ "CALL \"SelectChangedCards\"(FIRST, LAST)";
+			XPreparedStatement call = m_xConnection.prepareStatement(query);
+			XResultSet result = call.executeQuery();
+			System.out.println("DataBase.getChangedCards() 2");
+			maps = _getResult(result);
+			_closeCall(call);
+			System.out.println("DataBase.getChangedCards() 3");
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error happened: " + e.getMessage());
+			e.printStackTrace();
+		}
+		System.out.println("DataBase.getChangedCards() 7");
+		return maps;
+	}
+
+
+
+	public List<Map<String, Object>> getChangedCards1() throws SQLException
 	{
 		DateTime first = _getTimestamp();
 		DateTime last = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
 		printTimestamp("DataBase", "getChangedCards", 1, first);
 		printTimestamp("DataBase", "getChangedCards", 2, last);
-		String firstformated = 
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
