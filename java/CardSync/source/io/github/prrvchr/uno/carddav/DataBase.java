@@ -110,7 +110,7 @@ public final class DataBase
 		{
 			String query = "CALL \"UpdateUser\"()";
 			XPreparedStatement call = m_xConnection.prepareStatement(query);
-			call.executeQuery();
+			call.executeUpdate();
 			_closeCall(call);
 			query = "DECLARE FIRST, LAST TIMESTAMP(6) WITH TIME ZONE;\n"
 				+ "SET (FIRST, LAST) = (SELECT \"Created\", \"Modified\" FROM \"Users\" WHERE \"User\"=0);\n"
