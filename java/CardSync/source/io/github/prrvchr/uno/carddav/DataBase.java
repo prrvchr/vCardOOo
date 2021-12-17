@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.star.beans.NamedValue;
+import com.sun.star.sdbc.DataType;
 import com.sun.star.sdbc.SQLException;
 import com.sun.star.sdbc.XCloseable;
 import com.sun.star.sdbc.XConnection;
@@ -173,25 +174,16 @@ public final class DataBase
 	
 	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
-		DateTime first = _getTimestamp();
-		m_timestamp = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
-		printTimestamp("DataBase", "getChangedCards", 1, first);
-		printTimestamp("DataBase", "getChangedCards", 2, m_timestamp);
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
 			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
-			parameters.setTimestamp(1, first);
-			parameters.setTimestamp(2, m_timestamp);
+			parameters.setNull(1, DataType.TIMESTAMP);
+			parameters.setNull(2, DataType.TIMESTAMP);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
-			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);
-			first = row.getTimestamp(1);
-			printTimestamp("DataBase", "getChangedCards", 5, first);
-			m_timestamp = row.getTimestamp(2);
-			printTimestamp("DataBase", "getChangedCards", 6, m_timestamp);
 			maps = _getResult(result);
 			_closeCall(call);
 		}
@@ -203,6 +195,15 @@ public final class DataBase
 		System.out.println("DataBase.getChangedCards() 7");
 		return maps;
 	}
+
+
+	public void updateUser() throws SQLException
+	{
+		XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"()");
+		call.executeUpdate();
+		_closeCall(call);
+	}
+
 
 	public void printTimestamp(String clazz, String method, int num, DateTime timestamp)
 	{

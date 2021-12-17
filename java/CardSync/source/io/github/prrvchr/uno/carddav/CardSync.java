@@ -106,15 +106,19 @@ implements XJob
 		DataBase database = new DataBase(arguments);
 		try
 		{
+			boolean status = true;
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
 			for (Map<String, Object> result: database.getChangedCards())
 			{
 				String method = (String) result.get("Method");
-				if (!method.equals("Deleted")) _parseCard(database, result, method);
+				if (!method.equals("Deleted"))
+				{
+					status = _parseCard(database, result, method);
+				}
 			}
-			database.setTimestamp();
+			if (status) database.updateUser();
 			System.out.println("CardSync.execute() 2");
 		}
 		catch (Exception e)
@@ -126,7 +130,7 @@ implements XJob
 		return null;
 	}
 
-	private void _parseCard(DataBase database, Map<String, Object> result, String method) throws IOException
+	private boolean _parseCard(DataBase database, Map<String, Object> result, String method) throws IOException
 	{
 		String data = (String) result.get("Data");
 		VCard card = Ezvcard.parse(data).first();
@@ -144,6 +148,7 @@ implements XJob
 			else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
 			else System.out.println("CardSync._parseCard() " + name);
 		}
+		return true;
 	}
 
 	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)
