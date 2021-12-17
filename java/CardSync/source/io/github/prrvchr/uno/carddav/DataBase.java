@@ -109,24 +109,24 @@ public final class DataBase
 		try
 		{
 			String query = "(SELECT U1.\"User\",P1.\"Card\",NULL AS \"Data\",'Deleted' AS \"Method\",P1.\"RowEnd\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? AS P1\n"
+						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS P1\n"
 						+  "JOIN \"Addressbooks\" AS A1 ON P1.\"Addressbook\"=A1.\"Addressbook\"\n"
 						+  "JOIN \"Users\" AS U1 ON A1.\"User\"=U1.\"User\"\n"
-						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? AS C1 ON P1.\"Card\" = C1.\"Card\"\n"
+						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C1 ON P1.\"Card\" = C1.\"Card\"\n"
 						+  "WHERE C1.\"Card\" IS NULL)\n"
 						+  "UNION\n"
 						+  "(SELECT U2.\"User\",C2.\"Card\",C2.\"Data\",'Inserted' AS \"Method\",C2.\"RowStart\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? AS C2\n"
+						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C2\n"
 						+  "JOIN \"Addressbooks\" AS A2 ON C2.\"Addressbook\"=A2.\"Addressbook\"\n"
 						+  "JOIN \"Users\" AS U2 ON A2.\"User\"=U2.\"User\"\n"
-						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? AS P2 ON C2.\"Card\"=P2.\"Card\"\n"
+						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS P2 ON C2.\"Card\"=P2.\"Card\"\n"
 						+  "WHERE P2.\"Card\" IS NULL)\n"
 						+  "UNION\n"
 						+  "(SELECT U3.\"User\",C3.\"Card\",C3.\"Data\",'Updated' AS \"Method\",P3.\"RowEnd\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? AS C3\n"
+						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C3\n"
 						+  "JOIN \"Addressbooks\" AS A3 ON C3.\"Addressbook\"=A3.\"Addressbook\"\n"
 						+  "JOIN \"Users\" AS U3 ON A3.\"User\"=U3.\"User\"\n"
-						+  "INNER JOIN \"Cards\" FOR SYSTEM_TIME FROM ? TO ? AS P3 ON C3.\"Card\"=P3.\"Card\" AND C3.\"RowStart\"=P3.\"RowEnd\")\n"
+						+  "INNER JOIN \"Cards\" FOR SYSTEM_TIME FROM ? + SESSION_TIMEZONE() TO ? + SESSION_TIMEZONE() AS P3 ON C3.\"Card\"=P3.\"Card\" AND C3.\"RowStart\"=P3.\"RowEnd\")\n"
 						+  "ORDER BY \"Order\"";
 			DateTime first = _getTimestamp();
 			m_timestamp = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
