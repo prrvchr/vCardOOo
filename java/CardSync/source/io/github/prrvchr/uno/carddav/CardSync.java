@@ -114,7 +114,7 @@ implements XJob
 				String method = (String) result.get("Method");
 				if (!method.equals("Deleted")) _parseCard(database, result, method);
 			}
-			//database.setTimestamp();
+			database.setTimestamp();
 			System.out.println("CardSync.execute() 2");
 		}
 		catch (Exception e)
