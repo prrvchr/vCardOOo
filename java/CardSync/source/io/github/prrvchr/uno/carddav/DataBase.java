@@ -26,9 +26,6 @@
 package io.github.prrvchr.uno.carddav;
 
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,15 +44,11 @@ import com.sun.star.sdbc.XRow;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
-import com.sun.star.util.DateTime;
-
-import io.github.prrvchr.uno.helper.UnoHelper;
 
 
 public final class DataBase
 {
 	private XConnection m_xConnection;
-	private DateTime m_timestamp;
 
 	public DataBase(NamedValue[] arguments)
 	{
@@ -77,125 +70,18 @@ public final class DataBase
 		return m_xConnection.getMetaData().getDriverVersion();
 	}
 
-	private DateTime _getTimestamp() throws SQLException
-	{
-		DateTime timestamp = new DateTime();
-		String query = "SELECT \"Modified\" FROM \"Users\" WHERE \"User\"=?";
-		XPreparedStatement call = m_xConnection.prepareStatement(query);
-		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setInt(1, 0);
-		XResultSet result = call.executeQuery();
-		if(result != null && result.next())
-		{
-			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
-			timestamp = row.getTimestamp(1);
-		}
-		return timestamp;
-	}
-	
-	public void setTimestamp() throws SQLException
-	{
-		String query = "UPDATE \"Users\" SET \"Modified\"=? WHERE \"User\"=?";
-		XPreparedStatement call = m_xConnection.prepareStatement(query);
-		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setTimestamp(1, m_timestamp);
-		parameters.setInt(2, 0);
-		call.executeUpdate();
-	}
-
-	public List<Map<String, Object>> getChangedCards1() throws SQLException
-	{
-		System.out.println("DataBase.getChangedCards() 1");
-		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
-		try
-		{
-			String query = "(SELECT U1.\"User\",P1.\"Card\",NULL AS \"Data\",'Deleted' AS \"Method\",P1.\"RowEnd\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS P1\n"
-						+  "JOIN \"Addressbooks\" AS A1 ON P1.\"Addressbook\"=A1.\"Addressbook\"\n"
-						+  "JOIN \"Users\" AS U1 ON A1.\"User\"=U1.\"User\"\n"
-						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C1 ON P1.\"Card\" = C1.\"Card\"\n"
-						+  "WHERE C1.\"Card\" IS NULL)\n"
-						+  "UNION\n"
-						+  "(SELECT U2.\"User\",C2.\"Card\",C2.\"Data\",'Inserted' AS \"Method\",C2.\"RowStart\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C2\n"
-						+  "JOIN \"Addressbooks\" AS A2 ON C2.\"Addressbook\"=A2.\"Addressbook\"\n"
-						+  "JOIN \"Users\" AS U2 ON A2.\"User\"=U2.\"User\"\n"
-						+  "LEFT JOIN \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS P2 ON C2.\"Card\"=P2.\"Card\"\n"
-						+  "WHERE P2.\"Card\" IS NULL)\n"
-						+  "UNION\n"
-						+  "(SELECT U3.\"User\",C3.\"Card\",C3.\"Data\",'Updated' AS \"Method\",P3.\"RowEnd\" AS \"Order\"\n"
-						+  "FROM \"Cards\" FOR SYSTEM_TIME AS OF ? + SESSION_TIMEZONE() AS C3\n"
-						+  "JOIN \"Addressbooks\" AS A3 ON C3.\"Addressbook\"=A3.\"Addressbook\"\n"
-						+  "JOIN \"Users\" AS U3 ON A3.\"User\"=U3.\"User\"\n"
-						+  "INNER JOIN \"Cards\" FOR SYSTEM_TIME FROM ? + SESSION_TIMEZONE() TO ? + SESSION_TIMEZONE() AS P3 ON C3.\"Card\"=P3.\"Card\" AND C3.\"RowStart\"=P3.\"RowEnd\")\n"
-						+  "ORDER BY \"Order\"";
-			DateTime first = _getTimestamp();
-			m_timestamp = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
-			printTimestamp("DataBase", "getChangedCards", 2, first);
-			printTimestamp("DataBase", "getChangedCards", 3, m_timestamp);
-			XPreparedStatement call = m_xConnection.prepareStatement(query);
-			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
-			System.out.println("DataBase.getChangedCards() 4");
-			parameters.setTimestamp(1, first);
-			parameters.setTimestamp(2, m_timestamp);
-			parameters.setTimestamp(3, m_timestamp);
-			parameters.setTimestamp(4, first);
-			parameters.setTimestamp(5, m_timestamp);
-			parameters.setTimestamp(6, first);
-			parameters.setTimestamp(7, m_timestamp);
-			XResultSet result = call.executeQuery();
-			System.out.println("DataBase.getChangedCards() 5");
-			maps = _getResult(result);
-			_closeCall(call);
-			System.out.println("DataBase.getChangedCards() 6");
-		}
-		catch (Exception e)
-		{
-			System.out.println("Error happened: " + e.getMessage());
-			e.printStackTrace();
-		}
-		System.out.println("DataBase.getChangedCards() 7");
-		return maps;
-	}
-
-	public void execute(String query) throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareStatement(query);
-		call.execute();
-		_closeCall(call);
-	}
-
-	public void executeUpdate(String query) throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareStatement(query);
-		call.executeUpdate();
-		_closeCall(call);
-	}
-	
 	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
-		try
-		{
-			XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
-			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
-			System.out.println("DataBase.getChangedCards() 3");
-			parameters.setNull(1, DataType.TIMESTAMP);
-			parameters.setNull(2, DataType.TIMESTAMP);
-			XResultSet result = call.executeQuery();
-			System.out.println("DataBase.getChangedCards() 4");
-			maps = _getResult(result);
-			_closeCall(call);
-		}
-		catch (Exception e)
-		{
-			System.out.println("Error happened: " + e.getMessage());
-			e.printStackTrace();
-		}
-		System.out.println("DataBase.getChangedCards() 7");
+		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
+		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+		parameters.setNull(1, DataType.TIMESTAMP);
+		parameters.setNull(2, DataType.TIMESTAMP);
+		XResultSet result = call.executeQuery();
+		maps = _getResult(result);
+		_closeCall(call);
 		return maps;
 	}
-
 
 	public void updateUser() throws SQLException
 	{
@@ -204,12 +90,6 @@ public final class DataBase
 		_closeCall(call);
 	}
 
-
-	public void printTimestamp(String clazz, String method, int num, DateTime timestamp)
-	{
-		System.out.println(clazz + "." + method + "() " + num + " Timestamp: " + timestamp.Year + "-" + timestamp.Month + "-" + timestamp.Day + "T" + timestamp.Hours + ":" + timestamp.Minutes + ":" + timestamp.Seconds + "." + timestamp.NanoSeconds + "Z");
-	}
-	
 	public int deleteCard(int id)
 	{
 		return 1;
@@ -223,11 +103,6 @@ public final class DataBase
 	public int updateCard(int id)
 	{
 		return 1;
-	}
-
-	private static DateTimeFormatter _getDateTimeFormatter()
-	{
-		return DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss.nXXX");
 	}
 
 	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
@@ -258,66 +133,22 @@ public final class DataBase
 		return maps;
 	}
 
-	private static Object _getValueFromResult(XRow row, String dbtype, int index)
+	private static Object _getValueFromResult(XRow row, String dbtype, int index) throws SQLException
 	{
-		// TODO: 'TINYINT' is buggy: don't use it
 		Object value = null;
-		try
-		{
-			if (dbtype.equals("VARCHAR"))
-			{
-				value = row.getString(index);
-			}
-			else if (dbtype.equals("CHARACTER"))
-			{
-				value = row.getString(index);
-			}
-			else if (dbtype.equals("BOOLEAN"))
-			{
-				value = row.getBoolean(index);
-			}
-			else if (dbtype.equals("TINYINT"))
-			{
-				value = row.getShort(index);
-			}
-			else if (dbtype.equals("SMALLINT"))
-			{
-				value = row.getShort(index);
-			}
-			else if (dbtype.equals("INTEGER"))
-			{
-				value = row.getInt(index);
-			}
-			else if (dbtype.equals("BIGINT"))
-			{
-				value = row.getLong(index);
-			}
-			else if (dbtype.equals("FLOAT"))
-			{
-				value = row.getFloat(index);
-			}
-			else if (dbtype.equals("DOUBLE"))
-			{
-				value = row.getDouble(index);
-			}
-			else if (dbtype.startsWith("TIMESTAMP"))
-			{
-				value = row.getTimestamp(index);
-			}
-			else if (dbtype.equals("TIME"))
-			{
-				value = row.getTime(index);
-			}
-			else if (dbtype.equals("DATE"))
-			{
-				value = row.getDate(index);
-			}
-			if(row.wasNull())
-			{
-				value = null;
-			}
-		}
-		catch (SQLException e) {e.getStackTrace();}
+		if (dbtype.equals("VARCHAR")) value = row.getString(index);
+		else if (dbtype.equals("CHARACTER")) value = row.getString(index);
+		else if (dbtype.equals("BOOLEAN")) value = row.getBoolean(index);
+		else if (dbtype.equals("TINYINT")) value = row.getByte(index);
+		else if (dbtype.equals("SMALLINT")) value = row.getShort(index);
+		else if (dbtype.equals("INTEGER")) value = row.getInt(index);
+		else if (dbtype.equals("BIGINT")) value = row.getLong(index);
+		else if (dbtype.equals("FLOAT")) value = row.getFloat(index);
+		else if (dbtype.equals("DOUBLE")) value = row.getDouble(index);
+		else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
+		else if (dbtype.equals("TIME")) value = row.getTime(index);
+		else if (dbtype.equals("DATE")) value = row.getDate(index);
+		if(row.wasNull()) value = null;
 		return value;
 	}
 
