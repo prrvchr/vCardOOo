@@ -102,7 +102,7 @@ public final class DataBase
 		call.executeUpdate();
 	}
 
-	public List<Map<String, Object>> getChangedCards() throws SQLException
+	public List<Map<String, Object>> getChangedCards1() throws SQLException
 	{
 		System.out.println("DataBase.getChangedCards() 1");
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
@@ -171,12 +171,12 @@ public final class DataBase
 		_closeCall(call);
 	}
 	
-	public List<Map<String, Object>> getChangedCards1() throws SQLException
+	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
 		DateTime first = _getTimestamp();
-		DateTime last = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
+		m_timestamp = UnoHelper.getUnoDateTime(Timestamp.valueOf(LocalDateTime.now()));
 		printTimestamp("DataBase", "getChangedCards", 1, first);
-		printTimestamp("DataBase", "getChangedCards", 2, last);
+		printTimestamp("DataBase", "getChangedCards", 2, m_timestamp);
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		try
 		{
@@ -184,7 +184,7 @@ public final class DataBase
 			XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 			System.out.println("DataBase.getChangedCards() 3");
 			parameters.setTimestamp(1, first);
-			parameters.setTimestamp(2, last);
+			parameters.setTimestamp(2, m_timestamp);
 			XResultSet result = call.executeQuery();
 			System.out.println("DataBase.getChangedCards() 4");
 			XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, call);

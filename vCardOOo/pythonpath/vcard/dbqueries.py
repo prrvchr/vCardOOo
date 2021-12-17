@@ -582,13 +582,13 @@ CALL "SelectChangedCards"(FIRST, LAST)"""
 
     elif name == 'createUpdateUser':
         query = """\
-CREATE PROCEDURE "UpdateUser"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE,
-                              OUT LAST TIMESTAMP(6) WITH TIME ZONE)
+CREATE PROCEDURE "UpdateUser"()
   SPECIFIC "UpdateUser_1"
   MODIFIES SQL DATA
   BEGIN ATOMIC
-    UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
-    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
+    DECLARE FIRST TIMESTAMP(6) WITH TIME ZONE;
+    SET FIRST = (SELECT "Modified" FROM "Users" WHERE "User"=0);
+    UPDATE "Users" SET "Created"=FIRST WHERE "User"=0;
   END"""
 
     elif name == 'createSelectChangedCards':
@@ -596,7 +596,7 @@ CREATE PROCEDURE "UpdateUser"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE,
 CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
                                       INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedCards_1"
-  READS SQL DATA
+  MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
@@ -624,6 +624,8 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
         ON C3."Card"=P3."Card" AND C3."RowStart"=P3."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
+    UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
+    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
     OPEN RSLT;
   END"""
 
