@@ -697,7 +697,7 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
       JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
       LEFT JOIN "PropertyType" AS PT ON C."Property"=PT."Property"
       JOIN "Types" AS T ON PT."Type"=T."Type"
-      GROUP BY C."Value",C."Getter",P."Getter",PT."Group"
+      GROUP BY C."Value",C."Getter",P."Getter",PP."Column",PT."Group"
       FOR READ ONLY;
     OPEN RSLT;
   END"""
