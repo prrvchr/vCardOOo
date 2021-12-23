@@ -252,7 +252,7 @@ def getViewsAndTriggers(ctx, statement, name):
 def getStaticTables():
     tables = ('Tables',
               'Columns',
-              'TableColumn'
+              'TableColumn',
               'Properties',
               'Parameters',
               'Types',
