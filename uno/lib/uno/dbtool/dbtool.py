@@ -481,12 +481,13 @@ def getValueFromResult(result, index=1, default=None):
 
 def createStaticTable(ctx, statement, tables, readonly=False):
     for table in tables:
-        query = getSqlQuery(ctx, 'createTable' + table)
+        query = getSqlQuery(ctx, 'createTable' + table, table)
         statement.executeUpdate(query)
-    for table in tables:
-        statement.executeUpdate(getSqlQuery(ctx, 'setTableSource', table))
+        query = getSqlQuery(ctx, 'setTableSource', table)
+        statement.executeUpdate(query)
         if readonly:
-            statement.executeUpdate(getSqlQuery(ctx, 'setTableReadOnly', table))
+            query = getSqlQuery(ctx, 'setTableReadOnly', table)
+            statement.executeUpdate(query)
 
 def executeSqlQueries(statement, queries):
     for query in queries:

@@ -1,0 +1,9 @@
+Property|Value|Getter
+0|ADR|getAddresses
+1|CATEGORIES|getCategoriesList
+2|EMAIL|getEmails
+3|FN|getFormattedNames
+4|N|getStructuredNames
+5|ORG|getOrganizations
+6|TEL|getTelephoneNumbers
+7|TITLE|getTitles

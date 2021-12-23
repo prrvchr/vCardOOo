@@ -32,6 +32,7 @@ import java.util.Map;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.parameter.AddressType;
 import ezvcard.parameter.EmailType;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.property.Address;
@@ -176,9 +177,10 @@ implements XJob
 		for (Email email: card.getEmails())
 		{
 			String value = email.getValue();
+			System.out.println("CardSync._parseEmails() Email: " + value + " - Type: ");
 			for (EmailType type: email.getTypes())
 			{
-				System.out.println("CardSync._parseEmails() N°: " + value + " - Type: " + type.getValue());
+				System.out.print(" " + type.getValue());
 			}
 		}
 	}
@@ -200,7 +202,11 @@ implements XJob
 		{
 			String street = address.getStreetAddress();
 			String city = address.getLocality();
-			System.out.println("CardSync._parseAddresses() Street: " + street + " - City: " + city);
+			System.out.println("CardSync._parseAddresses() Street: " + street + " - City: " + city + " - Type: ");
+			for (AddressType type: address.getTypes())
+			{
+				System.out.print(" " + type.getValue());
+			}
 		}
 	}
 
@@ -209,9 +215,10 @@ implements XJob
 		for (Telephone telephone: card.getTelephoneNumbers())
 		{
 			String value = telephone.getText();
+			System.out.println("CardSync._parseTelephones() Tel: " + value + " - Type: ");
 			for (TelephoneType type: telephone.getTypes())
 			{
-				System.out.println("CardSync._parseTelephones() N°: " + value + " - Type: " + type.getValue());
+				System.out.print(" " + type.getValue());
 			}
 		}
 	}

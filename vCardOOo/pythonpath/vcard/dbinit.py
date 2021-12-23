@@ -252,7 +252,12 @@ def getViewsAndTriggers(ctx, statement, name):
 def getStaticTables():
     tables = ('Tables',
               'Columns',
-              'TableColumn')
+              'TableColumn'
+              'Properties',
+              'Parameters',
+              'Types',
+              'PropertyParameter',
+              'PropertyType')
     return tables
 
 def getQueries():
@@ -263,4 +268,5 @@ def getQueries():
             ('createDeleteCard', None),
             ('createUpdateUser', None),
             ('createSelectChangedCards', None),
-            ('insertSuperUser', g_superuser))
+            ('insertSuperUser', g_superuser),
+            ('createSelectAddressbookColumn', None))
