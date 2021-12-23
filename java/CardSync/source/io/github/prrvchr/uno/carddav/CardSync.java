@@ -27,6 +27,7 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
@@ -111,6 +112,8 @@ implements XJob
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
+			for (Map<String, Object> map: database.getAddressbookColumn())
+				System.out.println("CardSync.execute() 2 Map: " + map);
 			for (Map<String, Object> result: database.getChangedCards())
 			{
 				String method = (String) result.get("Method");
@@ -120,7 +123,7 @@ implements XJob
 				}
 			}
 			if (status) database.updateUser();
-			System.out.println("CardSync.execute() 2");
+			System.out.println("CardSync.execute() 3");
 		}
 		catch (Exception e)
 		{

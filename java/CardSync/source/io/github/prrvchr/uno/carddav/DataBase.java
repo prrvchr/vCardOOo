@@ -72,13 +72,12 @@ public final class DataBase
 
 	public List<Map<String, Object>> getChangedCards() throws SQLException
 	{
-		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
 		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 		parameters.setNull(1, DataType.TIMESTAMP);
 		parameters.setNull(2, DataType.TIMESTAMP);
 		XResultSet result = call.executeQuery();
-		maps = _getResult(result);
+		List<Map<String, Object>> maps = _getResult(result);
 		_closeCall(call);
 		return maps;
 	}
@@ -90,6 +89,16 @@ public final class DataBase
 		_closeCall(call);
 	}
 
+	public List<Map<String, Object>> getAddressbookColumn() throws SQLException
+	{
+		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
+		XResultSet result = call.executeQuery();
+		List<Map<String, Object>> maps = _getResult(result);
+		_closeCall(call);
+		return maps;
+	}
+
+	
 	public int deleteCard(int id)
 	{
 		return 1;
@@ -144,6 +153,7 @@ public final class DataBase
 		else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
 		else if (dbtype.equals("TIME")) value = row.getTime(index);
 		else if (dbtype.equals("DATE")) value = row.getDate(index);
+		else System.out.println("DataBase._getValueFromResult() " + dbtype);
 		if(row.wasNull()) value = null;
 		return value;
 	}
