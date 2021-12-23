@@ -482,7 +482,6 @@ def getValueFromResult(result, index=1, default=None):
 def createStaticTable(ctx, statement, tables, readonly=False):
     for table in tables:
         query = getSqlQuery(ctx, 'createTable' + table, table)
-        print("dbtool.createStaticTable():\n%s" % query)
         statement.executeUpdate(query)
         query = getSqlQuery(ctx, 'setTableSource', table)
         statement.executeUpdate(query)
