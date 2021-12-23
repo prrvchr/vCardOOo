@@ -689,7 +689,7 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
       SELECT C."Value",C."Typed",C."Getter" AS "GetProperty",P."Getter" AS "GetParameter",
-        GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR '') ||
+        COALESCE(GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR ''),'') ||
         COALESCE(PP."Column",'') AS "ColumnName",
         ARRAY_AGG(T."Value") AS "Type",
         ROWNUM() AS "ColumnId"
