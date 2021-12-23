@@ -12,6 +12,5 @@ Parameter|Getter
 10|getSuffixes
 11|getAdditionalNames
 12|getText
-13|getTypes
-14|getValue
-15|getValues
+13|getValue
+14|getValues

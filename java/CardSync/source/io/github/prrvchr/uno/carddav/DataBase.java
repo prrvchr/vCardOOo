@@ -153,6 +153,7 @@ public final class DataBase
 		else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
 		else if (dbtype.equals("TIME")) value = row.getTime(index);
 		else if (dbtype.equals("DATE")) value = row.getDate(index);
+		else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
 		else System.out.println("DataBase._getValueFromResult() " + dbtype);
 		if(row.wasNull()) value = null;
 		return value;

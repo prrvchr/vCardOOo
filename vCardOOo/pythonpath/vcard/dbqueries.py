@@ -86,7 +86,8 @@ def getSqlQuery(ctx, name, format=None):
         c1 = '"Property" INTEGER NOT NULL PRIMARY KEY'
         c2 = '"Value" VARCHAR(100) NOT NULL'
         c3 = '"Getter" VARCHAR(100) NOT NULL'
-        c = (c1, c2, c3)
+        c4 = '"Typed" BOOLEAN DEFAULT FALSE'
+        c = (c1, c2, c3, c4)
         f = (format, ','.join(c))
         query = getSqlQuery(ctx, 'createTextTable', f)
 
@@ -687,7 +688,7 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT C."Value",C."Getter" AS "GetProperty",P."Getter" AS "GetParameter",
+      SELECT C."Value",C."Typed",C."Getter" AS "GetProperty",P."Getter" AS "GetParameter",
         GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR '') ||
         COALESCE(PP."Column",'') AS "ColumnName",
         ARRAY_AGG(T."Value") AS "Type",
@@ -697,7 +698,7 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
       JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
       LEFT JOIN "PropertyType" AS PT ON C."Property"=PT."Property"
       JOIN "Types" AS T ON PT."Type"=T."Type"
-      GROUP BY C."Value",C."Getter",P."Getter",PP."Column",PT."Group"
+      GROUP BY C."Value",C."Typed",C."Getter",P."Getter",PP."Column",PT."Group"
       FOR READ ONLY;
     OPEN RSLT;
   END"""
