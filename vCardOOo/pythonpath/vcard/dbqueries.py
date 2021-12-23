@@ -691,7 +691,7 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
         GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR '') ||
         COALESCE(PP."Column",'') AS "ColumnName",
         ARRAY_AGG(T."Value") AS "Type",
-        ROW_NUMBER() AS "ColumnId"
+        ROWNUM() AS "ColumnId"
       FROM "Properties" AS C
       LEFT JOIN "PropertyParameter" AS PP ON C."Property"=PP."Property"
       JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
