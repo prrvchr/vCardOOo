@@ -690,15 +690,16 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
       SELECT C."Value",C."Getter" AS "GetProperty",P."Getter" AS "GetParameter",
         GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR '') ||
         COALESCE(PP."Column",'') AS "ColumnName",
-        ARRAY_AGG(T."Value") AS "Types",
+        ARRAY_AGG(T."Value") AS "Type",
         ROW_NUMBER() AS "ColumnId"
-      FROM "CardProperty" AS C
-      LEFT JOIN "CardPropertyParameter" AS PP ON C."Property"=PP."Property"
-      JOIN "CardParameter" AS P ON PP."Parameter"=P."Parameter"
-      LEFT JOIN "CardPropertyType" AS PT ON C."Property"=PT."Property"
-      JOIN "CardType" AS T ON PT."Type"=T."Type"
+      FROM "Properties" AS C
+      LEFT JOIN "PropertyParameter" AS PP ON C."Property"=PP."Property"
+      JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
+      LEFT JOIN "PropertyType" AS PT ON C."Property"=PT."Property"
+      JOIN "Types" AS T ON PT."Type"=T."Type"
       GROUP BY C."Property",PT."Group"
       ORDER BY C."Property",PT."Group"
+      FOR READ ONLY;
     OPEN RSLT;
   END"""
 
