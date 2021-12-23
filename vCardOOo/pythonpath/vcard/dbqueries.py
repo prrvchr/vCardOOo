@@ -694,10 +694,10 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
         ARRAY_AGG(T."Value") AS "Type",
         ROWNUM() AS "ColumnId"
       FROM "Properties" AS C
-      LEFT JOIN "PropertyParameter" AS PP ON C."Property"=PP."Property"
+      JOIN "PropertyParameter" AS PP ON C."Property"=PP."Property"
       JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
       LEFT JOIN "PropertyType" AS PT ON C."Property"=PT."Property"
-      JOIN "Types" AS T ON PT."Type"=T."Type"
+      LEFT JOIN "Types" AS T ON PT."Type"=T."Type"
       GROUP BY C."Value",C."Typed",C."Getter",P."Getter",PP."Column",PT."Group"
       FOR READ ONLY;
     OPEN RSLT;
