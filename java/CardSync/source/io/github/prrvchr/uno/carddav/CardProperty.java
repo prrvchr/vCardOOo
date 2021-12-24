@@ -65,13 +65,26 @@ public final class CardProperty<T>
 		{
 			for (Map<String, Object> column: columns.getColumns())
 			{
+				Object value = null;
 				String getter = (String) column.get("ParameterGetter");
 				String name = (String) column.get("ColumnName");
 				int id = (int) column.get("ColumnId");
 				System.out.println("CardProperty.parseProperty()2 " + getter);
-				Class<T> clazz = (Class<T>) property.getClass();
-				Method method = clazz.getMethod(getter, new Class[] {clazz.getSuperclass().getSuperclass()});
-				Object value = method.invoke(property);
+				Method method = null;
+				Class clazz = property.getClass();
+				int i = 3;
+				while (i > 0) 
+				{
+					try {
+						method = clazz.getMethod(getter);
+					}
+					catch(NoSuchMethodException e)
+					{
+						clazz = clazz.getSuperclass();
+						i --;
+					}
+				}
+				if (method != null) value = method.invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
 			}
 		}
