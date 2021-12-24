@@ -146,7 +146,7 @@ implements XJob
 
 	private boolean _parseCard(DataBase database,
 								Map<String, Object> result,
-								Map<String, CardColumn> map,
+								Map<String, CardColumn> columns,
 								String query)
 	throws IOException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
@@ -156,8 +156,9 @@ implements XJob
 		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
+			if (!columns.containsKey(name)) continue;
 			System.out.println("CardSync._parseCard() 1 " + name);
-			CardColumn column = map.get(name);
+			CardColumn column = columns.get(name);
 			System.out.println("CardSync._parseCard() 2 " + column);
 			_parseCardProperty(database, card, result, column, query);
 
