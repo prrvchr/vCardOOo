@@ -47,10 +47,11 @@ public final class CardProperty<T>
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		String name = column.getMethod();
-		Method method = card.getClass().getDeclaredMethod(name);
-		Class<?> cls = method.getReturnType();
-		m_property = method.invoke(card);
-		System.out.println("CardProperty.CardProperty()1 " + cls.getName() + " - " + m_property.getClass().getName() + " - " + clazz.getName());
+		System.out.println("CardProperty.CardProperty()1 " + name);
+		//Method method = card.getClass().getDeclaredMethod(name);
+		//Class<?> cls = method.getReturnType();
+		//m_property = method.invoke(card);
+		//System.out.println("CardProperty.CardProperty()2 " + cls.getName() + " - " + m_property.getClass().getName() + " - " + clazz.getName());
 	};
 
 
