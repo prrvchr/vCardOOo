@@ -155,8 +155,10 @@ implements XJob
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
 		{
-			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
-			CardColumn column = map.get(scribe.getPropertyName());
+			String name = index.getPropertyScribe(property).getPropertyName();
+			System.out.println("CardSync._parseCard() 1 " + name);
+			CardColumn column = map.get(name);
+			System.out.println("CardSync._parseCard() 2 " + column);
 			_parseCardProperty(database, card, result, column, query);
 
 			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
