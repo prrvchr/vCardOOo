@@ -447,14 +447,15 @@ def getRowResult(result, index=(0,), separator=' '):
     return tuple(sequence)
 
 def getValueFromResult(result, index=1, default=None):
-    # TODO: 'TINYINT' is buggy: don't use it
     dbtype = result.MetaData.getColumnTypeName(index)
     if dbtype == 'VARCHAR':
+        value = result.getString(index)
+    elif dbtype == 'CHARACTER':
         value = result.getString(index)
     elif dbtype == 'BOOLEAN':
         value = result.getBoolean(index)
     elif dbtype == 'TINYINT':
-        value = result.getShort(index)
+        value = result.getByte(index)
     elif dbtype == 'SMALLINT':
         value = result.getShort(index)
     elif dbtype == 'INTEGER':
@@ -465,7 +466,7 @@ def getValueFromResult(result, index=1, default=None):
         value = result.getFloat(index)
     elif dbtype == 'DOUBLE':
         value = result.getDouble(index)
-    elif dbtype == 'TIMESTAMP':
+    elif dbtype.startswith('TIMESTAMP'):
         value = result.getTimestamp(index)
     elif dbtype == 'TIME':
         value = result.getTime(index)

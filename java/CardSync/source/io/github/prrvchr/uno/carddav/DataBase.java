@@ -77,7 +77,7 @@ public final class DataBase
 		parameters.setNull(1, DataType.TIMESTAMP);
 		parameters.setNull(2, DataType.TIMESTAMP);
 		XResultSet result = call.executeQuery();
-		List<Map<String, Object>> maps = _getResult(result);
+		List<Map<String, Object>> maps = _getResultList(result);
 		_closeCall(call);
 		return maps;
 	}
@@ -89,11 +89,11 @@ public final class DataBase
 		_closeCall(call);
 	}
 
-	public List<Map<String, Object>> getAddressbookColumn() throws SQLException
+	public Map<String, Object> getAddressbookColumn() throws SQLException
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
 		XResultSet result = call.executeQuery();
-		List<Map<String, Object>> maps = _getResult(result);
+		Map<String, Object> maps = _getResultMap(result, "Value");
 		_closeCall(call);
 		return maps;
 	}
@@ -114,33 +114,68 @@ public final class DataBase
 		return 1;
 	}
 
-	private static List<Map<String, Object>> _getResult(XResultSet result) throws SQLException
+	private static List<Map<String, Object>> _getResultList(XResultSet result) throws SQLException
 	{
-		System.out.println("DataBase._getResult() 1");
+		System.out.println("DataBase._getResultList() 1");
 		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
 		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
 		while(result != null && result.next())
 		{
-			Map<String, Object> map = new HashMap<String, Object>();
-			for (int i = 1; i <= len; i++)
-			{
-				String name = metadata.getMetaData().getColumnLabel(i);
-				String dbtype = metadata.getMetaData().getColumnTypeName(i);
-				Object value = _getValueFromResult(row, dbtype, i);
-				map.put(name, value);
-				System.out.println("DataBase._getResult() 2: Name: " + name + " - Type: " + dbtype);
-			}
-			maps.add(map);
+			maps.add(_getRowMap(metadata, row, len));
 		}
-		System.out.println("DataBase._getResult() 3");
+		System.out.println("DataBase._getResultList() 2");
 		return maps;
 	}
 
-	private static Object _getValueFromResult(XRow row, String dbtype, int index) throws SQLException
+	private static Map<String, Object> _getResultMap(XResultSet result, String key) throws SQLException
 	{
-		Object value = null;
+		System.out.println("DataBase._getResultMap() 1");
+		String mapkey = null;
+		List<Object> list = null;
+		Map<String, Object> maps = new HashMap<String, Object>();
+		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
+		int len = metadata.getMetaData().getColumnCount();
+		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
+		while(result != null && result.next())
+		{
+			Map<String, Object> map = _getRowMap(metadata, row, len);
+			if (mapkey == null || !mapkey.equals(map.get(key))) 
+			{
+				if (mapkey != null) maps.put(mapkey, new ArrayList<Object>(list));
+				mapkey = (String) map.get(key);
+				list = new ArrayList<Object>();
+			}
+			list.add(map);
+		}
+		if (list != null) maps.put(mapkey, new ArrayList<Object>(list));
+		System.out.println("DataBase._getResultMap() 2");
+		return maps;
+	}
+
+	
+	private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int len) throws SQLException
+	{
+		Map<String, Object> map = new HashMap<String, Object>();
+		for (int i = 1; i <= len; i++)
+		{
+			String name = metadata.getMetaData().getColumnLabel(i);
+			String dbtype = metadata.getMetaData().getColumnTypeName(i);
+			Object value = _getRowValue(row, dbtype, i);
+			map.put(name, value);
+			System.out.println("DataBase._getRowMap(): Name: " + name + " - Type: " + dbtype);
+		}
+		return map;
+	}
+	
+	private static Object _getRowValue(XRow row, String dbtype, int index) throws SQLException
+	{
+		return _getRowValue(row, dbtype, index, null);
+	}
+
+	private static Object _getRowValue(XRow row, String dbtype, int index, Object value) throws SQLException
+	{
 		if (dbtype.equals("VARCHAR")) value = row.getString(index);
 		else if (dbtype.equals("CHARACTER")) value = row.getString(index);
 		else if (dbtype.equals("BOOLEAN")) value = row.getBoolean(index);
@@ -153,8 +188,8 @@ public final class DataBase
 		else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
 		else if (dbtype.equals("TIME")) value = row.getTime(index);
 		else if (dbtype.equals("DATE")) value = row.getDate(index);
+		else if (dbtype.equals("BINARY")) value = row.getBytes(index);
 		else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
-		else System.out.println("DataBase._getValueFromResult() " + dbtype);
 		if(row.wasNull()) value = null;
 		return value;
 	}
