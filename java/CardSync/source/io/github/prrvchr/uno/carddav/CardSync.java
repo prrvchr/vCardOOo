@@ -114,14 +114,14 @@ implements XJob
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
 			Map<String, CardColumn> columns = database.getAddressbookColumn();
-			for (String key: columns.keySet())
-			{
-				CardColumn column = columns.get(key);
-				for (Map<String, Object> object: column.getColumns())
-				{
-					System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
-				}
-			}
+			//for (String key: columns.keySet())
+			//{
+			//	CardColumn column = columns.get(key);
+			//	for (Map<String, Object> object: column.getColumns())
+			//	{
+			//		System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
+			//	}
+			//}
 			for (Map<String, Object> result: database.getChangedCards())
 			{
 				System.out.println("CardSync.execute() 3");
