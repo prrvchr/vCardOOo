@@ -69,7 +69,8 @@ public final class CardProperty<T>
 				String name = (String) column.get("ColumnName");
 				int id = (int) column.get("ColumnId");
 				System.out.println("CardProperty.parseProperty()2 " + getter);
-				Method method = property.getClass().getMethod(getter, new Class[] {property.getClass().getSuperclass()});
+				Class<T> clazz = (Class<T>) property.getClass();
+				Method method = clazz.getMethod(getter, new Class[] {clazz.getSuperclass().getSuperclass()});
 				Object value = method.invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
 			}
