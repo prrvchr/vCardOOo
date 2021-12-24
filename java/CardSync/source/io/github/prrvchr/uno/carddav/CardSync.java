@@ -156,6 +156,7 @@ implements XJob
 		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
+			// FIXME: We do not parse Properties that do not have a Column
 			if (!columns.containsKey(name)) continue;
 			System.out.println("CardSync._parseCard() 1 " + name);
 			CardColumn column = columns.get(name);
