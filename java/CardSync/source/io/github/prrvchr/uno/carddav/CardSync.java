@@ -27,12 +27,14 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.io.scribe.VCardPropertyScribe;
 import ezvcard.parameter.AddressType;
 import ezvcard.parameter.EmailType;
 import ezvcard.parameter.TelephoneType;
@@ -112,10 +114,10 @@ implements XJob
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
-			Map<String, Object> map = database.getAddressbookColumn();
-			for (String key: map.keySet())
+			Map<String, Object> columns = database.getAddressbookColumn();
+			for (String key: columns.keySet())
 			{
-				List<Object> list = (List<Object>) map.get(key);
+				List<?> list = (List<?>) columns.get(key);
 				for (Object object: list)
 				{
 					System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
@@ -126,7 +128,7 @@ implements XJob
 				String method = (String) result.get("Method");
 				if (!method.equals("Deleted"))
 				{
-					status = _parseCard(database, result, method);
+					status = _parseCard(database, result, columns, method);
 				}
 			}
 			if (status) database.updateUser();
@@ -141,27 +143,46 @@ implements XJob
 		return null;
 	}
 
-	private boolean _parseCard(DataBase database, Map<String, Object> result, String method) throws IOException
+	private boolean _parseCard(DataBase database,
+								Map<String, Object> result,
+								Map<String, Object> map,
+								String method)
+	throws IOException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		String data = (String) result.get("Data");
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
 		{
-			String name = index.getPropertyScribe(property).getPropertyName();
-			if ("FN".equals(name)) _parseFormattedNames(card, result, method);
-			else if ("N".equals(name)) _parseStructuredNames(card, result, method);
-			else if ("EMAIL".equals(name)) _parseEmails(card, result, method);
-			else if ("ORG".equals(name)) _parseOrganizations(card, result, method);
-			else if ("ADR".equals(name)) _parseAddresses(card, result, method);
-			else if ("TEL".equals(name)) _parseTelephones(card, result, method);
-			else if ("TITLE".equals(name)) _parseTitles(card, result, method);
-			else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
-			else System.out.println("CardSync._parseCard() " + name);
+			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
+			List<?> columns = (List<Map<String, Object>>) map.get(scribe.getPropertyName());
+			_parseCardProperty(database, card, result, columns, method, scribe.getPropertyClass());
+
+			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
+			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
+			//else if ("EMAIL".equals(name)) _parseEmails(card, result, method);
+			//else if ("ORG".equals(name)) _parseOrganizations(card, result, method);
+			//else if ("ADR".equals(name)) _parseAddresses(card, result, method);
+			//else if ("TEL".equals(name)) _parseTelephones(card, result, method);
+			//else if ("TITLE".equals(name)) _parseTitles(card, result, method);
+			//else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
+			//else System.out.println("CardSync._parseCard() " + name);
 		}
 		return true;
 	}
 
+	private <T> void _parseCardProperty(DataBase database,
+										VCard card,
+										Map<String, Object> result,
+										List<?> columns,
+										String method,
+										Class<T> clazz)
+	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	{
+		List<Map<String, Object>> c = (List<Map<String, Object>>) columns;
+		CardProperty property = new CardProperty<T>(database, card, result, c, method, clazz);
+	}
+	
 	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)
 	{
 		for (FormattedName name: card.getFormattedNames())
