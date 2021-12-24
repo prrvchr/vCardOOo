@@ -27,13 +27,12 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import ezvcard.VCard;
 
 
-public final class CardProperty<T>
+public final class CardProperty
 {
 
 	private Object m_property = null;
@@ -42,8 +41,7 @@ public final class CardProperty<T>
 						VCard card,
 						Map<String, Object> result,
 						CardColumn column,
-						String query,
-						Class<T> clazz)
+						String query)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		String name = column.getMethod();
