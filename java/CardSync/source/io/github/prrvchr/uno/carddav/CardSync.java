@@ -28,7 +28,6 @@ package io.github.prrvchr.uno.carddav;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
@@ -114,11 +113,11 @@ implements XJob
 			String name = database.getUserName();
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
-			Map<String, Object> columns = database.getAddressbookColumn();
+			Map<String, CardColumn> columns = database.getAddressbookColumn();
 			for (String key: columns.keySet())
 			{
-				List<?> list = (List<?>) columns.get(key);
-				for (Object object: list)
+				CardColumn column = (CardColumn) columns.get(key);
+				for (Object object: column.getColumns())
 				{
 					System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
 				}
@@ -145,8 +144,8 @@ implements XJob
 
 	private boolean _parseCard(DataBase database,
 								Map<String, Object> result,
-								Map<String, Object> map,
-								String method)
+								Map<String, CardColumn> map,
+								String query)
 	throws IOException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		String data = (String) result.get("Data");
@@ -155,8 +154,8 @@ implements XJob
 		for (VCardProperty property: card)
 		{
 			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
-			List<?> columns = (List<Map<String, Object>>) map.get(scribe.getPropertyName());
-			_parseCardProperty(database, card, result, columns, method, scribe.getPropertyClass());
+			CardColumn column = map.get(scribe.getPropertyName());
+			_parseCardProperty(database, card, result, column, query, scribe.getPropertyClass());
 
 			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
 			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
@@ -174,13 +173,12 @@ implements XJob
 	private <T> void _parseCardProperty(DataBase database,
 										VCard card,
 										Map<String, Object> result,
-										List<?> columns,
-										String method,
+										CardColumn column,
+										String query,
 										Class<T> clazz)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		List<Map<String, Object>> c = (List<Map<String, Object>>) columns;
-		CardProperty property = new CardProperty<T>(database, card, result, c, method, clazz);
+		CardProperty<T> property = new CardProperty<T>(database, card, result, column, query, clazz);
 	}
 	
 	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)

@@ -28,7 +28,6 @@ package io.github.prrvchr.uno.carddav;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 
 import ezvcard.VCard;
@@ -42,29 +41,16 @@ public final class CardProperty<T>
 	public CardProperty(DataBase database,
 						VCard card,
 						Map<String, Object> result,
-						List<Map<String, Object>> maps,
-						String command,
+						CardColumn column,
+						String query,
 						Class<T> clazz)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		String name = null;
-		for (Map<String, Object> map: maps)
-		{
-			if (m_property == null)
-			{
-				name = (String) map.get("getProperty");
-				Method method = clazz.getDeclaredMethod(name);
-				Class<?> cls = method.getReturnType();
-				m_property = method.invoke(card);
-				System.out.println("CardProperty.CardProperty()1 " + cls.getName() + " - " + m_property.getClass().getName());
-			}
-			name = (String) map.get("getParameter");
-			Object value = m_property.getClass().getDeclaredMethod(name).invoke(m_property);
-			String column = (String) map.get("ColumnName");
-			int id = (int) map.get("ColumnId");
-			System.out.println("CardProperty.CardProperty()2 " + value + " - " + column + " - " + id);
-			
-		}
+		String name = column.getMethod();
+		Method method = card.getClass().getDeclaredMethod(name);
+		Class<?> cls = method.getReturnType();
+		m_property = method.invoke(card);
+		System.out.println("CardProperty.CardProperty()1 " + cls.getName() + " - " + m_property.getClass().getName() + " - " + clazz.getName());
 	};
 
 

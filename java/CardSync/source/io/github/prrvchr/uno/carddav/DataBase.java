@@ -89,11 +89,11 @@ public final class DataBase
 		_closeCall(call);
 	}
 
-	public Map<String, Object> getAddressbookColumn() throws SQLException
+	public Map<String, CardColumn> getAddressbookColumn() throws SQLException
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
 		XResultSet result = call.executeQuery();
-		Map<String, Object> maps = _getResultMap(result, "Value");
+		Map<String, CardColumn> maps = _getResultMap(result, "Value", "PropertyGetter");
 		_closeCall(call);
 		return maps;
 	}
@@ -129,12 +129,13 @@ public final class DataBase
 		return maps;
 	}
 
-	private static Map<String, Object> _getResultMap(XResultSet result, String key) throws SQLException
+	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method) throws SQLException
 	{
 		System.out.println("DataBase._getResultMap() 1");
 		String mapkey = null;
-		List<Object> list = null;
-		Map<String, Object> maps = new HashMap<String, Object>();
+		String mapmethod = null;
+		CardColumn column = null;
+		Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
 		int len = metadata.getMetaData().getColumnCount();
 		XRow row = (XRow)UnoRuntime.queryInterface(XRow.class, result);
@@ -143,13 +144,14 @@ public final class DataBase
 			Map<String, Object> map = _getRowMap(metadata, row, len);
 			if (mapkey == null || !mapkey.equals(map.get(key))) 
 			{
-				if (mapkey != null) maps.put(mapkey, new ArrayList<Object>(list));
+				if (mapkey != null) maps.put(mapkey, new CardColumn(column));
 				mapkey = (String) map.get(key);
-				list = new ArrayList<Object>();
+				mapmethod = (String) map.get(method);
+				column = new CardColumn(mapkey, mapmethod);
 			}
-			list.add(map);
+			column.add(map);
 		}
-		if (list != null) maps.put(mapkey, new ArrayList<Object>(list));
+		if (column != null) maps.put(mapkey, new CardColumn(column));
 		System.out.println("DataBase._getResultMap() 2");
 		return maps;
 	}

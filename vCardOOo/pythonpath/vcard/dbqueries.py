@@ -688,17 +688,20 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT C."Value",C."Typed",C."Getter" AS "GetProperty",P."Getter" AS "GetParameter",
+      SELECT ROWNUM() AS "ColumnId",
+        C."Value" AS "PropertyName",
+        C."Getter" AS "PropertyGetter",
+        P."Getter" AS "ParameterGetter",
+        C."Typed",
         COALESCE(GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR ''),'') ||
         COALESCE(PP."Column",'') AS "ColumnName",
-        ARRAY_AGG(T."Value") AS "Type",
-        ROWNUM() AS "ColumnId"
+        ARRAY_AGG(T."Value") AS "TypeValues"
       FROM "Properties" AS C
       JOIN "PropertyParameter" AS PP ON C."Property"=PP."Property"
       JOIN "Parameters" AS P ON PP."Parameter"=P."Parameter"
       LEFT JOIN "PropertyType" AS PT ON C."Property"=PT."Property"
       LEFT JOIN "Types" AS T ON PT."Type"=T."Type"
-      GROUP BY C."Value",C."Typed",C."Getter",P."Getter",PP."Column",PT."Group"
+      GROUP BY C."Value",C."Getter",P."Getter",C."Typed",PP."Column",PT."Group"
       FOR READ ONLY;
     OPEN RSLT;
   END"""
