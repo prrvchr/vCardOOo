@@ -34,15 +34,18 @@ public final class CardColumn
 
 	private String m_property = null;
 	private String m_method = null;
+	private List<String> m_methods = new ArrayList<String>();
+
 	private List<Map<String, Object>> m_columns = new ArrayList<Map<String, Object>>();
 
 	public CardColumn(CardColumn original)
 	{
 		m_property = original.getProperty();
 		m_method = original.getMethod();
+		m_methods = original.getMethods();
 		m_columns = original.getColumns();
 	};
-	
+
 	public CardColumn(String property, String method)
 	{
 		m_property = property;
@@ -58,15 +61,23 @@ public final class CardColumn
 	{
 		return m_method;
 	};
-	
+
 	public List<Map<String, Object>> getColumns()
 	{
 		return new ArrayList<Map<String, Object>>(m_columns);
+	}
+
+	public List<String> getMethods()
+	{
+		return new ArrayList<String>(m_methods);
 	};
 
 	public void add(Map<String, Object> map)
 	{
+		String getter = (String) map.get("ParameterGetter");
+		if (!m_methods.contains(getter)) m_methods.add(getter);
 		m_columns.add(map);
 	};
-	
+
+
 }
