@@ -129,7 +129,8 @@ implements XJob
 				if (!query.equals("Deleted"))
 				{
 					System.out.println("CardSync.execute() 4");
-					status = _parseCard(database, result, columns, query);
+					String data = (String) result.get("Data");
+					status = _parseCard(database, data, columns, query);
 				}
 			}
 			if (status) database.updateUser();
@@ -145,12 +146,11 @@ implements XJob
 	}
 
 	private boolean _parseCard(DataBase database,
-								Map<String, Object> result,
+								String data,
 								Map<String, CardColumn> columns,
 								String query)
 	throws IOException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		String data = (String) result.get("Data");
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
@@ -162,7 +162,7 @@ implements XJob
 			System.out.println("CardSync._parseCard() 1 " + name);
 			CardColumn column = columns.get(name);
 			System.out.println("CardSync._parseCard() 2 " + column);
-			_parseCardProperty(database, card, result, column, query, scribe.getPropertyClass());
+			_parseCardProperty(database, card, column, query, scribe.getPropertyClass());
 
 			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
 			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
@@ -179,13 +179,13 @@ implements XJob
 
 	private <T> void _parseCardProperty(DataBase database,
 									VCard card,
-									Map<String, Object> result,
 									CardColumn column,
 									String query,
 									Class<T> clazz)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		CardProperty property = new CardProperty<T>(database, card, result, column, query, clazz);
+		CardProperty<T> property = new CardProperty<T>(card, column, clazz);
+		property.parse(database, column, query);
 	}
 	
 	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)

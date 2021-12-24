@@ -39,22 +39,41 @@ public final class CardProperty<T>
 
 	private List<T> m_properties = null;
 
-	public CardProperty(DataBase database,
-						VCard card,
-						Map<String, Object> result,
+	@SuppressWarnings("unchecked")
+	public CardProperty(VCard card,
 						CardColumn column,
-						String query,
 						Class<T> clazz)
 	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
 		System.out.println("CardProperty.CardProperty()1 " + clazz.getName());
-		String name = column.getMethod();
-		System.out.println("CardProperty.CardProperty()2 " + name);
-		Method method = card.getClass().getDeclaredMethod(name);
+		String getter = column.getMethod();
+		System.out.println("CardProperty.CardProperty()2 " + getter);
+		Method method = card.getClass().getDeclaredMethod(getter);
 		Class<?> cls = method.getReturnType();
 		m_properties = (List<T>) method.invoke(card);
 		System.out.println("CardProperty.CardProperty()2 " + cls.getName() + " - " + m_properties.getClass().getName());
 	};
 
 
+	public void parse(DataBase database,
+					  CardColumn columns,
+					  String query)
+	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	{
+		System.out.println("CardProperty.parseProperty()1");
+		for (T property: m_properties)
+		{
+			for (Map<String, Object> column: columns.getColumns())
+			{
+				String getter = (String) column.get("ParameterGetter");
+				String name = (String) column.get("ColumnName");
+				int id = (int) column.get("ColumnId");
+				System.out.println("CardProperty.parseProperty()2 " + getter);
+				Method method = property.getClass().getDeclaredMethod(getter);
+				Object value = method.invoke(property);
+				System.out.println("CardProperty.parseProperty()3 " + value);
+			}
+		}
+	};
+	
 }
