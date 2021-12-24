@@ -57,7 +57,7 @@ public final class CardColumn
 	public String getMethod()
 	{
 		return m_method;
-	}
+	};
 	
 	public List<Object> getColumns()
 	{

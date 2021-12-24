@@ -164,9 +164,7 @@ public final class DataBase
 		{
 			String name = metadata.getMetaData().getColumnLabel(i);
 			String dbtype = metadata.getMetaData().getColumnTypeName(i);
-			Object value = _getRowValue(row, dbtype, i);
-			map.put(name, value);
-			System.out.println("DataBase._getRowMap(): Name: " + name + " - Type: " + dbtype);
+			map.put(name, _getRowValue(row, dbtype, i));
 		}
 		return map;
 	}

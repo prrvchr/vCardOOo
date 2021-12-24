@@ -26,7 +26,6 @@
 package io.github.prrvchr.uno.carddav;
 
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import ezvcard.VCard;
@@ -42,10 +41,10 @@ public final class CardProperty
 						Map<String, Object> result,
 						CardColumn column,
 						String query)
-	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
+		System.out.println("CardProperty.CardProperty()1");
 		String name = column.getMethod();
-		System.out.println("CardProperty.CardProperty()1 " + name);
+		System.out.println("CardProperty.CardProperty()2 " + name);
 		//Method method = card.getClass().getDeclaredMethod(name);
 		//Class<?> cls = method.getReturnType();
 		//m_property = method.invoke(card);
