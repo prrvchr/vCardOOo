@@ -114,26 +114,26 @@ implements XJob
 			String version = database.getDriverVersion();
 			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
 			Map<String, CardColumn> columns = database.getAddressbookColumn();
-			//for (String key: columns.keySet())
-			//{
-			//	CardColumn column = (CardColumn) columns.get(key);
-			//	for (Object object: column.getColumns())
-			//	{
-			//		System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
-			//	}
-			//}
+			for (String key: columns.keySet())
+			{
+				CardColumn column = columns.get(key);
+				for (Map<String, Object> object: column.getColumns())
+				{
+					System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
+				}
+			}
 			for (Map<String, Object> result: database.getChangedCards())
 			{
-				System.out.println("CardSync.execute() 2");
+				System.out.println("CardSync.execute() 3");
 				String query = (String) result.get("Query");
 				if (!query.equals("Deleted"))
 				{
-					System.out.println("CardSync.execute() 3");
+					System.out.println("CardSync.execute() 4");
 					status = _parseCard(database, result, columns, query);
 				}
 			}
 			if (status) database.updateUser();
-			System.out.println("CardSync.execute() 4");
+			System.out.println("CardSync.execute() 5");
 		}
 		catch (Exception e)
 		{
