@@ -72,21 +72,22 @@ public final class CardProperty<T>
 				System.out.println("CardProperty.parseProperty()2 " + getter);
 				Method method = null;
 				Class clazz = property.getClass();
-				int i = 3;
-				while (i > 0) 
-				{
-					try {
-						System.out.println("CardProperty.parseProperty()3");
-						method = clazz.getMethod(getter);
-						System.out.println("CardProperty.parseProperty()4");
-						break;
-					}
-					catch(NoSuchMethodException e)
-					{
-						clazz = clazz.getSuperclass();
-						i --;
-					}
-				}
+				method = clazz.getMethod(getter);
+				//int i = 3;
+				//while (i > 0) 
+				//{
+				//	try {
+				//		System.out.println("CardProperty.parseProperty()3");
+				//		method = clazz.getMethod(getter);
+				//		System.out.println("CardProperty.parseProperty()4");
+				//		break;
+				//	}
+				//	catch(NoSuchMethodException e)
+				//	{
+				//		clazz = clazz.getSuperclass();
+				//		i --;
+				//	}
+				//}
 				if (method != null) value = method.invoke(property);
 				System.out.println("CardProperty.parseProperty()5 " + value);
 			}
