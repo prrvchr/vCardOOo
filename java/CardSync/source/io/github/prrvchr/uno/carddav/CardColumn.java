@@ -34,7 +34,7 @@ public final class CardColumn
 
 	private String m_property = null;
 	private String m_method = null;
-	private List<Object> m_columns = new ArrayList<Object>();
+	private List<Map<String, Object>> m_columns = new ArrayList<Map<String, Object>>();
 
 	public CardColumn(CardColumn original)
 	{
@@ -59,9 +59,9 @@ public final class CardColumn
 		return m_method;
 	};
 	
-	public List<Object> getColumns()
+	public List<Map<String, Object>> getColumns()
 	{
-		return new ArrayList<Object>(m_columns);
+		return new ArrayList<Map<String, Object>>(m_columns);
 	};
 
 	public void add(Map<String, Object> map)
