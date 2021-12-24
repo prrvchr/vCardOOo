@@ -155,13 +155,14 @@ implements XJob
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
 		{
-			String name = index.getPropertyScribe(property).getPropertyName();
+			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
+			String name = scribe.getPropertyName();
 			// FIXME: We do not parse Properties that do not have a Column
 			if (!columns.containsKey(name)) continue;
 			System.out.println("CardSync._parseCard() 1 " + name);
 			CardColumn column = columns.get(name);
 			System.out.println("CardSync._parseCard() 2 " + column);
-			_parseCardProperty(database, card, result, column, query);
+			_parseCardProperty(database, card, result, column, query, scribe.getPropertyClass());
 
 			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
 			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
@@ -176,14 +177,15 @@ implements XJob
 		return true;
 	}
 
-	private void _parseCardProperty(DataBase database,
+	private <T> void _parseCardProperty(DataBase database,
 									VCard card,
 									Map<String, Object> result,
 									CardColumn column,
-									String query)
+									String query,
+									Class<T> clazz)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		CardProperty property = new CardProperty(database, card, result, column, query);
+		CardProperty property = new CardProperty<T>(database, card, result, column, query, clazz);
 	}
 	
 	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)

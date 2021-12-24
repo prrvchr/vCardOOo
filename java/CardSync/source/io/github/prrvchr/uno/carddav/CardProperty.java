@@ -28,30 +28,32 @@ package io.github.prrvchr.uno.carddav;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 import ezvcard.VCard;
 
 
-public final class CardProperty
+public final class CardProperty<T>
 {
 
-	private Object m_property = null;
+	private List<T> m_properties = null;
 
 	public CardProperty(DataBase database,
 						VCard card,
 						Map<String, Object> result,
 						CardColumn column,
-						String query)
+						String query,
+						Class<T> clazz)
 	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		System.out.println("CardProperty.CardProperty()1");
+		System.out.println("CardProperty.CardProperty()1 " + clazz.getName());
 		String name = column.getMethod();
 		System.out.println("CardProperty.CardProperty()2 " + name);
 		Method method = card.getClass().getDeclaredMethod(name);
 		Class<?> cls = method.getReturnType();
-		m_property = method.invoke(card);
-		System.out.println("CardProperty.CardProperty()2 " + cls.getName() + " - " + m_property.getClass().getName());
+		m_properties = (List<T>) method.invoke(card);
+		System.out.println("CardProperty.CardProperty()2 " + cls.getName() + " - " + m_properties.getClass().getName());
 	};
 
 
