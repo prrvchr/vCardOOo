@@ -76,7 +76,10 @@ public final class CardProperty<T>
 				while (i > 0) 
 				{
 					try {
+						System.out.println("CardProperty.parseProperty()3");
 						method = clazz.getMethod(getter);
+						System.out.println("CardProperty.parseProperty()4");
+						break;
 					}
 					catch(NoSuchMethodException e)
 					{
@@ -85,7 +88,7 @@ public final class CardProperty<T>
 					}
 				}
 				if (method != null) value = method.invoke(property);
-				System.out.println("CardProperty.parseProperty()3 " + value);
+				System.out.println("CardProperty.parseProperty()5 " + value);
 			}
 		}
 	};
