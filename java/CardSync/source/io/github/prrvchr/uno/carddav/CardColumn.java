@@ -26,8 +26,11 @@
 package io.github.prrvchr.uno.carddav;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.sun.star.sdbc.SQLException;
 
@@ -90,7 +93,8 @@ public final class CardColumn
 			}
 			else
 			{
-				Object[] values = ((Array) map.get("TypeValues")).getArray(null);
+				Object[] object = ((Array) map.get("TypeValues")).getArray(null);
+				List<String> values = (List<String>) _convertObjectToList(object);
 				if (types.equals(values))
 				{
 					id = (int) map.get("ColumnId");
@@ -100,6 +104,15 @@ public final class CardColumn
 		}
 		return id;
 	};
+	
+	private static List<String> _convertObjectToList(Object[] object)
+	{
+		//List<String> list = new ArrayList<>();
+		//list = (List<String>) Arrays.asList(object);
+		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+		return list;
+	}
+	
 	
 	public List<Map<String, Object>> getColumns()
 	{
