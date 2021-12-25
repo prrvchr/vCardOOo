@@ -66,10 +66,17 @@ public final class CardProperty<T>
 			for (String getter: columns.getMethods())
 			{
 				Object value = null;
+				List<String> types = null;
 				System.out.println("CardProperty.parseProperty()2 " + getter);
 				Method method = property.getClass().getMethod(getter);
 				if (method != null) value = method.invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
+				if (columns.getTyped())
+				{
+					method = property.getClass().getMethod("getTypes");
+					if (method != null) types = (List<String>) method.invoke(property);
+					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
+				}
 				//String name = (String) column.get("ColumnName");
 				//int id = (int) column.get("ColumnId");
 			}

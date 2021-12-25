@@ -93,7 +93,7 @@ public final class DataBase
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
 		XResultSet result = call.executeQuery();
-		Map<String, CardColumn> maps = _getResultMap(result, "PropertyName", "PropertyGetter");
+		Map<String, CardColumn> maps = _getResultMap(result, "PropertyName", "PropertyGetter", "Typed");
 		_closeCall(call);
 		return maps;
 	}
@@ -129,7 +129,7 @@ public final class DataBase
 		return maps;
 	}
 
-	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method) throws SQLException
+	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method, String typed) throws SQLException
 	{
 		System.out.println("DataBase._getResultMap() 1");
 		String mapkey = null;
@@ -146,8 +146,7 @@ public final class DataBase
 			{
 				if (mapkey != null) maps.put(mapkey, new CardColumn(column));
 				mapkey = (String) map.get(key);
-				mapmethod = (String) map.get(method);
-				column = new CardColumn(mapkey, mapmethod);
+				column = new CardColumn(mapkey, (String) map.get(method), (Boolean) map.get(typed));
 			}
 			column.add(map);
 		}

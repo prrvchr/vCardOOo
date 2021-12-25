@@ -34,6 +34,7 @@ public final class CardColumn
 
 	private String m_property = null;
 	private String m_method = null;
+	private Boolean m_typed = null;
 	private List<String> m_methods = new ArrayList<String>();
 
 	private List<Map<String, Object>> m_columns = new ArrayList<Map<String, Object>>();
@@ -42,14 +43,16 @@ public final class CardColumn
 	{
 		m_property = original.getProperty();
 		m_method = original.getMethod();
+		m_typed = original.getTyped();
 		m_methods = original.getMethods();
 		m_columns = original.getColumns();
 	};
 
-	public CardColumn(String property, String method)
+	public CardColumn(String property, String method, Boolean typed)
 	{
 		m_property = property;
 		m_method = method;
+		m_typed = typed;
 	};
 
 	public String getProperty()
@@ -62,6 +65,11 @@ public final class CardColumn
 		return m_method;
 	};
 
+	public Boolean getTyped()
+	{
+		return m_typed;
+	};
+	
 	public List<Map<String, Object>> getColumns()
 	{
 		return new ArrayList<Map<String, Object>>(m_columns);
