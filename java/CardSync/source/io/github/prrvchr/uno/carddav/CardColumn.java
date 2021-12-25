@@ -26,7 +26,6 @@
 package io.github.prrvchr.uno.carddav;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,7 +76,7 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public int getColumnId(Object[] types, String getter) throws SQLException
+	public int getColumnId(List<String> types, String getter) throws SQLException
 	{
 		int id = 0;
 		for (Map<String, Object> map: m_columns)
