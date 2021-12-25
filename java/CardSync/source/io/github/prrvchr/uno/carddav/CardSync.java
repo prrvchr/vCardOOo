@@ -33,7 +33,6 @@ import java.util.Map;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
-import ezvcard.io.scribe.VCardPropertyScribe;
 import ezvcard.property.VCardProperty;
 
 import com.sun.star.beans.NamedValue;
