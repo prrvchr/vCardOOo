@@ -29,6 +29,8 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import com.sun.star.sdbc.SQLException;
+
 import ezvcard.VCard;
 
 
@@ -58,7 +60,8 @@ public final class CardProperty<T>
 			SecurityException,
 			IllegalAccessException,
 			IllegalArgumentException,
-			InvocationTargetException
+			InvocationTargetException,
+			SQLException
 	{
 		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)
@@ -75,7 +78,7 @@ public final class CardProperty<T>
 					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
 				//String name = (String) column.get("ColumnName");
-				Integer id = (Integer) columns.getColumnId(types, getter);
+				int id = columns.getColumnId(types, getter);
 				System.out.println("CardProperty.parseProperty()5 " + value + " - " + id);
 			}
 		}

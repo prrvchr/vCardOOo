@@ -26,8 +26,13 @@
 package io.github.prrvchr.uno.carddav;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import com.sun.star.sdbc.SQLException;
+
+import io.github.prrvchr.uno.sdbc.Array;
 
 public final class CardColumn
 {
@@ -70,9 +75,9 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public Integer getColumnId(List<String> types, String getter)
+	public int getColumnId(List<String> types, String getter) throws SQLException
 	{
-		Integer id = null;
+		int id = 0;
 		for (Map<String, Object> map: m_columns)
 		{
 			if (types == null)
@@ -80,17 +85,16 @@ public final class CardColumn
 				String value = (String) map.get("ParameterGetter");
 				if (getter.equals(value))
 				{
-					id = (Integer) map.get("ColumnId");
+					id = (int) map.get("ColumnId");
 					break;
 				}
 			}
 			else
 			{
-				@SuppressWarnings("unchecked")
-				List<String> values = (List<String>) map.get("TypeValues");
+				List<String> values = Arrays.asList((String[]) ((Array) map.get("TypeValues")).getArray(null));
 				if (types.equals(values))
 				{
-					id = (Integer) map.get("ColumnId");
+					id = (int) map.get("ColumnId");
 					break;
 				}
 			}

@@ -41,6 +41,7 @@ import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.XComponentContext;
 import com.sun.star.registry.XRegistryKey;
+import com.sun.star.sdbc.SQLException;
 import com.sun.star.task.XJob;
 
 import io.github.prrvchr.uno.lang.ServiceComponent;
@@ -138,39 +139,37 @@ implements XJob
 								String data,
 								Map<String, CardColumn> columns,
 								String query)
-	throws IOException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	throws IOException, 
+			NoSuchMethodException, 
+			IllegalAccessException, 
+			IllegalArgumentException, 
+			InvocationTargetException, 
+			SecurityException, 
+			SQLException
 	{
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
 		for (VCardProperty property: card)
 		{
-			VCardPropertyScribe<? extends VCardProperty> scribe = index.getPropertyScribe(property);
-			String name = scribe.getPropertyName();
+			String name = index.getPropertyScribe(property).getPropertyName();
 			// FIXME: We do not parse Properties that do not have a Column
 			if (!columns.containsKey(name)) continue;
-			System.out.println("CardSync._parseCard() 1 " + name);
 			CardColumn column = columns.get(name);
-			System.out.println("CardSync._parseCard() 2 " + column);
 			_parseCardProperty(database, card, column, query);
-
-			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
-			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
-			//else if ("EMAIL".equals(name)) _parseEmails(card, result, method);
-			//else if ("ORG".equals(name)) _parseOrganizations(card, result, method);
-			//else if ("ADR".equals(name)) _parseAddresses(card, result, method);
-			//else if ("TEL".equals(name)) _parseTelephones(card, result, method);
-			//else if ("TITLE".equals(name)) _parseTitles(card, result, method);
-			//else if ("CATEGORIES".equals(name)) _parseCategories(database, card, result, method);
-			//else System.out.println("CardSync._parseCard() " + name);
 		}
 		return true;
 	}
 
 	private <T> void _parseCardProperty(DataBase database,
-									VCard card,
-									CardColumn column,
-									String query)
-	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+										VCard card,
+										CardColumn column,
+										String query)
+	throws NoSuchMethodException,
+			IllegalAccessException,
+			IllegalArgumentException,
+			InvocationTargetException,
+			SecurityException,
+			SQLException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
 		property.parse(database, column, query);
