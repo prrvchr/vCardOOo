@@ -45,16 +45,11 @@ public final class CardProperty<T>
 						Class<T> clazz)
 	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		System.out.println("CardProperty.CardProperty()1 " + clazz.getName());
-		String getter = column.getMethod();
-		System.out.println("CardProperty.CardProperty()2 " + getter);
-		Method method = card.getClass().getDeclaredMethod(getter);
-		Class<?> cls = method.getReturnType();
-		m_properties = (List<T>) method.invoke(card);
-		System.out.println("CardProperty.CardProperty()2 " + cls.getName() + " - " + m_properties.getClass().getName());
+		m_properties = (List<T>) card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
 	};
 
 
+	@SuppressWarnings("unchecked")
 	public void parse(DataBase database,
 					  CardColumn columns,
 					  String query)
@@ -65,16 +60,13 @@ public final class CardProperty<T>
 		{
 			for (String getter: columns.getMethods())
 			{
-				Object value = null;
 				List<String> types = null;
 				System.out.println("CardProperty.parseProperty()2 " + getter);
-				Method method = property.getClass().getMethod(getter);
-				if (method != null) value = method.invoke(property);
+				Object value = property.getClass().getMethod(getter).invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
 				if (columns.getTyped())
 				{
-					method = property.getClass().getMethod("getTypes");
-					if (method != null) types = (List<String>) method.invoke(property);
+					types = (List<String>) property.getClass().getMethod("getTypes").invoke(property);
 					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
 				//String name = (String) column.get("ColumnName");
