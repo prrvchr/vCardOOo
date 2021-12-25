@@ -133,7 +133,6 @@ public final class DataBase
 	{
 		System.out.println("DataBase._getResultMap() 1");
 		String mapkey = null;
-		String mapmethod = null;
 		CardColumn column = null;
 		Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
 		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier)UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);

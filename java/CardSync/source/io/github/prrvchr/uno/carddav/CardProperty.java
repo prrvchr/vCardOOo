@@ -27,9 +27,7 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 
 import ezvcard.VCard;
 
@@ -41,9 +39,12 @@ public final class CardProperty<T>
 
 	@SuppressWarnings("unchecked")
 	public CardProperty(VCard card,
-						CardColumn column,
-						Class<T> clazz)
-	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+						CardColumn column)
+	throws NoSuchMethodException,
+			SecurityException,
+			IllegalAccessException,
+			IllegalArgumentException,
+			InvocationTargetException
 	{
 		m_properties = (List<T>) card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
 	};
@@ -53,7 +54,11 @@ public final class CardProperty<T>
 	public void parse(DataBase database,
 					  CardColumn columns,
 					  String query)
-	throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	throws NoSuchMethodException,
+			SecurityException,
+			IllegalAccessException,
+			IllegalArgumentException,
+			InvocationTargetException
 	{
 		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)
@@ -70,7 +75,8 @@ public final class CardProperty<T>
 					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
 				//String name = (String) column.get("ColumnName");
-				//int id = (int) column.get("ColumnId");
+				Integer id = (Integer) columns.getColumnId(types, getter);
+				System.out.println("CardProperty.parseProperty()5 " + value + " - " + id);
 			}
 		}
 	};

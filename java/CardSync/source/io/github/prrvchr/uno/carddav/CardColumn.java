@@ -70,6 +70,34 @@ public final class CardColumn
 		return m_typed;
 	};
 	
+	public Integer getColumnId(List<String> types, String getter)
+	{
+		Integer id = null;
+		for (Map<String, Object> map: m_columns)
+		{
+			if (types == null)
+			{
+				String value = (String) map.get("ParameterGetter");
+				if (getter.equals(value))
+				{
+					id = (Integer) map.get("ColumnId");
+					break;
+				}
+			}
+			else
+			{
+				@SuppressWarnings("unchecked")
+				List<String> values = (List<String>) map.get("TypeValues");
+				if (types.equals(values))
+				{
+					id = (Integer) map.get("ColumnId");
+					break;
+				}
+			}
+		}
+		return id;
+	};
+	
 	public List<Map<String, Object>> getColumns()
 	{
 		return new ArrayList<Map<String, Object>>(m_columns);

@@ -34,17 +34,6 @@ import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
 import ezvcard.io.scribe.VCardPropertyScribe;
-import ezvcard.parameter.AddressType;
-import ezvcard.parameter.EmailType;
-import ezvcard.parameter.TelephoneType;
-import ezvcard.property.Address;
-import ezvcard.property.Categories;
-import ezvcard.property.Email;
-import ezvcard.property.FormattedName;
-import ezvcard.property.Organization;
-import ezvcard.property.StructuredName;
-import ezvcard.property.Telephone;
-import ezvcard.property.Title;
 import ezvcard.property.VCardProperty;
 
 import com.sun.star.beans.NamedValue;
@@ -162,7 +151,7 @@ implements XJob
 			System.out.println("CardSync._parseCard() 1 " + name);
 			CardColumn column = columns.get(name);
 			System.out.println("CardSync._parseCard() 2 " + column);
-			_parseCardProperty(database, card, column, query, scribe.getPropertyClass());
+			_parseCardProperty(database, card, column, query);
 
 			//if ("FN".equals(name)) _parseFormattedNames(card, result, method);
 			//else if ("N".equals(name)) _parseStructuredNames(card, result, method);
@@ -180,106 +169,13 @@ implements XJob
 	private <T> void _parseCardProperty(DataBase database,
 									VCard card,
 									CardColumn column,
-									String query,
-									Class<T> clazz)
+									String query)
 	throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
 	{
-		CardProperty<T> property = new CardProperty<T>(card, column, clazz);
+		CardProperty<T> property = new CardProperty<T>(card, column);
 		property.parse(database, column, query);
 	}
 	
-	private void _parseFormattedNames(VCard card, Map<String, Object> result, String method)
-	{
-		for (FormattedName name: card.getFormattedNames())
-		{
-			
-			String fullname = name.getValue();
-			System.out.println("CardSync._parseFormattedNames() '" + fullname + "'");
-		}
-	}
-
-	private void _parseStructuredNames(VCard card, Map<String, Object> result, String method)
-	{
-		for (StructuredName name: card.getStructuredNames())
-		{
-			String firstname = name.getGiven();
-			String lastname = name.getFamily();
-			System.out.println("CardSync._parseStructuredNames() Fisrt Name: " + firstname + " - Last Name: " + lastname);
-		}
-	}
-
-	private void _parseEmails(VCard card, Map<String, Object> result, String method)
-	{
-		for (Email email: card.getEmails())
-		{
-			String value = email.getValue();
-			System.out.println("CardSync._parseEmails() Email: " + value + " - Type: ");
-			for (EmailType type: email.getTypes())
-			{
-				System.out.print(" " + type.getValue());
-			}
-		}
-	}
-
-	private void _parseOrganizations(VCard card, Map<String, Object> result, String method)
-	{
-		for (Organization organization: card.getOrganizations())
-		{
-			for (String value: organization.getValues())
-			{
-				System.out.println("CardSync._parseOrganizations() " + value);
-			}
-		}
-	}
-
-	private void _parseAddresses(VCard card, Map<String, Object> result, String method)
-	{
-		for (Address address: card.getAddresses())
-		{
-			String street = address.getStreetAddress();
-			String city = address.getLocality();
-			System.out.println("CardSync._parseAddresses() Street: " + street + " - City: " + city + " - Type: ");
-			for (AddressType type: address.getTypes())
-			{
-				System.out.print(" " + type.getValue());
-			}
-		}
-	}
-
-	private void _parseTelephones(VCard card, Map<String, Object> result, String method)
-	{
-		for (Telephone telephone: card.getTelephoneNumbers())
-		{
-			String value = telephone.getText();
-			System.out.println("CardSync._parseTelephones() Tel: " + value + " - Type: ");
-			for (TelephoneType type: telephone.getTypes())
-			{
-				System.out.print(" " + type.getValue());
-			}
-		}
-	}
-
-	private void _parseTitles(VCard card, Map<String, Object> result, String method)
-	{
-		for (Title title: card.getTitles())
-		{
-			String value = title.getValue();
-			System.out.println("CardSync._parseTitles() " + value);
-		}
-	}
-
-	private void _parseCategories(DataBase database, VCard card, Map<String, Object> result, String method)
-	{
-		for (Categories categories: card.getCategoriesList())
-		{
-			for (String category: categories.getValues())
-			{
-				//database.updateGroup(category, card);
-				int user = (int) result.get("User");
-				System.out.println("CardSync._parseCategories() User: " + user + " - Group: " + category);
-			}
-		}
-	}
 
 
 }
