@@ -26,6 +26,7 @@
 package io.github.prrvchr.uno.carddav;
 
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +90,14 @@ public final class DataBase
 		_closeCall(call);
 	}
 
-	public Map<String, CardColumn> getAddressbookColumn() throws SQLException
+	public Map<String, CardColumn> getAddressbookColumn()
+	throws SQLException, 
+			InstantiationException,
+			IllegalAccessException, 
+			IllegalArgumentException,
+			InvocationTargetException, 
+			NoSuchMethodException,
+			SecurityException
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
 		XResultSet result = call.executeQuery();
@@ -129,7 +137,14 @@ public final class DataBase
 		return maps;
 	}
 
-	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method, String typed) throws SQLException
+	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method, String typed) 
+			throws SQLException,
+					InstantiationException,
+					IllegalAccessException, 
+					IllegalArgumentException, 
+					InvocationTargetException,
+					NoSuchMethodException,
+					SecurityException
 	{
 		System.out.println("DataBase._getResultMap() 1");
 		String mapkey = null;

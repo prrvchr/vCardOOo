@@ -27,6 +27,7 @@ package io.github.prrvchr.uno.carddav;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,9 +44,10 @@ public final class CardColumn
 	private String m_property = null;
 	private String m_method = null;
 	private Boolean m_typed = null;
-	private List<String> m_methods = new ArrayList<String>();
 
-	private List<Map<String, Object>> m_columns = new ArrayList<Map<String, Object>>();
+	private List<String> m_methods = new ArrayList<String>();
+	private Map<List<String>, Integer> m_types = new HashMap<List<String>, Integer>();
+	private Map<String, Integer> m_ids = new HashMap<String, Integer>();
 
 	public CardColumn(CardColumn original)
 	{
@@ -53,7 +55,14 @@ public final class CardColumn
 		m_method = original.getMethod();
 		m_typed = original.getTyped();
 		m_methods = original.getMethods();
-		m_columns = original.getColumns();
+		if (m_typed) 
+		{
+			m_types = original.getTypes();
+		}
+		else
+		{
+			m_ids = original.getIds(); 
+		}
 	};
 
 	public CardColumn(String property, String method, Boolean typed)
@@ -77,36 +86,30 @@ public final class CardColumn
 	{
 		return m_typed;
 	};
-	
+
+	public Map<List<String>, Integer> getTypes()
+	{
+		return m_types;
+	};
+
+	public Map<String, Integer> getIds()
+	{
+		return m_ids;
+	};
+
 	public int getColumnId(List<VCardParameter> types, String getter)
-	throws SQLException, 
-		InstantiationException,
-		IllegalAccessException, 
-		IllegalArgumentException, 
-		InvocationTargetException,
-		NoSuchMethodException,
-		SecurityException
 	{
 		int id = 0;
-		for (Map<String, Object> map: m_columns)
+		if (m_typed) 
 		{
-			String method = (String) map.get("ParameterGetter");
-			if (getter.equals(method))
-			{
-				if (types == null || _getTypes(types).equals(_getTypes(map)))
-				{
-					id = (int) map.get("ColumnId");
-					break;
-				}
-			}
+			id = m_types.get(_getTypes(types));
+		}
+		else
+		{
+			id = m_ids.get(getter);
 		}
 		return id;
 	};
-
-	public List<Map<String, Object>> getColumns()
-	{
-		return new ArrayList<Map<String, Object>>(m_columns);
-	}
 
 	public List<String> getMethods()
 	{
@@ -114,10 +117,25 @@ public final class CardColumn
 	};
 
 	public void add(Map<String, Object> map)
+	throws SQLException,
+			InstantiationException,
+			IllegalAccessException,
+			IllegalArgumentException,
+			InvocationTargetException,
+			NoSuchMethodException,
+			SecurityException
 	{
 		String getter = (String) map.get("ParameterGetter");
 		if (!m_methods.contains(getter)) m_methods.add(getter);
-		m_columns.add(map);
+		int id = (int) map.get("ColumnId");
+		if (m_typed) 
+		{
+			m_types.put(_getTypes(map), id);
+		}
+		else
+		{
+			m_ids.put(getter, id); 
+		}
 	};
 
 	private static List<String> _getTypes(List<VCardParameter> types)

@@ -29,8 +29,6 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import com.sun.star.sdbc.SQLException;
-
 import ezvcard.VCard;
 import ezvcard.parameter.VCardParameter;
 
@@ -57,13 +55,11 @@ public final class CardProperty<T>
 	public <U> void parse(DataBase database,
 							CardColumn columns,
 							String query)
-	throws NoSuchMethodException,
-			SecurityException,
-			IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException,
-			SQLException,
-			InstantiationException
+	throws IllegalAccessException, 
+	IllegalArgumentException,
+	InvocationTargetException,
+	NoSuchMethodException, 
+	SecurityException
 	{
 		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)
