@@ -99,9 +99,10 @@ public final class CardColumn
 				}
 				else
 				{
-					System.out.println("CardColumn.getColumnId()1 " + types.getClass().getName());
 					@SuppressWarnings("unchecked")
-					List<U> type = (List<U>) _getTypes(types.getClass(), map);
+					Class<U> clazz = (Class<U>) types.get(0).getClass(); 
+					System.out.println("CardColumn.getColumnId()1 " + clazz.getName());
+					List<U> type = (List<U>) _getTypes(clazz, map);
 					Boolean same = true;
 					System.out.println("CardColumn.getColumnId()2 " + types + " - " + type);
 					for (U t: types)
