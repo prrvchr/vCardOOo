@@ -77,7 +77,7 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public <T> int getColumnId(List<T> types, String getter)
+	public <U> int getColumnId(List<U> types, String getter)
 	throws SQLException, 
 		InstantiationException,
 		IllegalAccessException, 
@@ -100,11 +100,11 @@ public final class CardColumn
 				else
 				{
 					@SuppressWarnings("unchecked")
-					Class<T> clazz = (Class<T>) types.getClass();
-					List<T> type = _getTypes(clazz, map);
+					Class<U> clazz = (Class<U>) types.getClass();
+					List<U> type = _getTypes(clazz, map);
 					Boolean same = true;
 					System.out.println("CardColumn.getColumnId()1 " + types + " - " + type);
-					for (T t: types)
+					for (U t: types)
 					{
 						if (!type.contains(t))
 						{
@@ -141,7 +141,7 @@ public final class CardColumn
 		m_columns.add(map);
 	};
 
-	private static <T> List<T> _getTypes(Class<T> clazz, Map<String, Object> map)
+	private static <U> List<U> _getTypes(Class<U> clazz, Map<String, Object> map)
 	throws SQLException,
 			InstantiationException,
 			IllegalAccessException,
@@ -150,18 +150,18 @@ public final class CardColumn
 			NoSuchMethodException,
 			SecurityException
 	{
-		List<T> types = new ArrayList<T>();
+		List<U> types = new ArrayList<U>();
 		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
 		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 		for (String value: list)
 		{
-			T type = _getInstanceOfT(clazz, value);
+			U type = _getInstanceOfT(clazz, value);
 			types.add(type);
 		}
 		return types;
 	}
 
-	private static <T> T _getInstanceOfT(Class<T> clazz, String value)
+	private static <U> U _getInstanceOfT(Class<U> clazz, String value)
 			throws InstantiationException,
 					IllegalAccessException,
 					IllegalArgumentException,

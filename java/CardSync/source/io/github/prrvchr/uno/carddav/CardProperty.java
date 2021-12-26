@@ -53,9 +53,9 @@ public final class CardProperty<T>
 
 
 	@SuppressWarnings("unchecked")
-	public void parse(DataBase database,
-					  CardColumn columns,
-					  String query)
+	public <U> void parse(DataBase database,
+							CardColumn columns,
+							String query)
 	throws NoSuchMethodException,
 			SecurityException,
 			IllegalAccessException,
@@ -69,13 +69,13 @@ public final class CardProperty<T>
 		{
 			for (String getter: columns.getMethods())
 			{
-				List<String> types = null;
+				List<U> types = null;
 				System.out.println("CardProperty.parseProperty()2 " + getter);
 				Object value = property.getClass().getMethod(getter).invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
 				if (columns.getTyped())
 				{
-					types = (List<String>) property.getClass().getMethod("getTypes").invoke(property);
+					types = (List<U>) property.getClass().getMethod("getTypes").invoke(property);
 					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
 				//String name = (String) column.get("ColumnName");
