@@ -47,7 +47,7 @@ public final class CardColumn
 	private Boolean m_typed = null;
 
 	private Map<String, Integer> m_methods = new HashMap<String, Integer>();
-	private Map<List<String>, Integer> m_types = new HashMap<List<String>, Integer>();
+	private Map<String, Map<List<String>, Integer>> m_types = new HashMap<String, Map<List<String>, Integer>>();
 
 	public CardColumn(CardColumn original)
 	{
@@ -83,9 +83,9 @@ public final class CardColumn
 		return m_typed;
 	};
 
-	public Map<List<String>, Integer> getTypes()
+	public Map<String, Map<List<String>, Integer>> getTypes()
 	{
-		return new HashMap<List<String>, Integer>(m_types);
+		return new HashMap<String, Map<List<String>, Integer>>(m_types);
 	};
 
 	public Map<String, Integer> getMethods()
@@ -103,7 +103,7 @@ public final class CardColumn
 		int id = 0;
 		if (m_typed) 
 		{
-			id = m_types.get(_getTypes(types));
+			id = m_types.get(getter).get(_getTypes(types));
 		}
 		else
 		{
@@ -123,10 +123,19 @@ public final class CardColumn
 	{
 		String getter = (String) map.get("ParameterGetter");
 		int id = (int) map.get("ColumnId");
-		if (!m_methods.containsKey(getter)) m_methods.put(getter, id);
-		if (m_typed) 
+		if (!m_methods.containsKey(getter)) {
+			m_methods.put(getter, id);
+			if (m_typed) 
+			{
+				Map<List<String>, Integer> type = new HashMap<List<String>, Integer>();
+				type.put(_getTypes(map), id);
+				m_types.put(getter, type);
+			}
+			
+		}
+		else if (m_typed) 
 		{
-			m_types.put(_getTypes(map), id);
+			m_types.get(getter).put(_getTypes(map), id);
 		}
 	};
 
