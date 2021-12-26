@@ -92,12 +92,21 @@ public final class CardColumn
 				else
 				{
 					List<String> t = _getTypes(map);
+					Boolean same = true;
 					System.out.println("CardColumn.getColumnId()1 " + types + " - " + t);
-					if (types == t)
+					for (String s: types)
 					{
-						System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
+						if (!t.contains(s))
+						{
+							System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
+							same = false;
+							break;
+						}
+					}
+					if (same)
+					{
 						id = (int) map.get("ColumnId");
-						break;
+						System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
 					}
 				}
 			}
