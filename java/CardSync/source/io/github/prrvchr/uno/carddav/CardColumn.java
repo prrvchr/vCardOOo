@@ -89,12 +89,12 @@ public final class CardColumn
 
 	public Map<List<String>, Integer> getTypes()
 	{
-		return m_types;
+		return new HashMap<List<String>, Integer>(m_types);
 	};
 
 	public Map<String, Integer> getIds()
 	{
-		return m_ids;
+		return new HashMap<String, Integer>(m_ids);
 	};
 
 	public int getColumnId(List<VCardParameter> types, String getter)
