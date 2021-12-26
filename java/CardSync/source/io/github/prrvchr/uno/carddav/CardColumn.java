@@ -82,23 +82,23 @@ public final class CardColumn
 		for (Map<String, Object> map: m_columns)
 		{
 			String method = (String) map.get("ParameterGetter");
-			if (types == null)
+			if (getter.equals(method))
 			{
-				if (getter.equals(method))
+				if (types == null)
 				{
 					id = (int) map.get("ColumnId");
 					break;
 				}
-			}
-			else
-			{
-				List<String> t = _getTypes(map);
-				System.out.println("CardColumn.getColumnId()1 " + types + " - " + t);
-				if (getter.equals(method) && types.containsAll(t) && t.containsAll(types))
+				else
 				{
-					System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
-					id = (int) map.get("ColumnId");
-					break;
+					List<String> t = _getTypes(map);
+					System.out.println("CardColumn.getColumnId()1 " + types + " - " + t);
+					if (types == t)
+					{
+						System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
+						id = (int) map.get("ColumnId");
+						break;
+					}
 				}
 			}
 		}
