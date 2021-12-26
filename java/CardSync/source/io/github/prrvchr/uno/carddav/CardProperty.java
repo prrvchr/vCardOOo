@@ -29,6 +29,8 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.sun.star.sdbc.SQLException;
 
@@ -83,15 +85,21 @@ public final class CardProperty<T>
 	};
 
 	private String _getCardValue(Method method,
-								T property)
+									T property)
 	throws IllegalAccessException, 
 	IllegalArgumentException, 
 	InvocationTargetException
 	{
 		String value = null;
 		Class<?> clazz = method.getReturnType();
+		Object object = method.invoke(property);
 		System.out.println("CardProperty._getCardValue(): " + clazz.getName());
-		value = (String) method.invoke(property);
+		if (clazz.getName().equals("java.util.List"))
+		{
+			List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+			if (list.size() > 0) value = list.get(0);
+		}
+		else value = (String) object;
 		return value;
 	}
 	
