@@ -93,11 +93,15 @@ public final class CardProperty<T>
 		String value = null;
 		Class<?> clazz = method.getReturnType();
 		Object object = method.invoke(property);
-		System.out.println("CardProperty._getCardValue(): " + clazz.getName());
+		System.out.println("CardProperty._getCardValue(): 1 " + clazz.getName());
 		if (clazz.getName().equals("java.util.List"))
 		{
 			List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
-			if (list.size() > 0) value = list.get(0);
+			if (list.size() > 0)
+			{
+				value = list.get(0);
+				System.out.println("CardProperty._getCardValue(): 2 Size" + list.size() + " - Value: " + value);
+			}
 		}
 		else value = (String) object;
 		return value;
