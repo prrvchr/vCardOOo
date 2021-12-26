@@ -27,6 +27,7 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import com.sun.star.sdbc.SQLException;
@@ -70,7 +71,8 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				List<VCardParameter> types = null;
-				String value = (String) property.getClass().getMethod(getter).invoke(property);
+				Method method = property.getClass().getMethod(getter);
+				String value = _getCardValue(method, property);
 				if (columns.getTyped())
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
@@ -79,5 +81,18 @@ public final class CardProperty<T>
 			}
 		}
 	};
+
+	private String _getCardValue(Method method,
+								T property)
+	throws IllegalAccessException, 
+	IllegalArgumentException, 
+	InvocationTargetException
+	{
+		String value = null;
+		Class<?> clazz = method.getReturnType();
+		System.out.println("CardProperty._getCardValue(): " + clazz.getName());
+		value = (String) method.invoke(property);
+		return value;
+	}
 	
 }
