@@ -91,7 +91,9 @@ public final class CardColumn
 			}
 			else
 			{
-				if (types.equals( _getTypes(map)))
+				List<String> t = _getTypes(map);
+				System.out.println("CardColumn.getColumnId()1 " + types + " - " + t);
+				if (types.equals(t))
 				{
 					id = (int) map.get("ColumnId");
 					break;
