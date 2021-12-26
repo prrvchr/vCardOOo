@@ -100,25 +100,12 @@ public final class CardColumn
 				}
 				else
 				{
-					List<String> type = _getTypes(map);
-					Boolean same = true;
-					System.out.println("CardColumn.getColumnId()2 " + types + " - " + type);
-					for (VCardParameter t: types)
+					System.out.println("CardColumn.getColumnId()2 " + types + " - " + _getTypes(types));
+					if (_getTypes(types).equals(_getTypes(map)))
 					{
-						for (String s: type)
-						{
-							if (!(t.getValue() == s))
-							{
-								System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
-								same = false;
-								break;
-							}
-						}
-					}
-					if (same)
-					{
+						System.out.println("CardColumn.getColumnId()3 " + _getTypes(map));
 						id = (int) map.get("ColumnId");
-						System.out.println("CardColumn.getColumnId()4 " + types + " - " + type);
+						break;
 					}
 				}
 			}
@@ -141,6 +128,16 @@ public final class CardColumn
 		String getter = (String) map.get("ParameterGetter");
 		if (!m_methods.contains(getter)) m_methods.add(getter);
 		m_columns.add(map);
+	};
+
+	private static List<String> _getTypes(List<VCardParameter> types)
+	{
+		List<String> type = new ArrayList<String>();
+		for (VCardParameter t: types)
+		{
+			type.add(t.getValue());
+		}
+		return type;
 	};
 
 	private static List<String> _getTypes(Map<String, Object> map)
