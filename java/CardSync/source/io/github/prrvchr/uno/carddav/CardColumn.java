@@ -78,7 +78,7 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public <U> int getColumnId(List<VCardParameter> types, String getter)
+	public int getColumnId(List<VCardParameter> types, String getter)
 	throws SQLException, 
 		InstantiationException,
 		IllegalAccessException, 
@@ -93,20 +93,10 @@ public final class CardColumn
 			String method = (String) map.get("ParameterGetter");
 			if (getter.equals(method))
 			{
-				if (types == null)
+				if (types == null || _getTypes(types).equals(_getTypes(map)))
 				{
 					id = (int) map.get("ColumnId");
 					break;
-				}
-				else
-				{
-					System.out.println("CardColumn.getColumnId()2 " + types + " - " + _getTypes(types));
-					if (_getTypes(types).equals(_getTypes(map)))
-					{
-						System.out.println("CardColumn.getColumnId()3 " + _getTypes(map));
-						id = (int) map.get("ColumnId");
-						break;
-					}
 				}
 			}
 		}
