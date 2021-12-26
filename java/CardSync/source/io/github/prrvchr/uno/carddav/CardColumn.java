@@ -25,6 +25,7 @@
 */
 package io.github.prrvchr.uno.carddav;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,14 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public int getColumnId(List<String> types, String getter) throws SQLException
+	public <T> int getColumnId(List<T> types, String getter)
+	throws SQLException, 
+		InstantiationException,
+		IllegalAccessException, 
+		IllegalArgumentException, 
+		InvocationTargetException,
+		NoSuchMethodException,
+		SecurityException
 	{
 		int id = 0;
 		for (Map<String, Object> map: m_columns)
@@ -91,12 +99,14 @@ public final class CardColumn
 				}
 				else
 				{
-					List<String> t = _getTypes(map);
+					@SuppressWarnings("unchecked")
+					Class<T> clazz = (Class<T>) types.getClass();
+					List<T> type = _getTypes(clazz, map);
 					Boolean same = true;
-					System.out.println("CardColumn.getColumnId()1 " + types + " - " + t);
-					for (String s: types)
+					System.out.println("CardColumn.getColumnId()1 " + types + " - " + type);
+					for (T t: types)
 					{
-						if (!t.contains(s))
+						if (!type.contains(t))
 						{
 							System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
 							same = false;
@@ -106,7 +116,7 @@ public final class CardColumn
 					if (same)
 					{
 						id = (int) map.get("ColumnId");
-						System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
+						System.out.println("CardColumn.getColumnId()3 " + types + " - " + type);
 					}
 				}
 			}
@@ -131,13 +141,36 @@ public final class CardColumn
 		m_columns.add(map);
 	};
 
-	private static List<String> _getTypes(Map<String, Object> map)
-	throws SQLException
+	private static <T> List<T> _getTypes(Class<T> clazz, Map<String, Object> map)
+	throws SQLException,
+			InstantiationException,
+			IllegalAccessException,
+			IllegalArgumentException,
+			InvocationTargetException,
+			NoSuchMethodException,
+			SecurityException
 	{
+		List<T> types = new ArrayList<T>();
 		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
-		return Stream.of(object).map(Object::toString).collect(Collectors.toList());
+		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+		for (String value: list)
+		{
+			T type = _getInstanceOfT(clazz, value);
+			types.add(type);
+		}
+		return types;
 	}
 
-
+	private static <T> T _getInstanceOfT(Class<T> clazz, String value)
+			throws InstantiationException,
+					IllegalAccessException,
+					IllegalArgumentException,
+					InvocationTargetException,
+					NoSuchMethodException,
+					SecurityException {
+        return clazz.getDeclaredConstructor().newInstance(value);
+     }
+	
+	
 
 }
