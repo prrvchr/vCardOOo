@@ -32,6 +32,7 @@ import java.util.List;
 import com.sun.star.sdbc.SQLException;
 
 import ezvcard.VCard;
+import ezvcard.parameter.VCardParameter;
 
 
 public final class CardProperty<T>
@@ -69,13 +70,13 @@ public final class CardProperty<T>
 		{
 			for (String getter: columns.getMethods())
 			{
-				List<U> types = null;
+				List<VCardParameter> types = null;
 				System.out.println("CardProperty.parseProperty()2 " + getter);
 				Object value = property.getClass().getMethod(getter).invoke(property);
 				System.out.println("CardProperty.parseProperty()3 " + value);
 				if (columns.getTyped())
 				{
-					types = (List<U>) property.getClass().getMethod("getTypes").invoke(property);
+					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
 					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
 				//String name = (String) column.get("ColumnName");

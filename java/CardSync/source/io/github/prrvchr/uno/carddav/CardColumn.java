@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 
 import com.sun.star.sdbc.SQLException;
 
+import ezvcard.parameter.VCardParameter;
 import io.github.prrvchr.uno.sdbc.Array;
 
 public final class CardColumn
@@ -77,7 +78,7 @@ public final class CardColumn
 		return m_typed;
 	};
 	
-	public <U> int getColumnId(List<U> types, String getter)
+	public <U> int getColumnId(List<VCardParameter> types, String getter)
 	throws SQLException, 
 		InstantiationException,
 		IllegalAccessException, 
@@ -99,19 +100,19 @@ public final class CardColumn
 				}
 				else
 				{
-					@SuppressWarnings("unchecked")
-					Class<U> clazz = (Class<U>) types.get(0).getClass(); 
-					System.out.println("CardColumn.getColumnId()1 " + clazz.getName());
-					List<U> type = (List<U>) _getTypes(clazz, map);
+					List<String> type = _getTypes(map);
 					Boolean same = true;
 					System.out.println("CardColumn.getColumnId()2 " + types + " - " + type);
-					for (U t: types)
+					for (VCardParameter t: types)
 					{
-						if (!type.contains(t))
+						for (String s: type)
 						{
-							System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
-							same = false;
-							break;
+							if (!(t.getValue() == s))
+							{
+								System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
+								same = false;
+								break;
+							}
 						}
 					}
 					if (same)
@@ -142,7 +143,7 @@ public final class CardColumn
 		m_columns.add(map);
 	};
 
-	private static <U> List<U> _getTypes(Class<U> clazz, Map<String, Object> map)
+	private static List<String> _getTypes(Map<String, Object> map)
 	throws SQLException,
 			InstantiationException,
 			IllegalAccessException,
@@ -151,13 +152,8 @@ public final class CardColumn
 			NoSuchMethodException,
 			SecurityException
 	{
-		List<U> types = new ArrayList<U>();
 		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
-		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
-		for (String value: list)
-		{
-			types.add(clazz.getDeclaredConstructor(String.class).newInstance(value));
-		}
+		List<String> types = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 		return types;
 	};
 
