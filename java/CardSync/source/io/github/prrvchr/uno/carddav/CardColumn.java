@@ -83,8 +83,7 @@ public final class CardColumn
 		{
 			if (types == null)
 			{
-				String value = (String) map.get("ParameterGetter");
-				if (getter.equals(value))
+				if (getter.equals((String) map.get("ParameterGetter")))
 				{
 					id = (int) map.get("ColumnId");
 					break;
@@ -92,9 +91,7 @@ public final class CardColumn
 			}
 			else
 			{
-				Object[] object = ((Array) map.get("TypeValues")).getArray(null);
-				List<String> values = (List<String>) _convertObjectToList(object);
-				if (types.equals(values))
+				if (types.equals( _getTypes(map)))
 				{
 					id = (int) map.get("ColumnId");
 					break;
@@ -103,16 +100,7 @@ public final class CardColumn
 		}
 		return id;
 	};
-	
-	private static List<String> _convertObjectToList(Object[] object)
-	{
-		//List<String> list = new ArrayList<>();
-		//list = (List<String>) Arrays.asList(object);
-		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
-		return list;
-	}
-	
-	
+
 	public List<Map<String, Object>> getColumns()
 	{
 		return new ArrayList<Map<String, Object>>(m_columns);
@@ -129,6 +117,14 @@ public final class CardColumn
 		if (!m_methods.contains(getter)) m_methods.add(getter);
 		m_columns.add(map);
 	};
+
+	private static List<String> _getTypes(Map<String, Object> map)
+	throws SQLException
+	{
+		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
+		return Stream.of(object).map(Object::toString).collect(Collectors.toList());
+	}
+
 
 
 }
