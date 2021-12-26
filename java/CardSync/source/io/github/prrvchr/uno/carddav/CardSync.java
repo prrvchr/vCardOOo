@@ -120,7 +120,7 @@ implements XJob
 					System.out.println("CardSync.execute() 4");
 					int id = (int) result.get("Card");
 					String data = (String) result.get("Data");
-					status = _parseCard(database, id, data, columns, query);
+					status = _parseCard(database, id, data, columns);
 				}
 			}
 			if (status) database.updateUser();
@@ -138,8 +138,7 @@ implements XJob
 	private boolean _parseCard(DataBase database,
 								int id,
 								String data,
-								Map<String, CardColumn> columns,
-								String query)
+								Map<String, CardColumn> columns)
 	throws IOException, 
 			NoSuchMethodException, 
 			IllegalAccessException, 
@@ -157,7 +156,7 @@ implements XJob
 			// FIXME: We do not parse Properties that do not have a Column
 			if (!columns.containsKey(name)) continue;
 			CardColumn column = columns.get(name);
-			_parseCardProperty(database, id, card, column, query);
+			_parseCardProperty(database, id, card, column);
 		}
 		return true;
 	}
@@ -165,8 +164,7 @@ implements XJob
 	private <T> void _parseCardProperty(DataBase database,
 										int id,
 										VCard card,
-										CardColumn column,
-										String query)
+										CardColumn column)
 	throws NoSuchMethodException,
 			IllegalAccessException,
 			IllegalArgumentException,
@@ -176,7 +174,7 @@ implements XJob
 			InstantiationException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
-		property.parse(database, id, column, query);
+		property.parse(database, id, column);
 	}
 
 

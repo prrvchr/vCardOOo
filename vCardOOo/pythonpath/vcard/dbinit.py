@@ -269,4 +269,5 @@ def getQueries():
             ('createUpdateUser', None),
             ('createSelectChangedCards', None),
             ('insertSuperUser', g_superuser),
-            ('createSelectAddressbookColumn', None))
+            ('createSelectAddressbookColumn', None),
+            ('createMergeCardValue', None))

@@ -123,65 +123,6 @@ def getSqlQuery(ctx, name, format=None):
         f = (format, ','.join(c))
         query = getSqlQuery(ctx, 'createTextTable', f)
 
-
-
-    elif name == 'createTableSettings':
-        c1 = '"Setting" INTEGER NOT NULL PRIMARY KEY'
-        c2 = '"Name" VARCHAR(100) NOT NULL'
-        c3 = '"Value1" VARCHAR(100) NOT NULL'
-        c4 = '"Value2" VARCHAR(100) DEFAULT NULL'
-        c5 = '"Value3" VARCHAR(100) DEFAULT NULL'
-        k1 = 'CONSTRAINT "UniqueSettingsName" UNIQUE("Name")'
-        c = (c1, c2, c3, c4, c5, k1)
-        p = ','.join(c)
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "Settings"(%s)' % p
-
-    elif name == 'createTableTableType':
-        c1 = '"Table" INTEGER NOT NULL'
-        c2 = '"Type" INTEGER NOT NULL'
-        c3 = '"Default" BOOLEAN DEFAULT NULL'
-        k1 = 'PRIMARY KEY("Table","Type")'
-        #k2 = 'CONSTRAINT "UniqueTypesDefault" UNIQUE("Table","Default")'
-        k2 = 'CONSTRAINT "ForeignTableTypeTable" FOREIGN KEY("Table") REFERENCES '
-        k2 += '"Tables"("Table") ON DELETE CASCADE ON UPDATE CASCADE'
-        k3 = 'CONSTRAINT "ForeignTableTypeType" FOREIGN KEY("Type") REFERENCES '
-        k3 += '"Types"("Type") ON DELETE CASCADE ON UPDATE CASCADE'
-        c = (c1, c2, c3, k1, k2, k3)
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "TableType"(%s)' % ','.join(c)
-
-    elif name == 'createTableLabels':
-        c1 = '"Label" INTEGER NOT NULL PRIMARY KEY'
-        c2 = '"Name" VARCHAR(100) NOT NULL'
-        k1 = 'CONSTRAINT "UniqueLabelsName" UNIQUE("Name")'
-        c = (c1, c2, k1)
-        p = ','.join(c)
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "Labels"(%s)' % p
-
-    elif name == 'createTableTableLabel':
-        c1 = '"Table" INTEGER NOT NULL'
-        c2 = '"Label" INTEGER NOT NULL'
-        c3 = '"View" VARCHAR(10) DEFAULT NULL'
-        k1 = 'PRIMARY KEY("Table","Label")'
-        k2 = 'CONSTRAINT "UniqueTableLabelView" UNIQUE("View")'
-        k3 = 'CONSTRAINT "ForeignTableLabelTable" FOREIGN KEY("Table") REFERENCES '
-        k3 += '"Tables"("Table") ON DELETE CASCADE ON UPDATE CASCADE'
-        k4 = 'CONSTRAINT "ForeignTableLabelLabel" FOREIGN KEY("Label") REFERENCES '
-        k4 += '"Labels"("Label") ON DELETE CASCADE ON UPDATE CASCADE'
-        c = (c1, c2, c3, k1, k2, k3, k4)
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "TableLabel"(%s)' % ','.join(c)
-
-    elif name == 'createTableFields':
-        c1 = '"Field" INTEGER NOT NULL PRIMARY KEY'
-        c2 = '"Method" VARCHAR(100) NOT NULL'
-        c3 = '"Name" VARCHAR(100) NOT NULL'
-        c4 = '"Type" VARCHAR(100) NOT NULL'
-        c5 = '"Table" VARCHAR(100) NOT NULL'
-        c6 = '"Column" INTEGER NOT NULL'
-        k1 = 'CONSTRAINT "UniqueFieldsName" UNIQUE("Method", "Name")'
-        c = (c1, c2, c3, c4, c5, c6, k1)
-        p = ','.join(c)
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "Fields"(%s)' % p
-
     elif name == 'setTableSource':
         query = 'SET TABLE "%s" SOURCE "%s"' % (format, g_csv % format)
 
@@ -706,6 +647,20 @@ CREATE PROCEDURE "SelectAddressbookColumn"()
     OPEN RSLT;
   END"""
 
+    elif name == 'createMergeCardValue':
+        query = """\
+CREATE PROCEDURE "MergeCardValue"(IN AID INTEGER,
+                                  IN CID INTEGER,
+                                  IN DATA VARCHAR(128))
+  SPECIFIC "MergeCardValue_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    MERGE INTO "CardValues" USING (VALUES(AID,CID,DATA))
+      AS vals(x,y,z) ON "Card"=vals.x AND "Column"=vals.y
+        WHEN MATCHED THEN UPDATE SET "Value"=vals.z
+        WHEN NOT MATCHED THEN INSERT ("Card","Column","Value")
+          VALUES vals.x,vals.y,vals.z;
+  END"""
 
 
     elif name == 'createInsertUser1':

@@ -3,3 +3,4 @@ Table|Name|Identity|View|Versioned
 1|Addressbooks|||false
 2|Groups|||false
 3|Cards|||true
+4|CardValues|||false

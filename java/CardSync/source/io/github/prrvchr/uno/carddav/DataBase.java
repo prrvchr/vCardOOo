@@ -108,20 +108,19 @@ public final class DataBase
 
 	public void parseCard(int card,
 							int column,
-							String value,
-							String method)
+							String value)
 	throws SQLException
 	{
-		String query = (method.equals("Inserted")) ? "CALL \"insertCardValue\"(?,?,?)" : "CALL \"updateCardValue\"(?,?,?)";
-		System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value + " - Method: " + method);
-		//XPreparedStatement call = m_xConnection.prepareCall(query);
-		//XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
-		//parameters.setInt(1, card);
-		//parameters.setInt(2, column);
-		//if (value == null) parameters.setNull(3, DataType.VARCHAR);
-		//else parameters.setString(3, value);
-		//call.executeUpdate();
-		//_closeCall(call);
+		String query = "CALL \"MergeCardValue\"(?,?,?)";
+		System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value);
+		XPreparedStatement call = m_xConnection.prepareCall(query);
+		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+		parameters.setInt(1, card);
+		parameters.setInt(2, column);
+		if (value == null) parameters.setNull(3, DataType.VARCHAR);
+		else parameters.setString(3, value);
+		call.executeUpdate();
+		_closeCall(call);
 	};
 
 	public int deleteCard(int id)

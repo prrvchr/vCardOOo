@@ -59,8 +59,7 @@ public final class CardProperty<T>
 	@SuppressWarnings("unchecked")
 	public <U> void parse(DataBase database,
 							int id,
-							CardColumn columns,
-							String query)
+							CardColumn columns)
 	throws IllegalAccessException, 
 	IllegalArgumentException,
 	InvocationTargetException,
@@ -79,7 +78,7 @@ public final class CardProperty<T>
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
 				}
-				database.parseCard(id, columns.getColumnId(types, getter), value, query);
+				database.parseCard(id, columns.getColumnId(types, getter), value);
 			}
 		}
 	};
@@ -100,7 +99,7 @@ public final class CardProperty<T>
 			if (list.size() > 0)
 			{
 				value = list.get(0);
-				System.out.println("CardProperty._getCardValue(): 2 Size" + list.size() + " - Value: " + value);
+				System.out.println("CardProperty._getCardValue(): 2 Size: " + list.size() + " - Value: " + value);
 			}
 		}
 		else value = (String) object;
