@@ -61,7 +61,8 @@ public final class CardProperty<T>
 			IllegalAccessException,
 			IllegalArgumentException,
 			InvocationTargetException,
-			SQLException
+			SQLException,
+			InstantiationException
 	{
 		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)

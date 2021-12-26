@@ -144,7 +144,8 @@ implements XJob
 			IllegalArgumentException, 
 			InvocationTargetException, 
 			SecurityException, 
-			SQLException
+			SQLException,
+			InstantiationException
 	{
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
@@ -168,7 +169,8 @@ implements XJob
 			IllegalArgumentException,
 			InvocationTargetException,
 			SecurityException,
-			SQLException
+			SQLException,
+			InstantiationException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
 		property.parse(database, column, query);
