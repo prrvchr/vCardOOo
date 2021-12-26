@@ -29,6 +29,8 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import com.sun.star.sdbc.SQLException;
+
 import ezvcard.VCard;
 import ezvcard.parameter.VCardParameter;
 
@@ -53,31 +55,27 @@ public final class CardProperty<T>
 
 	@SuppressWarnings("unchecked")
 	public <U> void parse(DataBase database,
+							int id,
 							CardColumn columns,
 							String query)
 	throws IllegalAccessException, 
 	IllegalArgumentException,
 	InvocationTargetException,
 	NoSuchMethodException, 
-	SecurityException
+	SecurityException, 
+	SQLException
 	{
-		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)
 		{
 			for (String getter: columns.getGetters())
 			{
 				List<VCardParameter> types = null;
-				System.out.println("CardProperty.parseProperty()2 " + getter);
-				Object value = property.getClass().getMethod(getter).invoke(property);
-				System.out.println("CardProperty.parseProperty()3 " + value);
+				String value = (String) property.getClass().getMethod(getter).invoke(property);
 				if (columns.getTyped())
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
-					System.out.println("CardProperty.parseProperty()4 " + columns.getTyped() + " - " + types);
 				}
-				//String name = (String) column.get("ColumnName");
-				int id = columns.getColumnId(types, getter);
-				System.out.println("CardProperty.parseProperty()5 " + value + " - " + id);
+				database.parseCard(id, columns.getColumnId(types, getter), value, query);
 			}
 		}
 	};

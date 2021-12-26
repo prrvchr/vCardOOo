@@ -106,7 +106,24 @@ public final class DataBase
 		return maps;
 	}
 
-	
+	public void parseCard(int card,
+							int column,
+							String value,
+							String method)
+	throws SQLException
+	{
+		String query = (method.equals("Inserted")) ? "CALL \"insertCardValue\"(?,?,?)" : "CALL \"updateCardValue\"(?,?,?)";
+		System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value + " - Method: " + method);
+		//XPreparedStatement call = m_xConnection.prepareCall(query);
+		//XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
+		//parameters.setInt(1, card);
+		//parameters.setInt(2, column);
+		//if (value == null) parameters.setNull(3, DataType.VARCHAR);
+		//else parameters.setString(3, value);
+		//call.executeUpdate();
+		//_closeCall(call);
+	};
+
 	public int deleteCard(int id)
 	{
 		return 1;
@@ -146,7 +163,6 @@ public final class DataBase
 					NoSuchMethodException,
 					SecurityException
 	{
-		System.out.println("DataBase._getResultMap() 1");
 		String mapkey = null;
 		CardColumn column = null;
 		Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
@@ -165,7 +181,6 @@ public final class DataBase
 			column.add(map);
 		}
 		if (column != null) maps.put(mapkey, new CardColumn(column));
-		System.out.println("DataBase._getResultMap() 2");
 		return maps;
 	}
 

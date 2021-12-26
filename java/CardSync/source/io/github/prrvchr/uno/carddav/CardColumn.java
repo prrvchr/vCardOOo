@@ -123,7 +123,8 @@ public final class CardColumn
 	{
 		String getter = (String) map.get("ParameterGetter");
 		int id = (int) map.get("ColumnId");
-		if (!m_methods.containsKey(getter)) {
+		if (!m_methods.containsKey(getter))
+		{
 			m_methods.put(getter, id);
 			if (m_typed) 
 			{
@@ -131,7 +132,6 @@ public final class CardColumn
 				type.put(_getTypes(map), id);
 				m_types.put(getter, type);
 			}
-			
 		}
 		else if (m_typed) 
 		{
