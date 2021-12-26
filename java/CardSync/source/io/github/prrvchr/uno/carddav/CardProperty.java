@@ -64,7 +64,7 @@ public final class CardProperty<T>
 		System.out.println("CardProperty.parseProperty()1");
 		for (T property: m_properties)
 		{
-			for (String getter: columns.getMethods())
+			for (String getter: columns.getGetters())
 			{
 				List<VCardParameter> types = null;
 				System.out.println("CardProperty.parseProperty()2 " + getter);

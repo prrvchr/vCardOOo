@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,9 +46,8 @@ public final class CardColumn
 	private String m_method = null;
 	private Boolean m_typed = null;
 
-	private List<String> m_methods = new ArrayList<String>();
+	private Map<String, Integer> m_methods = new HashMap<String, Integer>();
 	private Map<List<String>, Integer> m_types = new HashMap<List<String>, Integer>();
-	private Map<String, Integer> m_ids = new HashMap<String, Integer>();
 
 	public CardColumn(CardColumn original)
 	{
@@ -58,10 +58,6 @@ public final class CardColumn
 		if (m_typed) 
 		{
 			m_types = original.getTypes();
-		}
-		else
-		{
-			m_ids = original.getIds(); 
 		}
 	};
 
@@ -92,11 +88,16 @@ public final class CardColumn
 		return new HashMap<List<String>, Integer>(m_types);
 	};
 
-	public Map<String, Integer> getIds()
+	public Map<String, Integer> getMethods()
 	{
-		return new HashMap<String, Integer>(m_ids);
+		return new HashMap<String, Integer>(m_methods);
 	};
 
+	public Set<String> getGetters()
+	{
+		return m_methods.keySet();
+	};
+	
 	public int getColumnId(List<VCardParameter> types, String getter)
 	{
 		int id = 0;
@@ -106,14 +107,9 @@ public final class CardColumn
 		}
 		else
 		{
-			id = m_ids.get(getter);
+			id = m_methods.get(getter);
 		}
 		return id;
-	};
-
-	public List<String> getMethods()
-	{
-		return new ArrayList<String>(m_methods);
 	};
 
 	public void add(Map<String, Object> map)
@@ -126,15 +122,11 @@ public final class CardColumn
 			SecurityException
 	{
 		String getter = (String) map.get("ParameterGetter");
-		if (!m_methods.contains(getter)) m_methods.add(getter);
 		int id = (int) map.get("ColumnId");
+		if (!m_methods.containsKey(getter)) m_methods.put(getter, id);
 		if (m_typed) 
 		{
 			m_types.put(_getTypes(map), id);
-		}
-		else
-		{
-			m_ids.put(getter, id); 
 		}
 	};
 
