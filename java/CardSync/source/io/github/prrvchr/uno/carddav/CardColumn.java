@@ -156,7 +156,7 @@ public final class CardColumn
 		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 		for (String value: list)
 		{
-			types.add(clazz.getDeclaredConstructor().newInstance(value));
+			types.add(clazz.getDeclaredConstructor(String.class).newInstance(value));
 		}
 		return types;
 	};
