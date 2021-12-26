@@ -99,16 +99,16 @@ public final class CardColumn
 				}
 				else
 				{
+					System.out.println("CardColumn.getColumnId()1 " + types.getClass().getName());
 					@SuppressWarnings("unchecked")
-					Class<U> clazz = (Class<U>) types.getClass();
-					List<U> type = _getTypes(clazz, map);
+					List<U> type = (List<U>) _getTypes(types.getClass(), map);
 					Boolean same = true;
-					System.out.println("CardColumn.getColumnId()1 " + types + " - " + type);
+					System.out.println("CardColumn.getColumnId()2 " + types + " - " + type);
 					for (U t: types)
 					{
 						if (!type.contains(t))
 						{
-							System.out.println("CardColumn.getColumnId()2 " + types + " - " + t);
+							System.out.println("CardColumn.getColumnId()3 " + types + " - " + t);
 							same = false;
 							break;
 						}
@@ -116,7 +116,7 @@ public final class CardColumn
 					if (same)
 					{
 						id = (int) map.get("ColumnId");
-						System.out.println("CardColumn.getColumnId()3 " + types + " - " + type);
+						System.out.println("CardColumn.getColumnId()4 " + types + " - " + type);
 					}
 				}
 			}
@@ -155,22 +155,10 @@ public final class CardColumn
 		List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 		for (String value: list)
 		{
-			U type = _getInstanceOfT(clazz, value);
-			types.add(type);
+			types.add(clazz.getDeclaredConstructor().newInstance(value));
 		}
 		return types;
-	}
+	};
 
-	private static <U> U _getInstanceOfT(Class<U> clazz, String value)
-			throws InstantiationException,
-					IllegalAccessException,
-					IllegalArgumentException,
-					InvocationTargetException,
-					NoSuchMethodException,
-					SecurityException {
-        return clazz.getDeclaredConstructor().newInstance(value);
-     }
-	
-	
 
 }
