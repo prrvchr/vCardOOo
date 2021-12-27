@@ -147,7 +147,6 @@ class DataBase(unohelper.Base):
             executeSqlQueries(statement, tables)
             executeQueries(self._ctx, statement, getQueries())
             columns = self._getAddressbookColumns(connection)
-            #views = getViews(self._ctx, columns, self._getViewName())
             views = getViews(self._ctx, columns, 'AddressBook')
             executeSqlQueries(statement, views)
             statement.close()
@@ -205,7 +204,7 @@ class DataBase(unohelper.Base):
         call.close()
         return user
 
-    def getAddressbookColumns(self, connection):
+    def _getAddressbookColumns(self, connection):
         columns = OrderedDict()
         call = getDataSourceCall(self._ctx, connection, 'getAddressbookColumns')
         result = call.executeQuery()
