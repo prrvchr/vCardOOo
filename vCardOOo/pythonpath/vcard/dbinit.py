@@ -194,18 +194,36 @@ def getTablesAndStatements(ctx, connection, version=g_version):
 def getViews(ctx, result, name):
     queries = []
     format = {'Schema': 'PUBLIC',
-              'Table': 'Card',
+              'RefTable': 'Cards',
+              'RefColumn': 'Card',
+              'DataTable': 'CardValues',
+              'DataColumn': 'Column',
+              'DataValue': 'Value',
               'Id': 'Path'}
+    table = 'LEFT JOIN "%(DataTable)s" AS C%(TableNum)s ON "%(RefTable)s"."%(RefColumn)s"=C%(TableNum)s."%(RefColumn)s" '
+    table += 'AND C%(TableNum)s."%(DataColumn)s"=%(ColumnId)s'
+    select = 'C%(TableNum)s."%(DataValue)s"'
+    on = ''
     for view, columns in result.items():
+        i = 0;
+        tables = []
+        selects = []
+        for name, index in columns.items():
+            format['ColumnId'] = index
+            format['TableNum'] = i
+            tables.append(table % format)
+            selects.append(select % format)
+            i +=1
         names = columns.keys()
         indexes = columns.values()
+        tables = 'LEFT JOIN %(Schema)s."%(DataTable)s" AS C'
         format['ViewName'] = view
         format['ViewColumn'] = '","'.join(names)
-        format['ViewSelect'] = ''
-        format['ViewTable'] = ''
-        q = 'CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(ViewName)s" ("%(Id)s","%(ViewColumn)s") '
-        q += 'AS SELECT "%(Schema)s"."%(Table)s"."%(Id)s","%(ViewSelect)s" '
-        q += 'FROM "%(Schema)s"."%(Table)s" %(ViewTable)s'
+        format['ViewSelect'] = ' '.join(selects)
+        format['ViewTable'] = ' '.join(tables)
+        q = 'CREATE VIEW IF NOT EXISTS %(Schema)s."%(ViewName)s" ("%(Id)s","%(ViewColumn)s") '
+        q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(Id)s","%(ViewSelect)s" '
+        q += 'FROM %(Schema)s."%(RefTable)s" %(ViewTable)s'
         query = q % format
         print("dbinit.getViews() View: %s " % query)
     return queries
