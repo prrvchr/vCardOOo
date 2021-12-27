@@ -87,7 +87,8 @@ def getSqlQuery(ctx, name, format=None):
         c2 = '"Value" VARCHAR(100) NOT NULL'
         c3 = '"Getter" VARCHAR(100) NOT NULL'
         c4 = '"Typed" BOOLEAN DEFAULT FALSE'
-        c = (c1, c2, c3, c4)
+        c5 = '"View" VARCHAR(100) DEFAULT NULL'
+        c = (c1, c2, c3, c4, c5)
         f = (format, ','.join(c))
         query = getSqlQuery(ctx, 'createTextTable', f)
 
@@ -157,19 +158,9 @@ def getSqlQuery(ctx, name, format=None):
         query = ' WITH SYSTEM VERSIONING'
 
 # Create Dynamic View Queries
-    elif name == 'getViewColumns':
+    elif name == 'getAddressBookView':
         query = '''\
-SELECT C."Value",C."Method" AS "PropertyMethod",P."Method" AS "ParameterMethod",
-    GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR '') ||
-    COALESCE(PP."Column",'') AS "ColumnName",
-    ARRAY_AGG(T."Value") AS "Types",
-    ROW_NUMBER() AS "ColumnId"
-  FROM "CardProperty" AS C
-  LEFT JOIN "CardPropertyParameter" AS PP ON C."Property"=PP."Property"
-  JOIN "CardParameter" AS P ON PP."Parameter"=P."Parameter"
-  LEFT JOIN "CardPropertyType" AS PT ON C."Property"=PT."Property"
-  JOIN "CardType" AS T ON PT."Type"=T."Type"
-  GROUP BY C."Property",PT."Group"
+CREATE VIEW "%(View)s" ("%(Columns)s") AS SELECT %(Select)s FROM "Card" %(Table)s
 ''' % format
 
     elif name == 'createCardColumnsView':
@@ -621,16 +612,17 @@ CREATE PROCEDURE "UpdateUser"()
     UPDATE "Users" SET "Created"=DATETIME WHERE "User"=0;
   END"""
 
-    elif name == 'createSelectAddressbookColumn':
+    elif name == 'createSelectAddressbookColumns':
         query = """\
-CREATE PROCEDURE "SelectAddressbookColumn"()
-  SPECIFIC "SelectAddressbookColumn_1"
+CREATE PROCEDURE "SelectAddressbookColumns"()
+  SPECIFIC "SelectAddressbookColumns_1"
   READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
       SELECT ROWNUM() AS "ColumnId",
         C."Value" AS "PropertyName",
+        C."View" AS "ViewName",
         C."Getter" AS "PropertyGetter",
         P."Getter" AS "ParameterGetter",
         C."Typed",
@@ -858,7 +850,8 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
         query = 'CALL "MergeCard"(?,?,?,?)'
     elif name == 'deleteCard':
         query = 'CALL "DeleteCard"(?,?)'
-
+    elif name == 'getAddressbookColumns':
+        query = 'CALL "SelectAddressbookColumns"()'
 
     elif name == 'mergePeople':
         query = 'CALL "MergePeople"(?,?,?,?,?)'

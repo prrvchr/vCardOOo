@@ -99,7 +99,7 @@ public final class DataBase
 			NoSuchMethodException,
 			SecurityException
 	{
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumn\"()");
+		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
 		XResultSet result = call.executeQuery();
 		Map<String, CardColumn> maps = _getResultMap(result, "PropertyName", "PropertyGetter", "Typed");
 		_closeCall(call);

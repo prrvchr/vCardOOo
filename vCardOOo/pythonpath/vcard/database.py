@@ -71,6 +71,7 @@ from .dbtool import getDataSourceConnection
 from .dbtool import executeQueries
 from .dbtool import getDictFromResult
 from .dbtool import getKeyMapFromResult
+from .dbtool import getRowDict
 from .dbtool import getSequenceFromResult
 from .dbtool import getKeyMapKeyMapFromResult
 
@@ -144,6 +145,9 @@ class DataBase(unohelper.Base):
             tables, statements = getTablesAndStatements(self._ctx, connection, version)
             executeSqlQueries(statement, tables)
             executeQueries(self._ctx, statement, getQueries())
+            columns = getAddressbookColumns(connection)
+            views = getViews(self._ctx, columns, self._getViewName())
+            executeSqlQueries(statement, views)
             statement.close()
         return error
 
@@ -198,6 +202,21 @@ class DataBase(unohelper.Base):
             user = getKeyMapFromResult(result)
         call.close()
         return user
+
+    def getAddressbookColumns(self, connection):
+        columns = OrderedDict()
+        call = getDataSourceCall(self._ctx, connection, 'getAddressbookColumns')
+        result = call.executeQuery()
+        count = result.MetaData.ColumnCount +1
+        while result.next():
+            row = getRowDict(result, None, count)
+            view = row.get("ViewName")
+            if view is not None:
+                if view not in columns:
+                    columns[view] = OrderedDict()
+                columns[view][row.get("ColumnName")] = row.get("ColumnId")
+        call.close()
+        return columns
 
     def selectAddressbook(self, uid, aid, name):
         addressbook = None

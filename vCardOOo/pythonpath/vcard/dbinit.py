@@ -191,6 +191,14 @@ def getTablesAndStatements(ctx, connection, version=g_version):
     call.close()
     return tables, statements
 
+def getViews(ctx, result, name):
+    queries = []
+    for view, columns in result.items():
+        indexes = columns.keys()
+        names = columns.values()
+        print("dbinit.getViews() View: %s - Indexes: %s - Names: %s" % (view, indexes, names))
+    return queries
+
 def getViewsAndTriggers(ctx, statement, name):
     c1 = []
     s1 = []
@@ -269,5 +277,5 @@ def getQueries():
             ('createUpdateUser', None),
             ('createSelectChangedCards', None),
             ('insertSuperUser', g_superuser),
-            ('createSelectAddressbookColumn', None),
+            ('createSelectAddressbookColumns', None),
             ('createMergeCardValue', None))
