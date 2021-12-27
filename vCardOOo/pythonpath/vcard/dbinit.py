@@ -216,12 +216,11 @@ def getViews(ctx, result, name):
             i += 1
         names = columns.keys()
         indexes = columns.values()
-        tables = 'LEFT JOIN %(Schema)s."%(DataTable)s" AS C'
         format['ViewName'] = view
         format['ViewColumn'] = '","'.join(names)
         format['ViewSelect'] = ','.join(selects)
         format['ViewTable'] = ' '.join(tables)
-        q = 'CREATE VIEW IF NOT EXISTS %(Schema)s."%(ViewName)s" ("%(RefColumn)s","%(ViewColumn)s") '
+        q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(RefColumn)s","%(ViewColumn)s") '
         q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(RefColumn)s",%(ViewSelect)s '
         q += 'FROM %(Schema)s."%(RefTable)s" %(ViewTable)s'
         query = q % format
