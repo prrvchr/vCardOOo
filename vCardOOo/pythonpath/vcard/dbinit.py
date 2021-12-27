@@ -192,35 +192,52 @@ def getTablesAndStatements(ctx, connection, version=g_version):
     return tables, statements
 
 def getViews(ctx, result, name):
+    col1 = []
+    sel1 = []
+    tab1 = []
     queries = []
     format = {'CardTable': 'Cards',
               'CardColumn': 'Card',
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
               'DataValue': 'Value'}
-    table = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
-    table += 'AND C%(AliasNum)s."%(DataColumn)s"=%(ColumnId)s'
-    select = 'C%(AliasNum)s."%(DataValue)s"'
-    for view, columns in result.items():
+    query = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
+    query += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
+    query += 'FROM "%(CardTable)s" %(ViewTable)s'
+    t1 = 'LEFT JOIN "%(ViewName)s" ON "%(CardTable)s"."%(CardColumn)s"="%(ViewName)s"."%(CardColumn)s"'
+    t2 = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
+    t2 += 'AND C%(AliasNum)s."%(DataColumn)s"=%(ColumnId)s'
+    s1 = '"%(ViewName)s"."%(ColumnName)s"'
+    s2 = 'C%(AliasNum)s."%(DataValue)s"'
+    for viewname, columns in result.items():
         i = 0
-        tables = []
-        selects = []
-        for index in columns.values():
-            format['ColumnId'] = index
+        col2 = columns.keys()
+        sel2 = []
+        tab2 = []
+        col1 += col2
+        format['ViewName'] = viewname
+        for key, value in columns.items():
+            format['ColumnName'] = key
+            format['ColumnId'] = value
             format['AliasNum'] = i
-            tables.append(table % format)
-            selects.append(select % format)
+            tab2.append(t2 % format)
+            sel1.append(s1 % format)
+            sel2.append(s2 % format)
             i += 1
-        names = columns.keys()
-        format['ViewName'] = view
-        format['ViewColumn'] = '","'.join(names)
-        format['ViewSelect'] = ','.join(selects)
-        format['ViewTable'] = ' '.join(tables)
-        q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
-        q += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
-        q += 'FROM "%(CardTable)s" %(ViewTable)s'
-        query = q % format
-        print("dbinit.getViews() View: %s " % query)
+        format['ViewColumn'] = '","'.join(col2)
+        format['ViewSelect'] = ','.join(sel2)
+        format['ViewTable'] = ' '.join(tab2)
+        q = query % format
+        queries.append(q)
+        tab1.append(t1 % format)
+        print("dbinit.getViews() View: %s " % q)
+    format['ViewName'] = name
+    format['ViewColumn'] = '","'.join(col1)
+    format['ViewSelect'] = ','.join(sel1)
+    format['ViewTable'] = ' '.join(tab1)
+    q = query % format
+    queries.append(q)
+    print("dbinit.getViews() View: %s " % q)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
