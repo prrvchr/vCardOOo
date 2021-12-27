@@ -145,7 +145,7 @@ class DataBase(unohelper.Base):
             tables, statements = getTablesAndStatements(self._ctx, connection, version)
             executeSqlQueries(statement, tables)
             executeQueries(self._ctx, statement, getQueries())
-            columns = getAddressbookColumns(connection)
+            columns = self.getAddressbookColumns(connection)
             views = getViews(self._ctx, columns, self._getViewName())
             executeSqlQueries(statement, views)
             statement.close()

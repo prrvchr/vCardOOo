@@ -194,9 +194,9 @@ def getTablesAndStatements(ctx, connection, version=g_version):
 def getViews(ctx, result, name):
     queries = []
     for view, columns in result.items():
-        indexes = columns.keys()
-        names = columns.values()
-        print("dbinit.getViews() View: %s - Indexes: %s - Names: %s" % (view, indexes, names))
+        names = columns.keys()
+        indexes = columns.values()
+        print("dbinit.getViews() View: %s - Names: %s - Indexes: %s" % (view, names, indexes))
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
