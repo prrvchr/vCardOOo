@@ -193,36 +193,32 @@ def getTablesAndStatements(ctx, connection, version=g_version):
 
 def getViews(ctx, result, name):
     queries = []
-    format = {'Schema': 'PUBLIC',
-              'RefTable': 'Cards',
-              'RefColumn': 'Card',
+    format = {'CardTable': 'Cards',
+              'CardColumn': 'Card',
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
-              'DataValue': 'Value',
-              'Id': 'Card'}
-    table = 'LEFT JOIN "%(DataTable)s" AS C%(TableNum)s ON "%(RefTable)s"."%(RefColumn)s"=C%(TableNum)s."%(RefColumn)s" '
-    table += 'AND C%(TableNum)s."%(DataColumn)s"=%(ColumnId)s'
-    select = 'C%(TableNum)s."%(DataValue)s"'
-    on = ''
+              'DataValue': 'Value'}
+    table = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
+    table += 'AND C%(AliasNum)s."%(DataColumn)s"=%(ColumnId)s'
+    select = 'C%(AliasNum)s."%(DataValue)s"'
     for view, columns in result.items():
         i = 0
         tables = []
         selects = []
-        for name, index in columns.items():
+        for index in columns.values():
             format['ColumnId'] = index
-            format['TableNum'] = i
+            format['AliasNum'] = i
             tables.append(table % format)
             selects.append(select % format)
             i += 1
         names = columns.keys()
-        indexes = columns.values()
         format['ViewName'] = view
         format['ViewColumn'] = '","'.join(names)
         format['ViewSelect'] = ','.join(selects)
         format['ViewTable'] = ' '.join(tables)
-        q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(RefColumn)s","%(ViewColumn)s") '
-        q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(RefColumn)s",%(ViewSelect)s '
-        q += 'FROM %(Schema)s."%(RefTable)s" %(ViewTable)s'
+        q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
+        q += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
+        q += 'FROM "%(CardTable)s" %(ViewTable)s'
         query = q % format
         print("dbinit.getViews() View: %s " % query)
     return queries
