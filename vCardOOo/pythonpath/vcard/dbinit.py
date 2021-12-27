@@ -205,7 +205,7 @@ def getViews(ctx, result, name):
     select = 'C%(TableNum)s."%(DataValue)s"'
     on = ''
     for view, columns in result.items():
-        i = 0;
+        i = 0
         tables = []
         selects = []
         for name, index in columns.items():
@@ -213,13 +213,13 @@ def getViews(ctx, result, name):
             format['TableNum'] = i
             tables.append(table % format)
             selects.append(select % format)
-            i +=1
+            i += 1
         names = columns.keys()
         indexes = columns.values()
         tables = 'LEFT JOIN %(Schema)s."%(DataTable)s" AS C'
         format['ViewName'] = view
         format['ViewColumn'] = '","'.join(names)
-        format['ViewSelect'] = ' '.join(selects)
+        format['ViewSelect'] = ','.join(selects)
         format['ViewTable'] = ' '.join(tables)
         q = 'CREATE VIEW IF NOT EXISTS %(Schema)s."%(ViewName)s" ("%(Id)s","%(ViewColumn)s") '
         q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(Id)s","%(ViewSelect)s" '
