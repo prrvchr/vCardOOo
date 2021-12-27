@@ -146,8 +146,9 @@ class DataBase(unohelper.Base):
             tables, statements = getTablesAndStatements(self._ctx, connection, version)
             executeSqlQueries(statement, tables)
             executeQueries(self._ctx, statement, getQueries())
-            columns = self.getAddressbookColumns(connection)
-            views = getViews(self._ctx, columns, self._getViewName())
+            columns = self._getAddressbookColumns(connection)
+            #views = getViews(self._ctx, columns, self._getViewName())
+            views = getViews(self._ctx, columns, 'AddressBook')
             executeSqlQueries(statement, views)
             statement.close()
         return error

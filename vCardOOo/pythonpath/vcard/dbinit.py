@@ -201,24 +201,24 @@ def getViews(ctx, result, name):
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
               'DataValue': 'Value'}
-    query = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
-    query += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
-    query += 'FROM "%(CardTable)s" %(ViewTable)s'
+    q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
+    q += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
+    q += 'FROM "%(CardTable)s" %(ViewTable)s'
     t1 = 'LEFT JOIN "%(ViewName)s" ON "%(CardTable)s"."%(CardColumn)s"="%(ViewName)s"."%(CardColumn)s"'
     t2 = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
     t2 += 'AND C%(AliasNum)s."%(DataColumn)s"=%(ColumnId)s'
     s1 = '"%(ViewName)s"."%(ColumnName)s"'
     s2 = 'C%(AliasNum)s."%(DataValue)s"'
-    for viewname, columns in result.items():
+    for view, columns in result.items():
         i = 0
         col2 = columns.keys()
         sel2 = []
         tab2 = []
         col1 += col2
-        format['ViewName'] = viewname
-        for key, value in columns.items():
-            format['ColumnName'] = key
-            format['ColumnId'] = value
+        format['ViewName'] = view
+        for column, index in columns.items():
+            format['ColumnName'] = column
+            format['ColumnId'] = index
             format['AliasNum'] = i
             tab2.append(t2 % format)
             sel1.append(s1 % format)
@@ -227,17 +227,13 @@ def getViews(ctx, result, name):
         format['ViewColumn'] = '","'.join(col2)
         format['ViewSelect'] = ','.join(sel2)
         format['ViewTable'] = ' '.join(tab2)
-        q = query % format
-        queries.append(q)
         tab1.append(t1 % format)
-        print("dbinit.getViews() View: %s " % q)
+        queries.append(q % format)
     format['ViewName'] = name
     format['ViewColumn'] = '","'.join(col1)
     format['ViewSelect'] = ','.join(sel1)
     format['ViewTable'] = ' '.join(tab1)
-    q = query % format
-    queries.append(q)
-    print("dbinit.getViews() View: %s " % q)
+    queries.append(q % format)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
