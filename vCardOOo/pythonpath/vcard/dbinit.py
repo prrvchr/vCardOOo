@@ -193,10 +193,21 @@ def getTablesAndStatements(ctx, connection, version=g_version):
 
 def getViews(ctx, result, name):
     queries = []
+    format = {'Schema': 'PUBLIC',
+              'Table': 'Card',
+              'Id': 'Path'}
     for view, columns in result.items():
         names = columns.keys()
         indexes = columns.values()
-        print("dbinit.getViews() View: %s - Names: %s - Indexes: %s" % (view, names, indexes))
+        format['ViewName'] = view
+        format['ViewColumn'] = '","'.join(names)
+        format['ViewSelect'] = ''
+        format['ViewTable'] = ''
+        q = 'CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(ViewName)s" ("%(Id)s","%(ViewColumn)s") '
+        q += 'AS SELECT "%(Schema)s"."%(Table)s"."%(Id)s","%(ViewSelect)s" '
+        q += 'FROM "%(Schema)s"."%(Table)s" %(ViewTable)s'
+        query = q % format
+        print("dbinit.getViews() View: %s " % query)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
