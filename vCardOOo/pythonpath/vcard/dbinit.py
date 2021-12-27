@@ -199,7 +199,7 @@ def getViews(ctx, result, name):
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
               'DataValue': 'Value',
-              'Id': 'Path'}
+              'Id': 'Card'}
     table = 'LEFT JOIN "%(DataTable)s" AS C%(TableNum)s ON "%(RefTable)s"."%(RefColumn)s"=C%(TableNum)s."%(RefColumn)s" '
     table += 'AND C%(TableNum)s."%(DataColumn)s"=%(ColumnId)s'
     select = 'C%(TableNum)s."%(DataValue)s"'
@@ -221,8 +221,8 @@ def getViews(ctx, result, name):
         format['ViewColumn'] = '","'.join(names)
         format['ViewSelect'] = ','.join(selects)
         format['ViewTable'] = ' '.join(tables)
-        q = 'CREATE VIEW IF NOT EXISTS %(Schema)s."%(ViewName)s" ("%(Id)s","%(ViewColumn)s") '
-        q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(Id)s","%(ViewSelect)s" '
+        q = 'CREATE VIEW IF NOT EXISTS %(Schema)s."%(ViewName)s" ("%(RefColumn)s","%(ViewColumn)s") '
+        q += 'AS SELECT %(Schema)s."%(RefTable)s"."%(RefColumn)s",%(ViewSelect)s '
         q += 'FROM %(Schema)s."%(RefTable)s" %(ViewTable)s'
         query = q % format
         print("dbinit.getViews() View: %s " % query)
