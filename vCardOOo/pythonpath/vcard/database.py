@@ -79,6 +79,7 @@ from .dbinit import getStaticTables
 from .dbinit import getQueries
 from .dbinit import getTablesAndStatements
 from .dbinit import getViewsAndTriggers
+from .dbinit import getViews
 
 from .logger import logMessage
 from .logger import getMessage
