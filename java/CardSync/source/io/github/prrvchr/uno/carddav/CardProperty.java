@@ -29,8 +29,6 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.sun.star.sdbc.SQLException;
 
@@ -57,10 +55,9 @@ public final class CardProperty<T>
 
 
 	@SuppressWarnings("unchecked")
-	public <U> void parse(DataBase database,
-							int id,
-							CardColumn columns,
-							String name)
+	public void parse(DataBase database,
+					  int id,
+					  CardColumn columns)
 	throws IllegalAccessException, 
 	IllegalArgumentException,
 	InvocationTargetException,
@@ -73,7 +70,8 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				List<VCardParameter> types = null;
-				String value = _getCardValue(property, getter, name);
+				Method method = property.getClass().getMethod(getter);
+				String value = _getCardValue(property, method, method.getReturnType());
 				if (columns.getTyped())
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
@@ -83,9 +81,9 @@ public final class CardProperty<T>
 		}
 	};
 
-	private String _getCardValue(T property,
-								 String getter,
-								 String name)
+	private <U> String _getCardValue(T property,
+									 Method method,
+									 Class<U> clazz)
 	throws IllegalAccessException, 
 	IllegalArgumentException, 
 	InvocationTargetException,
@@ -93,21 +91,15 @@ public final class CardProperty<T>
 	SecurityException
 	{
 		String value = null;
-		Method method = property.getClass().getMethod(getter);
-		Class<?> clazz = method.getReturnType();
-		System.out.println("CardProperty._getCardValue(): 1 Name: " + name + " - Class: " + clazz.getName());
-		if (clazz.getName().equals("java.util.List"))
+		U object = clazz.cast(method.invoke(property));
+		if (object.getClass().isArray())
 		{
-			//List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 			@SuppressWarnings("unchecked")
-			List<String> list = (List<String>) method.invoke(property);
-			if (list.size() > 0)
-			{
-				value = list.get(0);
-				System.out.println("CardProperty._getCardValue(): 2 Name: " + name + " - List: " + list + " - Size: " + list.size() + " - Value: " + value);
-			}
+			List<String> list = (List<String>) object;
+			if (list.size() > 0) value = list.get(0);
 		}
-		else value = (String) method.invoke(property);
+		else value = (String) object;
+		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
 		return value;
 	}
 	
