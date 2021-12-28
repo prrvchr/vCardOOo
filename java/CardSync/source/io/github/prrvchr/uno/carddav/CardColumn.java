@@ -44,7 +44,7 @@ public final class CardColumn
 
 	private String m_property = null;
 	private String m_method = null;
-	private Boolean m_typed = null;
+	private Short m_type = null;
 
 	private Map<String, Integer> m_methods = new HashMap<String, Integer>();
 	private Map<String, Map<List<String>, Integer>> m_types = new HashMap<String, Map<List<String>, Integer>>();
@@ -53,19 +53,19 @@ public final class CardColumn
 	{
 		m_property = original.getProperty();
 		m_method = original.getMethod();
-		m_typed = original.getTyped();
+		m_type = original.getType();
 		m_methods = original.getMethods();
-		if (m_typed) 
+		if (isTyped()) 
 		{
 			m_types = original.getTypes();
 		}
 	};
 
-	public CardColumn(String property, String method, Boolean typed)
+	public CardColumn(String property, String method, Short type)
 	{
 		m_property = property;
 		m_method = method;
-		m_typed = typed;
+		m_type = type;
 	};
 
 	public String getProperty()
@@ -78,11 +78,16 @@ public final class CardColumn
 		return m_method;
 	};
 
-	public Boolean getTyped()
+	public Short getType()
 	{
-		return m_typed;
+		return m_type;
 	};
 
+	public Boolean isTyped()
+	{
+		return m_type > 1;
+	};
+	
 	public Map<String, Map<List<String>, Integer>> getTypes()
 	{
 		return new HashMap<String, Map<List<String>, Integer>>(m_types);
@@ -101,7 +106,7 @@ public final class CardColumn
 	public int getColumnId(List<VCardParameter> types, String getter)
 	{
 		int id = 0;
-		if (m_typed) 
+		if (isTyped()) 
 		{
 			id = m_types.get(getter).get(_getTypes(types));
 		}
@@ -126,14 +131,14 @@ public final class CardColumn
 		if (!m_methods.containsKey(getter))
 		{
 			m_methods.put(getter, id);
-			if (m_typed) 
+			if (isTyped()) 
 			{
 				Map<List<String>, Integer> type = new HashMap<List<String>, Integer>();
 				type.put(_getTypes(map), id);
 				m_types.put(getter, type);
 			}
 		}
-		else if (m_typed) 
+		else if (isTyped()) 
 		{
 			m_types.get(getter).put(_getTypes(map), id);
 		}

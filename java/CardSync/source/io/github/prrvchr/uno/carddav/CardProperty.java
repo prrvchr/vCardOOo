@@ -53,7 +53,6 @@ public final class CardProperty<T>
 		m_properties = (List<T>) card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
 	};
 
-
 	@SuppressWarnings("unchecked")
 	public void parse(DataBase database,
 					  int id,
@@ -72,7 +71,7 @@ public final class CardProperty<T>
 				List<VCardParameter> types = null;
 				Method method = property.getClass().getMethod(getter);
 				String value = _getCardValue(property, method, method.getReturnType());
-				if (columns.getTyped())
+				if (columns.isTyped())
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
 				}

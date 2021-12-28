@@ -123,20 +123,20 @@ public final class DataBase
 		_closeCall(call);
 	};
 
-	public int deleteCard(int id)
-	{
-		return 1;
-	}
+	//public int deleteCard(int id)
+	//{
+	//	return 1;
+	//}
 
-	public int insertCard(int id)
-	{
-		return 1;
-	}
+	//public int insertCard(int id)
+	//{
+	//	return 1;
+	//}
 
-	public int updateCard(int id)
-	{
-		return 1;
-	}
+	//public int updateCard(int id)
+	//{
+	//	return 1;
+	//}
 
 	private static List<Map<String, Object>> _getResultList(XResultSet result) throws SQLException
 	{
@@ -153,7 +153,7 @@ public final class DataBase
 		return maps;
 	}
 
-	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String method, String typed) 
+	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String getter, String method) 
 			throws SQLException,
 					InstantiationException,
 					IllegalAccessException, 
@@ -175,7 +175,7 @@ public final class DataBase
 			{
 				if (mapkey != null) maps.put(mapkey, new CardColumn(column));
 				mapkey = (String) map.get(key);
-				column = new CardColumn(mapkey, (String) map.get(method), (Boolean) map.get(typed));
+				column = new CardColumn(mapkey, (String) map.get(getter), (Short) map.get(method));
 			}
 			column.add(map);
 		}

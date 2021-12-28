@@ -86,7 +86,7 @@ def getSqlQuery(ctx, name, format=None):
         c1 = '"Property" INTEGER NOT NULL PRIMARY KEY'
         c2 = '"Value" VARCHAR(100) NOT NULL'
         c3 = '"Getter" VARCHAR(100) NOT NULL'
-        c4 = '"Typed" BOOLEAN DEFAULT FALSE'
+        c4 = '"Method" SMALLINT NOT NULL'
         c5 = '"View" VARCHAR(100) DEFAULT NULL'
         c = (c1, c2, c3, c4, c5)
         f = (format, ','.join(c))
@@ -625,7 +625,7 @@ CREATE PROCEDURE "SelectAddressbookColumns"()
         C."View" AS "ViewName",
         C."Getter" AS "PropertyGetter",
         P."Getter" AS "ParameterGetter",
-        C."Typed",
+        C."Method",
         COALESCE(GROUP_CONCAT(T."Column" ORDER BY T."Order" SEPARATOR ''),'') ||
         COALESCE(PP."Column",'') AS "ColumnName",
         ARRAY_AGG(T."Value") AS "TypeValues"
