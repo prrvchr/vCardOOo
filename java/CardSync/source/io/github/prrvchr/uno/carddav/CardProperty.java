@@ -92,7 +92,7 @@ public final class CardProperty<T>
 	{
 		String value = null;
 		U object = clazz.cast(method.invoke(property));
-		if (clazz.isArray())
+		if (clazz.getName().equals("java.util.List"))
 		{
 			@SuppressWarnings("unchecked")
 			List<String> list = (List<String>) object;
