@@ -87,7 +87,12 @@ public final class CardColumn
 	{
 		return m_type > 1;
 	};
-	
+
+	public Boolean isColumn()
+	{
+		return m_type > 0;
+	};
+
 	public Map<String, Map<List<String>, Integer>> getTypes()
 	{
 		return new HashMap<String, Map<List<String>, Integer>>(m_types);

@@ -68,14 +68,21 @@ public final class CardProperty<T>
 		{
 			for (String getter: columns.getGetters())
 			{
-				List<VCardParameter> types = null;
 				Method method = property.getClass().getMethod(getter);
-				String value = _getCardValue(property, method, method.getReturnType());
-				if (columns.isTyped())
+				if (columns.isColumn())
 				{
-					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
+					List<VCardParameter> types = null;
+					String value = _getCardValue(property, method, method.getReturnType());
+					if (columns.isTyped())
+					{
+						types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
+					}
+					database.parseCard(id, columns.getColumnId(types, getter), value);
 				}
-				database.parseCard(id, columns.getColumnId(types, getter), value);
+				else
+				{
+					// TODO: We need to parse vCard Group
+				}
 			}
 		}
 	};
