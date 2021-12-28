@@ -59,7 +59,8 @@ public final class CardProperty<T>
 	@SuppressWarnings("unchecked")
 	public <U> void parse(DataBase database,
 							int id,
-							CardColumn columns)
+							CardColumn columns,
+							String name)
 	throws IllegalAccessException, 
 	IllegalArgumentException,
 	InvocationTargetException,
@@ -72,8 +73,7 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				List<VCardParameter> types = null;
-				Method method = property.getClass().getMethod(getter);
-				String value = _getCardValue(method, property);
+				String value = _getCardValue(property, getter, name);
 				if (columns.getTyped())
 				{
 					types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
@@ -83,23 +83,27 @@ public final class CardProperty<T>
 		}
 	};
 
-	private String _getCardValue(Method method,
-									T property)
+	private String _getCardValue(T property,
+								 String getter,
+								 String name)
 	throws IllegalAccessException, 
 	IllegalArgumentException, 
-	InvocationTargetException
+	InvocationTargetException,
+	NoSuchMethodException,
+	SecurityException
 	{
 		String value = null;
+		Method method = property.getClass().getMethod(getter);
 		Class<?> clazz = method.getReturnType();
 		Object object = method.invoke(property);
-		System.out.println("CardProperty._getCardValue(): 1 " + clazz.getName());
+		System.out.println("CardProperty._getCardValue(): 1 Name: " + name + " - Class: " + clazz.getName());
 		if (clazz.getName().equals("java.util.List"))
 		{
 			List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 			if (list.size() > 0)
 			{
 				value = list.get(0);
-				System.out.println("CardProperty._getCardValue(): 2 Size: " + list.size() + " - Value: " + value);
+				System.out.println("CardProperty._getCardValue(): 2 Name: " + name + " - Size: " + list.size() + " - Value: " + value);
 			}
 		}
 		else value = (String) object;

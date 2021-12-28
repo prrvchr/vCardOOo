@@ -156,7 +156,7 @@ implements XJob
 			// FIXME: We do not parse Properties that do not have a Column
 			if (!columns.containsKey(name)) continue;
 			CardColumn column = columns.get(name);
-			_parseCardProperty(database, id, card, column);
+			_parseCardProperty(database, id, card, column, name);
 		}
 		return true;
 	}
@@ -164,7 +164,8 @@ implements XJob
 	private <T> void _parseCardProperty(DataBase database,
 										int id,
 										VCard card,
-										CardColumn column)
+										CardColumn column,
+										String name)
 	throws NoSuchMethodException,
 			IllegalAccessException,
 			IllegalArgumentException,
@@ -174,7 +175,7 @@ implements XJob
 			InstantiationException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
-		property.parse(database, id, column);
+		property.parse(database, id, column, name);
 	}
 
 

@@ -91,7 +91,6 @@ from time import sleep
 
 class DataBase(unohelper.Base):
     def __init__(self, ctx):
-        print("vCard.DataBase.init() start")
         self._ctx = ctx
         self._statement = None
         self._embedded = False
@@ -115,7 +114,6 @@ class DataBase(unohelper.Base):
                 datasource.DatabaseDocument.storeAsURL(odb, ())
                 datasource.dispose()
             connection.close()
-        print("vCard.DataBase.init() end")
 
     @property
     def Connection(self):
@@ -152,19 +150,20 @@ class DataBase(unohelper.Base):
             statement.close()
         return error
 
-    def _createDataBase1(self, connection):
-        version, error = checkDataBase(self._ctx, connection)
-        if error is None:
-            statement = connection.createStatement()
-            createStaticTable(self._ctx, statement, getStaticTables())
-            tables, queries = getTablesAndStatements(self._ctx, statement, version)
-            executeSqlQueries(statement, tables)
-            executeQueries(self._ctx, statement, getQueries())
-            executeSqlQueries(statement, queries)
-            views, triggers = getViewsAndTriggers(self._ctx, statement, self._getViewName())
-            executeSqlQueries(statement, views)
-            statement.close()
-        return error
+    def _getAddressbookColumns(self, connection):
+        columns = OrderedDict()
+        call = getDataSourceCall(self._ctx, connection, 'getAddressbookColumns')
+        result = call.executeQuery()
+        count = result.MetaData.ColumnCount +1
+        while result.next():
+            row = getRowDict(result, None, count)
+            view = row.get("ViewName")
+            if view is not None:
+                if view not in columns:
+                    columns[view] = OrderedDict()
+                columns[view][row.get("ColumnName")] = row.get("ColumnId")
+        call.close()
+        return columns
 
     def getDataSource(self):
         return self.Connection.getParent()
@@ -203,21 +202,6 @@ class DataBase(unohelper.Base):
             user = getKeyMapFromResult(result)
         call.close()
         return user
-
-    def _getAddressbookColumns(self, connection):
-        columns = OrderedDict()
-        call = getDataSourceCall(self._ctx, connection, 'getAddressbookColumns')
-        result = call.executeQuery()
-        count = result.MetaData.ColumnCount +1
-        while result.next():
-            row = getRowDict(result, None, count)
-            view = row.get("ViewName")
-            if view is not None:
-                if view not in columns:
-                    columns[view] = OrderedDict()
-                columns[view][row.get("ColumnName")] = row.get("ColumnId")
-        call.close()
-        return columns
 
     def selectAddressbook(self, uid, aid, name):
         addressbook = None
@@ -372,15 +356,6 @@ class DataBase(unohelper.Base):
         statement.execute(query)
         statement.close()
 
-    def getFieldsMap(self, method, reverse):
-        if method not in self._fieldsMap:
-            self._fieldsMap[method] = self._getFieldsMap(method)
-        if reverse:
-            map = KeyMap(**{i: {'Map': j, 'Type': k, 'Table': l} for i, j, k, l in self._fieldsMap[method]})
-        else:
-            map = KeyMap(**{j: {'Map': i, 'Type': k, 'Table': l} for i, j, k, l in self._fieldsMap[method]})
-        return map
-
     def getUpdatedGroups(self, user, prefix):
         groups = None
         call = self._getCall('selectUpdatedGroup')
@@ -463,16 +438,6 @@ class DataBase(unohelper.Base):
 
     def _escapeQuote(self, text):
         return text.replace("'", "''")
-
-    def _getFieldsMap(self, method):
-        map = []
-        call = self._getCall('getFieldsMap')
-        call.setString(1, method)
-        r = call.executeQuery()
-        while r.next():
-            map.append((r.getString(1), r.getString(2), r.getString(3), r.getString(4)))
-        call.close()
-        return tuple(map)
 
     def _getViewName(self):
         if self._addressbook is None:
