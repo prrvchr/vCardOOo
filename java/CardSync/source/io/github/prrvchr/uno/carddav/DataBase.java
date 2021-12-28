@@ -101,7 +101,7 @@ public final class DataBase
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
 		XResultSet result = call.executeQuery();
-		Map<String, CardColumn> maps = _getResultMap(result, "PropertyName", "PropertyGetter", "Typed");
+		Map<String, CardColumn> maps = _getResultMap(result, "PropertyName", "PropertyGetter", "Method");
 		_closeCall(call);
 		return maps;
 	}
