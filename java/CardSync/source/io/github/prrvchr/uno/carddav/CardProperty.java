@@ -95,18 +95,19 @@ public final class CardProperty<T>
 		String value = null;
 		Method method = property.getClass().getMethod(getter);
 		Class<?> clazz = method.getReturnType();
-		Object object = method.invoke(property);
 		System.out.println("CardProperty._getCardValue(): 1 Name: " + name + " - Class: " + clazz.getName());
 		if (clazz.getName().equals("java.util.List"))
 		{
-			List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+			//List<String> list = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+			@SuppressWarnings("unchecked")
+			List<String> list = (List<String>) method.invoke(property);
 			if (list.size() > 0)
 			{
 				value = list.get(0);
-				System.out.println("CardProperty._getCardValue(): 2 Name: " + name + " - Size: " + list.size() + " - Value: " + value);
+				System.out.println("CardProperty._getCardValue(): 2 Name: " + name + " - List: " + list + " - Size: " + list.size() + " - Value: " + value);
 			}
 		}
-		else value = (String) object;
+		else value = (String) method.invoke(property);
 		return value;
 	}
 	
