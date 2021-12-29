@@ -41,6 +41,7 @@ public final class CardProperty<T>
 
 	private List<T> m_properties = null;
 
+	// FIXME: Suppress Warnings unchecked
 	@SuppressWarnings("unchecked")
 	public CardProperty(VCard card,
 						CardColumn column)
@@ -53,6 +54,7 @@ public final class CardProperty<T>
 		m_properties = (List<T>) card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
 	};
 
+	// FIXME: Suppress Warnings unchecked
 	@SuppressWarnings("unchecked")
 	public void parse(DataBase database,
 					  int id,
@@ -69,7 +71,15 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				Method method = property.getClass().getMethod(getter);
-				if (columns.isColumn())
+				if (columns.isUid())
+				{
+					// TODO: We need to parse vCard unique identifier (UID)
+				}
+				else if (columns.isGroup())
+				{
+					// TODO: We need to parse vCard Group (CATEGORIES)
+				}
+				else if (columns.isColumn())
 				{
 					List<VCardParameter> types = null;
 					String value = _getCardValue(property, method, method.getReturnType());
@@ -77,11 +87,11 @@ public final class CardProperty<T>
 					{
 						types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
 					}
-					database.parseCard(id, columns.getColumnId(types, getter), value);
-				}
-				else
-				{
-					// TODO: We need to parse vCard Group
+					Integer column = columns.getColumnId(types, getter);
+					if (column != null)
+					{
+						database.parseCard(id, column, value);
+					}
 				}
 			}
 		}
@@ -100,11 +110,18 @@ public final class CardProperty<T>
 		U object = clazz.cast(method.invoke(property));
 		if (clazz.getName().equals("java.util.List"))
 		{
+			// FIXME: Suppress Warnings unchecked
 			@SuppressWarnings("unchecked")
 			List<String> list = (List<String>) object;
-			if (list.size() > 0) value = list.get(0);
+			if (list.size() > 0)
+			{
+				value = list.get(0);
+			}
 		}
-		else value = (String) object;
+		else
+		{
+			value = (String) object;
+		}
 		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
 		return value;
 	}

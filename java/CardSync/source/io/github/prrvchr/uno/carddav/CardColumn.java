@@ -83,14 +83,24 @@ public final class CardColumn
 		return m_type;
 	};
 
+	public Boolean isUid()
+	{
+		return m_type == 0;
+	};
+
+	public Boolean isGroup()
+	{
+		return m_type == 1;
+	};
+
 	public Boolean isTyped()
 	{
-		return m_type > 1;
+		return m_type > 2;
 	};
 
 	public Boolean isColumn()
 	{
-		return m_type > 0;
+		return m_type > 1;
 	};
 
 	public Map<String, Map<List<String>, Integer>> getTypes()
@@ -108,9 +118,9 @@ public final class CardColumn
 		return m_methods.keySet();
 	};
 	
-	public int getColumnId(List<VCardParameter> types, String getter)
+	public Integer getColumnId(List<VCardParameter> types, String getter)
 	{
-		int id = 0;
+		Integer id = null;
 		if (isTyped()) 
 		{
 			id = m_types.get(getter).get(_getTypes(types));
