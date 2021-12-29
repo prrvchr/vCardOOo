@@ -83,24 +83,14 @@ public final class CardColumn
 		return m_type;
 	};
 
-	public Boolean isUid()
+	public Boolean isGroup()
 	{
 		return m_type == 0;
 	};
 
-	public Boolean isGroup()
-	{
-		return m_type == 1;
-	};
-
 	public Boolean isTyped()
 	{
-		return m_type > 2;
-	};
-
-	public Boolean isColumn()
-	{
-		return m_type > 1;
+		return m_type == 2;
 	};
 
 	public Map<String, Map<List<String>, Integer>> getTypes()

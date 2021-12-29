@@ -28,6 +28,8 @@ package io.github.prrvchr.uno.carddav;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.sun.star.sdbc.SQLException;
@@ -51,7 +53,15 @@ public final class CardProperty<T>
 			IllegalArgumentException,
 			InvocationTargetException
 	{
-		m_properties = (List<T>) card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
+		Object object = card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
+		if (object instanceof List)
+		{
+			m_properties = (List<T>) object;
+		}
+		else
+		{
+			m_properties = new ArrayList<T>(Arrays.asList((T) object));
+		}
 	};
 
 	// FIXME: Suppress Warnings unchecked
@@ -71,15 +81,11 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				Method method = property.getClass().getMethod(getter);
-				if (columns.isUid())
-				{
-					// TODO: We need to parse vCard unique identifier (UID)
-				}
-				else if (columns.isGroup())
+				if (columns.isGroup())
 				{
 					// TODO: We need to parse vCard Group (CATEGORIES)
 				}
-				else if (columns.isColumn())
+				else
 				{
 					List<VCardParameter> types = null;
 					String value = _getCardValue(property, method, method.getReturnType());
@@ -110,12 +116,10 @@ public final class CardProperty<T>
 		U object = clazz.cast(method.invoke(property));
 		if (clazz.getName().equals("java.util.List"))
 		{
-			// FIXME: Suppress Warnings unchecked
-			@SuppressWarnings("unchecked")
-			List<String> list = (List<String>) object;
+			List<?> list = (List<?>) object;
 			if (list.size() > 0)
 			{
-				value = list.get(0);
+				value = (String) list.get(0);
 			}
 		}
 		else
