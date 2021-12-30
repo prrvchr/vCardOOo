@@ -150,13 +150,19 @@ implements XJob
 	{
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
+		int i = 0;
 		for (VCardProperty property: card)
 		{
 			String name = index.getPropertyScribe(property).getPropertyName();
-			// FIXME: We do not parse Properties that do not have a Column
-			if (!columns.containsKey(name)) continue;
+			// XXX: We do not parse Properties that do not have a Column
+			if (!columns.containsKey(name))
+			{
+				continue;
+			}
+			System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);
 			CardColumn column = columns.get(name);
 			_parseCardProperty(database, id, card, column);
+			i ++;
 		}
 		return true;
 	}
