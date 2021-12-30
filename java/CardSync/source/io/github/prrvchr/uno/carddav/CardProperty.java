@@ -76,10 +76,13 @@ public final class CardProperty<T>
 	SecurityException, 
 	SQLException
 	{
+		int i = 1;
 		for (T property: m_properties)
 		{
+			System.out.println("CardProperty.parse(): 1 Num: " + i);
 			for (String getter: columns.getGetters())
 			{
+				System.out.println("CardProperty.parse(): 2 Getter: " + getter);
 				Method method = property.getClass().getMethod(getter);
 				if (columns.isGroup())
 				{
@@ -100,6 +103,7 @@ public final class CardProperty<T>
 					}
 				}
 			}
+			i ++;
 		}
 	};
 
