@@ -83,7 +83,6 @@ public final class CardProperty<T>
 			for (String getter: columns.getGetters())
 			{
 				System.out.println("CardProperty.parse(): 2 Getter: " + getter);
-				Method method = property.getClass().getMethod(getter);
 				if (columns.isGroup())
 				{
 					// TODO: We need to parse vCard Group (CATEGORIES)
@@ -91,7 +90,7 @@ public final class CardProperty<T>
 				else
 				{
 					List<VCardParameter> types = null;
-					String value = _getCardValue(property, method, method.getReturnType());
+					String value = _getCardValue(property, getter);
 					if (columns.isTyped())
 					{
 						types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
@@ -107,9 +106,37 @@ public final class CardProperty<T>
 		}
 	};
 
-	private <U> String _getCardValue(T property,
-									 Method method,
-									 Class<U> clazz)
+	private String _getCardValue(T property,
+								 String getter)
+	throws IllegalAccessException, 
+	IllegalArgumentException, 
+	InvocationTargetException,
+	NoSuchMethodException,
+	SecurityException
+	{
+		String value = null;
+		Object object = property.getClass().getMethod(getter).invoke(property);
+		//U object = clazz.cast(method.invoke(property));
+		//if (clazz.getName().equals("java.util.List"))
+		if (object instanceof List)
+		{
+			List<?> list = (List<?>) object;
+			if (list.size() > 0)
+			{
+				value = (String) list.get(0);
+			}
+		}
+		else
+		{
+			value = (String) object;
+		}
+		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
+		return value;
+	}
+
+	private <U> String _getCardValue1(T property,
+									  Method method,
+									  Class<U> clazz)
 	throws IllegalAccessException, 
 	IllegalArgumentException, 
 	InvocationTargetException,
@@ -133,5 +160,5 @@ public final class CardProperty<T>
 		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
 		return value;
 	}
-	
+
 }

@@ -117,26 +117,17 @@ public final class DataBase
 		XParameters parameters = (XParameters)UnoRuntime.queryInterface(XParameters.class, call);
 		parameters.setInt(1, card);
 		parameters.setInt(2, column);
-		if (value == null) parameters.setNull(3, DataType.VARCHAR);
-		else parameters.setString(3, value);
+		if (value == null)
+		{
+			parameters.setNull(3, DataType.VARCHAR);
+		}
+		else
+		{
+			parameters.setString(3, value);
+		}
 		call.executeUpdate();
 		_closeCall(call);
 	};
-
-	//public int deleteCard(int id)
-	//{
-	//	return 1;
-	//}
-
-	//public int insertCard(int id)
-	//{
-	//	return 1;
-	//}
-
-	//public int updateCard(int id)
-	//{
-	//	return 1;
-	//}
 
 	private static List<Map<String, Object>> _getResultList(XResultSet result) throws SQLException
 	{
