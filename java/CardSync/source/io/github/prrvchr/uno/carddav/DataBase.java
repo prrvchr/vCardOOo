@@ -26,7 +26,6 @@
 package io.github.prrvchr.uno.carddav;
 
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,12 +53,12 @@ public final class DataBase
 	public DataBase(NamedValue[] arguments)
 	{
 		this(_getConnection(arguments));
-	};
+	}
 
 	public DataBase(XConnection connection)
 	{
 		m_xConnection = connection;
-	};
+	}
 
 	public String getUserName() throws SQLException
 	{
@@ -91,13 +90,7 @@ public final class DataBase
 	}
 
 	public Map<String, CardColumn> getAddressbookColumn()
-	throws SQLException, 
-			InstantiationException,
-			IllegalAccessException, 
-			IllegalArgumentException,
-			InvocationTargetException, 
-			NoSuchMethodException,
-			SecurityException
+	throws SQLException
 	{
 		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
 		XResultSet result = call.executeQuery();
@@ -107,8 +100,8 @@ public final class DataBase
 	}
 
 	public void parseCard(int card,
-							int column,
-							String value)
+						  int column,
+						  String value)
 	throws SQLException
 	{
 		String query = "CALL \"MergeCardValue\"(?,?,?)";
@@ -127,7 +120,7 @@ public final class DataBase
 		}
 		call.executeUpdate();
 		_closeCall(call);
-	};
+	}
 
 	private static List<Map<String, Object>> _getResultList(XResultSet result) throws SQLException
 	{
@@ -145,13 +138,7 @@ public final class DataBase
 	}
 
 	private static Map<String, CardColumn> _getResultMap(XResultSet result, String key, String getter, String method) 
-			throws SQLException,
-					InstantiationException,
-					IllegalAccessException, 
-					IllegalArgumentException, 
-					InvocationTargetException,
-					NoSuchMethodException,
-					SecurityException
+	throws SQLException
 	{
 		String mapkey = null;
 		CardColumn column = null;
@@ -174,7 +161,6 @@ public final class DataBase
 		return maps;
 	}
 
-	
 	private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int len) throws SQLException
 	{
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -186,7 +172,7 @@ public final class DataBase
 		}
 		return map;
 	}
-	
+
 	private static Object _getRowValue(XRow row, String dbtype, int index) throws SQLException
 	{
 		return _getRowValue(row, dbtype, index, null);

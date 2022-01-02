@@ -25,7 +25,7 @@
 */
 package io.github.prrvchr.uno.carddav;
 
-import java.lang.reflect.InvocationTargetException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import com.sun.star.sdbc.SQLException;
 
 import ezvcard.parameter.VCardParameter;
+
 import io.github.prrvchr.uno.sdbc.Array;
 
 public final class CardColumn
@@ -59,54 +60,54 @@ public final class CardColumn
 		{
 			m_types = original.getTypes();
 		}
-	};
+	}
 
 	public CardColumn(String property, String method, Short type)
 	{
 		m_property = property;
 		m_method = method;
 		m_type = type;
-	};
+	}
 
 	public String getProperty()
 	{
 		return m_property;
-	};
+	}
 
 	public String getMethod()
 	{
 		return m_method;
-	};
+	}
 
 	public Short getType()
 	{
 		return m_type;
-	};
+	}
 
 	public Boolean isGroup()
 	{
 		return m_type == 0;
-	};
+	}
 
 	public Boolean isTyped()
 	{
 		return m_type == 2;
-	};
+	}
 
 	public Map<String, Map<List<String>, Integer>> getTypes()
 	{
 		return new HashMap<String, Map<List<String>, Integer>>(m_types);
-	};
+	}
 
 	public Map<String, Integer> getMethods()
 	{
 		return new HashMap<String, Integer>(m_methods);
-	};
+	}
 
 	public Set<String> getGetters()
 	{
 		return m_methods.keySet();
-	};
+	}
 	
 	public Integer getColumnId(List<VCardParameter> types, String getter)
 	{
@@ -120,16 +121,10 @@ public final class CardColumn
 			id = m_methods.get(getter);
 		}
 		return id;
-	};
+	}
 
 	public void add(Map<String, Object> map)
-	throws SQLException,
-			InstantiationException,
-			IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException,
-			NoSuchMethodException,
-			SecurityException
+	throws SQLException
 	{
 		String getter = (String) map.get("ParameterGetter");
 		int id = (int) map.get("ColumnId");
@@ -147,7 +142,7 @@ public final class CardColumn
 		{
 			m_types.get(getter).put(_getTypes(map), id);
 		}
-	};
+	}
 
 	private static List<String> _getTypes(List<VCardParameter> types)
 	{
@@ -157,21 +152,15 @@ public final class CardColumn
 			type.add(t.getValue());
 		}
 		return type;
-	};
+	}
 
 	private static List<String> _getTypes(Map<String, Object> map)
-	throws SQLException,
-			InstantiationException,
-			IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException,
-			NoSuchMethodException,
-			SecurityException
+	throws SQLException
 	{
 		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
 		List<String> types = Stream.of(object).map(Object::toString).collect(Collectors.toList());
 		return types;
-	};
+	}
 
 
 }

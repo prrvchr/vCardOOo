@@ -27,7 +27,6 @@ package io.github.prrvchr.uno.carddav;
 
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,41 +47,39 @@ public final class CardProperty<T>
 	public CardProperty(VCard card,
 						CardColumn column)
 	throws NoSuchMethodException,
-			SecurityException,
-			IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException
+		   SecurityException,
+		   IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException
 	{
 		Object object = card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
 		if (object instanceof List)
 		{
 			m_properties = (List<T>) object;
+			
 		}
 		else
 		{
 			m_properties = new ArrayList<T>(Arrays.asList((T) object));
 		}
-	};
+	}
 
 	// FIXME: Suppress Warnings unchecked
 	@SuppressWarnings("unchecked")
 	public void parse(DataBase database,
 					  int id,
 					  CardColumn columns)
-	throws IllegalAccessException, 
-	IllegalArgumentException,
-	InvocationTargetException,
-	NoSuchMethodException, 
-	SecurityException, 
-	SQLException
+	throws IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException,
+		   NoSuchMethodException,
+		   SecurityException,
+		   SQLException
 	{
-		int i = 1;
 		for (T property: m_properties)
 		{
-			System.out.println("CardProperty.parse(): 1 Num: " + i);
 			for (String getter: columns.getGetters())
 			{
-				System.out.println("CardProperty.parse(): 2 Getter: " + getter);
 				if (columns.isGroup())
 				{
 					// TODO: We need to parse vCard Group (CATEGORIES)
@@ -102,22 +99,19 @@ public final class CardProperty<T>
 					}
 				}
 			}
-			i ++;
 		}
-	};
+	}
 
 	private String _getCardValue(T property,
 								 String getter)
-	throws IllegalAccessException, 
-	IllegalArgumentException, 
-	InvocationTargetException,
-	NoSuchMethodException,
-	SecurityException
+	throws IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException,
+		   NoSuchMethodException,
+		   SecurityException
 	{
 		String value = null;
 		Object object = property.getClass().getMethod(getter).invoke(property);
-		//U object = clazz.cast(method.invoke(property));
-		//if (clazz.getName().equals("java.util.List"))
 		if (object instanceof List)
 		{
 			List<?> list = (List<?>) object;
@@ -134,31 +128,5 @@ public final class CardProperty<T>
 		return value;
 	}
 
-	private <U> String _getCardValue1(T property,
-									  Method method,
-									  Class<U> clazz)
-	throws IllegalAccessException, 
-	IllegalArgumentException, 
-	InvocationTargetException,
-	NoSuchMethodException,
-	SecurityException
-	{
-		String value = null;
-		U object = clazz.cast(method.invoke(property));
-		if (clazz.getName().equals("java.util.List"))
-		{
-			List<?> list = (List<?>) object;
-			if (list.size() > 0)
-			{
-				value = (String) list.get(0);
-			}
-		}
-		else
-		{
-			value = (String) object;
-		}
-		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
-		return value;
-	}
 
 }

@@ -61,7 +61,7 @@ implements XJob
 	public CardSync(XComponentContext context)
 	{
 		m_xContext = context;
-	};
+	}
 
 	// com.sun.star.lang.XServiceInfo:
 	@Override
@@ -136,17 +136,17 @@ implements XJob
 	}
 
 	private boolean _parseCard(DataBase database,
-								int id,
-								String data,
-								Map<String, CardColumn> columns)
-	throws IOException, 
-			NoSuchMethodException, 
-			IllegalAccessException, 
-			IllegalArgumentException, 
-			InvocationTargetException, 
-			SecurityException, 
-			SQLException,
-			InstantiationException
+							   int id,
+							   String data,
+							   Map<String, CardColumn> columns)
+	throws IOException,
+		   NoSuchMethodException,
+		   IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException,
+		   SecurityException,
+		   SQLException,
+		   InstantiationException
 	{
 		VCard card = Ezvcard.parse(data).first();
 		ScribeIndex index = new ScribeIndex();
@@ -172,12 +172,12 @@ implements XJob
 										VCard card,
 										CardColumn column)
 	throws NoSuchMethodException,
-			IllegalAccessException,
-			IllegalArgumentException,
-			InvocationTargetException,
-			SecurityException,
-			SQLException,
-			InstantiationException
+		   IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException,
+		   SecurityException,
+		   SQLException,
+		   InstantiationException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
 		property.parse(database, id, column);
