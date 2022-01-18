@@ -120,6 +120,17 @@ class DataParser(unohelper.Base,
             item = '{http://calendarserver.org/ns/}getctag'
             keys['Tag'] = (path + item, None)
             keys['Token'] = (path + '{DAV:}sync-token', None)
+        elif self._method == 'getAllAddressbook':
+            keys = OrderedDict()
+            path = "./{DAV:}propstat/{DAV:}status[.='HTTP/1.1 200 OK']"
+            # FIXME: Name is the fist property:
+            # FIXME: We need to exclude Addressbook without first property
+            keys['Name'] = (path + '../{DAV:}prop/{DAV:}displayname', None)
+            keys['Url'] = (path + '..../{DAV:}href', None)
+            item = '../{DAV:}prop/{http://calendarserver.org/ns/}getctag'
+            keys['Tag'] = (path + item, None)
+            keys['Token'] = (path + '../{DAV:}prop/{DAV:}sync-token', None)
+            self._path = './{DAV:}response'
         elif self._method == 'getAddressbookUrl':
             keys = OrderedDict()
             if not self._predicate:
@@ -163,6 +174,8 @@ class DataParser(unohelper.Base,
             data = None
         elif self._method == 'getDefaultAddressbook':
             data = []
+        elif self._method == 'getAllAddressbook':
+            data = []
         elif self._method == 'getAddressbookUrl':
             data = []
         elif self._method == 'getAddressbook':
@@ -182,6 +195,12 @@ class DataParser(unohelper.Base,
             data = value
         elif self._method == 'getDefaultAddressbook':
             data.append(value)
+        elif self._method == 'getAllAddressbook':
+            # FIXME: We need to exclude Addressbook without first property: Name
+            if key is None and value[0] is None:
+                pass
+            else:
+                data.append(value)
         elif self._method == 'getAddressbookUrl':
             data.append(value)
         elif self._method == 'getAddressbook':
@@ -196,6 +215,9 @@ class DataParser(unohelper.Base,
             elif value is not None:
                 data[key].append(value)
         return data
+
+
+
 
 
 class DataIterator(unohelper.Base,

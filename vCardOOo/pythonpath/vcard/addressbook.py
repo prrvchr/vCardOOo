@@ -38,85 +38,95 @@ from .dbtool import getSqlException
 from .logger import getMessage
 g_message = 'datasource'
 
+from collections import OrderedDict
 import traceback
 
 
-class AddressBook(unohelper.Base):
-    def __init__(self, ctx, database, user, aid=None, name=''):
+class AddressBooks(unohelper.Base):
+    def __init__(self, ctx, metadata):
         self._ctx = ctx
-        print("AddressBook.__init__() 1 %s - %s - %s" % (user.Scheme, user.Server, name))
-        self.User = user
-        name = self.User.unquoteUrl(name)
-        self._metadata = database.selectAddressbook(user.Id, aid, name)
-        print("AddressBook.__init__() 2 %s - '%s' - %s" % (user.Id, name, self._metadata))
-        if self._isNewAddressbook():
-            self._metadata = self._getNewAddressbook(database, name)
-            self.User.createAddressbook(database, self.Name, self.Id)
-        if aid is None:
-            self.User.addAddressbook(self.Id)
+        print("AddressBooks.__init__() 1")
+        self._addressbooks = self._getAddressbooks(metadata)
+        print("AddressBooks.__init__() 2")
+
+    def initAddressbooks(self, database, user, addressbooks):
+        print("AddressBooks.initAddressbooks() 1")
+        changed = False
+        for name, url, tag, token in addressbooks:
+            if not self._hasAddressbook(url):
+                index = database.insertAddressbook(user, url, name, tag, token)
+                addressbook = AddressBook(self._ctx, index, url, name, tag, token, True)
+                self._addressbooks[url] = addressbook
+                changed = True
+                print("AddressBooks.initAddressbooks() 2 %s - %s - %s" % (index, name, url))
+            else:
+                addressbook = self._getAddressbook(url)
+                if addressbook.hasNameChanged(name):
+                    database.updateAddressbookName(addressbook.Id, name)
+                    addressbook.setName(name)
+                    changed = True
+                    print("AddressBooks.initAddressbooks() 3 %s" % (name, ))
+        print("AddressBooks.initAddressbooks() 4")
+        return changed
+            
+    def getAddressbooks(self):
+        return self._addressbooks.values()
+
+    def _hasAddressbook(self, url):
+        return url in self._addressbooks
+
+    def _getAddressbook(self, url):
+        return self._addressbooks[url]
+
+    def _getAddressbooks(self, metadata):
+        addressbooks = OrderedDict()
+        indexes = metadata.getValue('Addressbooks').getArray(None)
+        names = metadata.getValue('Names').getArray(None)
+        tags = metadata.getValue('Tags').getArray(None)
+        tokens = metadata.getValue('Tokens').getArray(None)
+        i = 0
+        for url in metadata.getValue('Paths').getArray(None):
+            addressbooks[url] = AddressBook(self._ctx, indexes[i], url, names[i], tags[i], tokens[i])
+            i += 1
+        return addressbooks
+
+
+class AddressBook(unohelper.Base):
+    def __init__(self, ctx, index, url, name, tag, token, new=False):
+        self._ctx = ctx
+        self._index = index
+        self._url = url
+        self._name = name
+        self._tag = tag
+        self._token = token
+        self._new = new
 
     @property
     def Id(self):
-        return self._metadata.getValue('Addressbook')
-    @property
-    def Group(self):
-        return self._metadata.getValue('Group')
+        return self._index
     @property
     def Path(self):
-        return self._metadata.getValue('Path')
+        return self._url
     @property
     def Name(self):
-        return self._metadata.getValue('Name')
+        return self._name
     @property
     def Tag(self):
-        return self._metadata.getValue('Tag')
+        return self._tag
     @property
-    def AdrSync(self):
-        return self._metadata.getValue('AdrSync')
-    @property
-    def GrpSync(self):
-        return self._metadata.getValue('GrpSync')
-    @property
-    def New(self):
-        return self._metadata.getValue('New')
+    def Token(self):
+        return self._token
 
-    def getDataBaseCredential(self):
-        return self.User.getDataBaseCredential(self.Id)
+    def isNew(self):
+        new = self._new
+        self._new = False
+        return new
 
-    def getAddressbookCards(self):
-        return self.User.getAddressbookCards(self.Path)
+    def hasNameChanged(self, name):
+        return self.Name != name
 
-    def getModifiedCardByToken(self):
-        return self.User.getModifiedCardByToken(self.Path, self.AdrSync)
-
-    def getModifiedCard(self, urls):
-        return self.User.getModifiedCard(self.Path, urls)
-
-    def _isNewAddressbook(self):
-        return self._metadata is None
-
-    def _getNewAddressbook(self, database, name):
-        if self.User.isOffLine():
-            raise self._getSqlException(1004, 1108, self.User.Name)
-        path, name, tag, token = self.User.getAddressbookUrl(name)
-        if path is None or name is None:
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
-        print("AddressBook._getMetaData() 1 %s - %s" % (path, name))
-        if not self.User.getAddressbook(name, path):
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
-        print("AddressBook._getMetaData() 2 %s" % path)
-        keymap = database.insertAddressbook(self.User.Id, path, name, tag, token)
-        print("AddressBook._getMetaData() 3 %s" % name)
-        i = 4
-        for key in keymap.getKeys():
-            print("AddressBook._getMetaData() %i %s - %s" % (i, key, keymap.getValue(key)))
-            i += 1
-        return keymap
-
-    def getAddressbookId(self):
-        return '%i' % self.Id
+    def setName(self, name):
+        self.Name = name
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

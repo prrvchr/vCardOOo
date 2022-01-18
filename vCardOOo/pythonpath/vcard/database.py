@@ -36,6 +36,7 @@ from com.sun.star.logging.LogLevel import SEVERE
 from com.sun.star.sdb.CommandType import QUERY
 
 from com.sun.star.sdbc.DataType import INTEGER
+from com.sun.star.sdbc.DataType import TIMESTAMP
 from com.sun.star.sdbc.DataType import VARCHAR
 
 from .unolib import KeyMap
@@ -57,6 +58,8 @@ from .dbconfig import g_dba
 from .dbconfig import g_folder
 from .dbconfig import g_jar
 from .dbconfig import g_role
+from .dbconfig import g_schema
+from .dbconfig import g_user
 
 from .dbtool import Array
 from .dbtool import checkDataBase
@@ -66,6 +69,7 @@ from .dbtool import getConnectionInfo
 from .dbtool import getDataBaseConnection
 from .dbtool import getDataBaseUrl
 from .dbtool import executeSqlQueries
+from .dbtool import getDataFromResult
 from .dbtool import getDataSourceCall
 from .dbtool import getDataSourceConnection
 from .dbtool import executeQueries
@@ -77,8 +81,7 @@ from .dbtool import getKeyMapKeyMapFromResult
 
 from .dbinit import getStaticTables
 from .dbinit import getQueries
-from .dbinit import getTablesAndStatements
-from .dbinit import getViewsAndTriggers
+from .dbinit import getTables
 from .dbinit import getViews
 
 from .logger import logMessage
@@ -141,11 +144,11 @@ class DataBase(unohelper.Base):
         if error is None:
             statement = connection.createStatement()
             createStaticTable(self._ctx, statement, getStaticTables(), True)
-            tables, statements = getTablesAndStatements(self._ctx, connection, version)
+            tables = getTables(self._ctx, connection, version)
             executeSqlQueries(statement, tables)
             executeQueries(self._ctx, statement, getQueries())
             columns = self._getAddressbookColumns(connection)
-            views = getViews(self._ctx, columns, 'AddressBook')
+            views = getViews(self._ctx, columns, self._getViewName())
             executeSqlQueries(statement, views)
             statement.close()
         return error
@@ -182,9 +185,9 @@ class DataBase(unohelper.Base):
         statement.execute(query)
         statement.close()
 
-    def createUser(self, name, password):
+    def createUser(self, user, password):
         statement = self.Connection.createStatement()
-        format = {'User': name,
+        format = {'User': g_user % user,
                   'Password': password,
                   'Admin': g_admin}
         query = getSqlQuery(self._ctx, 'createUser', format)
@@ -192,9 +195,26 @@ class DataBase(unohelper.Base):
         statement.close()
         return status == 0
 
+    def createUserSchema(self, user):
+        view = self._getViewName()
+        format = {'Schema': g_schema % user,
+                  'Public': 'PUBLIC',
+                  'User': g_user % user,
+                  'View': view,
+                  'Name': view,
+                  'OldName': view}
+        statement = self.Connection.createStatement()
+        query = getSqlQuery(self._ctx, 'createUserSchema', format)
+        statement.execute(query)
+        query = getSqlQuery(self._ctx, 'setUserSchema', format)
+        statement.execute(query)
+        self._deleteUserView(statement, format)
+        self._createUserView(statement, 'createDefaultAddressbookView', format)
+        statement.close()
+
     def selectUser(self, server, name):
         user = None
-        call = self._getCall('getUser')
+        call = self._getCall('selectUser')
         call.setString(1, server)
         call.setString(2, name)
         result = call.executeQuery()
@@ -202,6 +222,76 @@ class DataBase(unohelper.Base):
             user = getKeyMapFromResult(result)
         call.close()
         return user
+
+    def selectChangedAddressbooks(self):
+        addressbooks = []
+        call = self._getCall('selectChangedAddressbooks')
+        call.setNull(1, TIMESTAMP)
+        call.setNull(2, TIMESTAMP)
+        result = call.executeQuery()
+        while result.next():
+            addressbooks.append(getDataFromResult(result))
+        call.close()
+        return addressbooks
+
+    def setChangedAddressbook(self):
+        call = self._getCall('updateAddressbook')
+        status = call.executeUpdate()
+        call.close()
+
+    def selectChangedGroups(self):
+        groups = []
+        call = self._getCall('selectChangedGroups')
+        call.setNull(1, TIMESTAMP)
+        call.setNull(2, TIMESTAMP)
+        result = call.executeQuery()
+        while result.next():
+            groups.append(getDataFromResult(result))
+        call.close()
+        return groups
+
+    def setChangedGroup(self):
+        call = self._getCall('updateGroup')
+        status = call.executeUpdate()
+        call.close()
+
+    def initUserAddressbookView(self, format):
+        statement = self.Connection.createStatement()
+        query = format.get('Query')
+        format['Public'] = 'PUBLIC'
+        format['View'] = self._getViewName()
+        if query == 'Deleted':
+            self._deleteUserView(statement, format)
+        elif query == 'Inserted':
+            self._createUserView(statement, 'createAddressbookView', format)
+        elif query == 'Updated':
+            self._deleteUserView(statement, format)
+            self._createUserView(statement, 'createAddressbookView', format)
+        statement.close()
+
+    def initUserGroupView(self, format):
+        statement = self.Connection.createStatement()
+        query = format.get('Query')
+        format['Public'] = 'PUBLIC'
+        format['View'] = self._getViewName()
+        if query == 'Deleted':
+            self._deleteUserView(statement, format)
+        elif query == 'Inserted':
+            self._createUserView(statement, 'createGroupView', format)
+        elif query == 'Updated':
+            self._deleteUserView(statement, format)
+            self._createUserView(statement, 'createGroupView', format)
+        statement.close()
+
+    def _createUserView(self, statement, view, format):
+        query = getSqlQuery(self._ctx, view, format)
+        print("DataBase._createUserView() 1: %s\n%s" % (view, query))
+        statement.execute(query)
+
+    def _deleteUserView(self, statement, format):
+        query = getSqlQuery(self._ctx, 'deleteView', format)
+        print("DataBase._deleteUserView() 1: %s" % (query, ))
+        statement.execute(query)
 
     def selectAddressbook(self, uid, aid, name):
         addressbook = None
@@ -221,28 +311,18 @@ class DataBase(unohelper.Base):
         call.close()
         return addressbook
 
-    def insertUser(self, scheme, server, path, user, url, name, tag, token):
-        usr = None
+    def insertUser(self, scheme, server, path, name):
+        user = None
         call = self._getCall('insertUser')
         call.setString(1, scheme)
         call.setString(2, server)
         call.setString(3, path)
-        call.setString(4, user)
-        call.setString(5, url)
-        call.setString(6, name)
-        if tag:
-            call.setString(7, tag)
-        else:
-            call.setNull(7, VARCHAR)
-        if token:
-            call.setString(8, token)
-        else:
-            call.setNull(8, VARCHAR)
+        call.setString(4, name)
         result = call.executeQuery()
         if result.next():
-            usr = getKeyMapFromResult(result)
+            user = getKeyMapFromResult(result)
         call.close()
-        return usr
+        return user
 
     def insertAddressbook(self, user, path, name, tag, token):
         addressbook = None
@@ -258,11 +338,17 @@ class DataBase(unohelper.Base):
             call.setString(5, token)
         else:
             call.setNull(5, VARCHAR)
-        result = call.executeQuery()
-        if result.next():
-            addressbook = getKeyMapFromResult(result)
+        state = call.executeUpdate()
+        addressbook = call.getInt(6)
         call.close()
         return addressbook
+
+    def updateAddressbookName(self, addressbook, name):
+        call = self._getCall('updateAddressbookName')
+        call.setInt(1, addressbook)
+        call.setString(2, name)
+        state = call.executeUpdate()
+        call.close()
 
     def updateAddressbookToken(self, aid, token):
         call = self._getCall('updateAddressbookToken')
@@ -271,47 +357,8 @@ class DataBase(unohelper.Base):
         state = call.executeUpdate()
         call.close()
 
-    def initAddressbook(self, format):
-        statement = self.Connection.createStatement()
-        format['View'] = self._getViewName()
-        query = getSqlQuery(self._ctx, 'createUserSchema', format)
-        statement.execute(query)
-        #query = getSqlQuery(self._ctx, 'setUserAuthorization', format)
-        #statement.execute(query)
-        #query = getSqlQuery(self._ctx, 'createUserSynonym', format)
-        #statement.execute(query)
-        query = getSqlQuery(self._ctx, 'setUserSchema', format)
-        statement.execute(query)
-        statement.close()
-
-    def truncatGroup(self, start):
-        statement = self.Connection.createStatement()
-        format = {'TimeStamp': unparseTimeStamp(start)}
-        query = getSqlQuery(self._ctx, 'truncatGroup', format)
-        statement.execute(query)
-        statement.close()
-
-    def createGroupView(self, user, group, groupid):
-        statement = self.Connection.createStatement()
-        format = {'Schema': user.Resource,
-                  'User': user.Account,
-                  'Name': group,
-                  'View': self._getViewName(),
-                  'GroupId': groupid}
-        query = getSqlQuery(self._ctx, 'dropGroupView', format)
-        statement.execute(query)
-        query = getSqlQuery(self._ctx, 'createGroupView', format)
-        statement.execute(query)
-        statement.close()
-
 # Procedures called by the User
-    def getUserFields(self):
-        fields = []
-        call = self._getCall('getFieldNames')
-        result = call.executeQuery()
-        fields = getSequenceFromResult(result)
-        call.close()
-        return tuple(fields)
+
 
 # Procedures called by the Replicator
     def mergeCard(self, aid, path, etag, data):

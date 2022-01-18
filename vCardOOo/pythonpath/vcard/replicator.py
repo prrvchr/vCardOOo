@@ -114,20 +114,23 @@ class Replicator(unohelper.Base):
                     dltd, mdfd = self._synchronize(logger)
                     total = dltd + mdfd
                     if total > 0:
-                        url = 'vnd.sun.star.job:service=%s' % self._cardsync 
+                        print("replicator.run()4 synchronize started CardSync.jar")
+                        url = 'vnd.sun.star.job:service=%s' % self._cardsync
                         arguments = getPropertyValueSet({'Connection': self._database.Connection})
                         executeDispatch(self._ctx, url, arguments)
+                        print("replicator.run()5 synchronize ended CardSync.jar")
+                        self._initGroup()
                     self._database.dispose()
                     format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
-                    print("replicator.run()4 synchronize ended query=%s modified=%s deleted=%s *******************************************" % format)
+                    print("replicator.run()6 synchronize ended query=%s modified=%s deleted=%s *******************************************" % format)
                     if self._started.is_set():
-                        print("replicator.run()5 start waitting *******************************************")
+                        print("replicator.run()7 start waitting *******************************************")
                         self._paused.clear()
                         timeout = self._getReplicateTimeout()
                         self._paused.wait(timeout)
-                        print("replicator.run()5 end waitting *******************************************")
-            print("replicator.run()6 canceled *******************************************")
+                        print("replicator.run()8 end waitting *******************************************")
+            print("replicator.run()9 canceled *******************************************")
         except Exception as e:
             msg = "Replicator run(): Error: %s" % traceback.print_exc()
             print(msg)
@@ -145,19 +148,21 @@ class Replicator(unohelper.Base):
                 logger.logResource(INFO, 113, user.Name, 'Replicator', '_synchronize()')
         return dltd, mdfd
 
+    def _initGroup(self):
+        for data in self._database.selectChangedGroups():
+            self._database.initUserGroupView(data)
+        self._database.setChangedGroup()
+
     def _syncUser(self, logger, user, dltd, mdfd):
-        for aid in user.getAddressbooks():
+        for addressbook in user.getAddressbooks():
             if self._canceled():
                 break
-            addressbook = AddressBook(self._ctx, self._database, user, aid)
-            print("Replicator._syncUser() %s" % (addressbook.New, ))
-            if addressbook.New:
-                cards = addressbook.getAddressbookCards()
+            if addressbook.isNew():
+                print("Replicator._syncUser() New")
+                cards = user.getAddressbookCards(addressbook.Path)
                 mdfd += self._mergeCard(addressbook, cards)
-                if not self._canceled():
-                    self._database.updateAddressbookToken(addressbook.Id, addressbook.AdrSync)
             elif not self._canceled():
-                dltd, mdfd = self._pullModifiedCard(addressbook, dltd, mdfd)
+                dltd, mdfd = self._pullModifiedCard(user, addressbook, dltd, mdfd)
         return dltd, mdfd
 
     def _mergeCard(self, addressbook, cards):
@@ -174,28 +179,28 @@ class Replicator(unohelper.Base):
         self._setBatchModeOff()
         return mdfd
 
-    def _pullModifiedCard(self, addressbook, dltd, mdfd):
-        if addressbook.AdrSync is not None:
-            dltd, mdfd = self._pullModifiedCardByToken(addressbook, dltd, mdfd)
+    def _pullModifiedCard(self, user, addressbook, dltd, mdfd):
+        if addressbook.Token is not None:
+            dltd, mdfd = self._pullModifiedCardByToken(user, addressbook, dltd, mdfd)
         elif addressbook.Tag is not None:
-            dltd, mdfd = self._pullModifiedCardByTag(addressbook, dltd, mdfd)
+            dltd, mdfd = self._pullModifiedCardByTag(user, addressbook, dltd, mdfd)
         else:
             print("Replicator._pullModifiedCard() Error %s" % (addressbook.Name, ))
         return dltd, mdfd
 
-    def _pullModifiedCardByToken(self, addressbook, dltd, mdfd):
+    def _pullModifiedCardByToken(self, user, addressbook, dltd, mdfd):
         print("Replicator._pullModifiedCardByToken() %s" % (addressbook.Name, ))
-        token, modified, deleted = addressbook.getModifiedCardByToken()
-        if addressbook.AdrSync != token:
+        token, modified, deleted = user.getModifiedCardByToken(addressbook.Path, addressbook.Token)
+        if addressbook.Token != token:
             if deleted:
                 dltd += self._database.deleteCard(addressbook.Id, deleted)
             if modified:
-                cards = addressbook.getModifiedCard(modified)
+                cards = user.getModifiedCard(addressbook.Path, modified)
                 mdfd += self._mergeCard(addressbook, cards)
             self._database.updateAddressbookToken(addressbook.Id, token)
         return dltd, mdfd
 
-    def _pullModifiedCardByTag(self, addressbook, dltd, mdfd):
+    def _pullModifiedCardByTag(self, user, addressbook, dltd, mdfd):
         print("Replicator._pullModifiedCardByTag() %s" % (addressbook.Name, ))
         return dltd, mdfd
 

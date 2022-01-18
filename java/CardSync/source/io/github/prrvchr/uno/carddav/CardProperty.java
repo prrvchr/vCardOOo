@@ -29,7 +29,9 @@ package io.github.prrvchr.uno.carddav;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import com.sun.star.sdbc.SQLException;
 
@@ -67,7 +69,8 @@ public final class CardProperty<T>
 	// FIXME: Suppress Warnings unchecked
 	@SuppressWarnings("unchecked")
 	public void parse(DataBase database,
-					  int id,
+					  CardGroup group,
+					  int card,
 					  CardColumn columns)
 	throws IllegalAccessException,
 		   IllegalArgumentException,
@@ -82,7 +85,7 @@ public final class CardProperty<T>
 			{
 				if (columns.isGroup())
 				{
-					// TODO: We need to parse vCard Group (CATEGORIES)
+					group.parse(database, card, _getCardGroup(property, getter));
 				}
 				else
 				{
@@ -95,11 +98,30 @@ public final class CardProperty<T>
 					Integer column = columns.getColumnId(types, getter);
 					if (column != null)
 					{
-						database.parseCard(id, column, value);
+						database.parseCard(card, column, value);
 					}
 				}
 			}
 		}
+	}
+
+	private String[] _getCardGroup(T property,
+								   String getter)
+	throws IllegalAccessException,
+		   IllegalArgumentException,
+		   InvocationTargetException,
+		   NoSuchMethodException,
+		   SecurityException
+	{
+		Object object = property.getClass().getMethod(getter).invoke(property);
+		List<?> list = _convertObjectToList(object);
+		List<String> strings = new ArrayList<>(list.size());
+		for (Object o: list)
+		{
+			strings.add(Objects.toString(o, null));
+		}
+		System.out.println("CardProperty._getCardGroup(): 1 List: " + strings);
+		return strings.toArray(new String[0]);
 	}
 
 	private String _getCardValue(T property,
@@ -126,6 +148,21 @@ public final class CardProperty<T>
 		}
 		System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
 		return value;
+	}
+
+	private List<?> _convertObjectToList(Object object)
+	{
+		List<?> list = new ArrayList<>();
+		if (object.getClass().isArray())
+		{
+			list = Arrays.asList((Object[]) object);
+		}
+		else if (object instanceof Collection)
+		{
+			list = new ArrayList<>((Collection<?>) object);
+		}
+		System.out.println("CardProperty._convertObjectToList(): 1 List: " + list);
+		return list;
 	}
 
 

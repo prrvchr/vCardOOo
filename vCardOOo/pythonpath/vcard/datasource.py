@@ -85,32 +85,31 @@ class DataSource(unohelper.Base):
         return connection
 
     def closeConnection(self, connection):
-        url = connection.getMetaData().getUserName()
-        server, name, aid = self._getUrlParts(url)
-        uid = getUserId(server, name)
-        if uid in self._users:
-            self._users.get(uid).removeAddressbook(aid)
+        uid = connection.getMetaData().getUserName()
+        #if uid in self._users:
+        #    self._users.get(uid).removeAddressbook(aid)
         if self._count > 0:
             self._count -= 1
-        print("DataSource.closeConnection() 1: %s - %s - %s - %s" % (self._count, server, name, aid))
+        print("DataSource.closeConnection() 1: %s - %s" % (self._count, uid))
         if self._count == 0:
             #self._replicator.stop()
             pass
 
-    def getConnectionCredential(self, scheme, server, addressbook, name, password):
-        print("DataSource.getDataBaseCredential() 1 %s - %s - %s" % (scheme, server, addressbook))
+    def getConnectionCredential(self, scheme, server, name, password):
+        print("DataSource.getDataBaseCredential() 1 %s - %s" % (scheme, server))
         uid = getUserId(server, name)
         if uid in self._users:
+            print("DataSource.getDataBaseCredential() 2 %s - %s - %s" % (scheme, server, uid))
             user = self._users.get(uid)
         else:
+            print("DataSource.getDataBaseCredential() 3 %s - %s - %s" % (scheme, server, uid))
             user = User(self._ctx, self._database, scheme, server, name, password)
             self._users[uid] = user
-        a = AddressBook(self._ctx, self._database, user, None, addressbook)
-        name, password = a.getDataBaseCredential()
+        user.initAddressbooks(self._database)
         # User and/or AddressBook has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
         self._replicator.start()
-        return name, password
+        return user.getDataBaseCredential()
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)

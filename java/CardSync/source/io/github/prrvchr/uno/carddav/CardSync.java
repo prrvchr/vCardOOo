@@ -94,8 +94,10 @@ implements XJob
 
 	// com.sun.star.task.XJob:
 	public Object execute(NamedValue[] arguments)
+	throws SQLException
 	{
 		DataBase database = new DataBase(arguments);
+		Map<Integer, CardGroup> groups = database.getCardGroup();
 		try
 		{
 			boolean status = true;
@@ -118,9 +120,10 @@ implements XJob
 				if (!query.equals("Deleted"))
 				{
 					System.out.println("CardSync.execute() 4");
-					int id = (int) result.get("Card");
+					int user = (int) result.get("User");
+					int card = (int) result.get("Card");
 					String data = (String) result.get("Data");
-					status = _parseCard(database, id, data, columns);
+					status = _parseCard(database, groups.get(user), card, data, columns);
 				}
 			}
 			if (status) database.updateUser();
@@ -136,6 +139,7 @@ implements XJob
 	}
 
 	private boolean _parseCard(DataBase database,
+							   CardGroup group,
 							   int id,
 							   String data,
 							   Map<String, CardColumn> columns)
@@ -161,13 +165,14 @@ implements XJob
 			}
 			System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);
 			CardColumn column = columns.get(name);
-			_parseCardProperty(database, id, card, column);
+			_parseCardProperty(database, group, id, card, column);
 			i ++;
 		}
 		return true;
 	}
 
 	private <T> void _parseCardProperty(DataBase database,
+										CardGroup group,
 										int id,
 										VCard card,
 										CardColumn column)
@@ -180,7 +185,7 @@ implements XJob
 		   InstantiationException
 	{
 		CardProperty<T> property = new CardProperty<T>(card, column);
-		property.parse(database, id, column);
+		property.parse(database, group, id, column);
 	}
 
 

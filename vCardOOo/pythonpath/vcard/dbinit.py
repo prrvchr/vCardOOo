@@ -97,6 +97,7 @@ def _createDataBase(ctx, datasource, url, dbname):
 def _executeQueries(ctx, statement, queries):
     for name, format in queries.items():
         query = getSqlQuery(ctx, name, format)
+        print("dbinit._executeQueries() %s/n%s" % (name, query))
         statement.executeQuery(query)
 
 def _getTableColumns(connection, tables):
@@ -191,18 +192,77 @@ def getTablesAndStatements(ctx, connection, version=g_version):
     call.close()
     return tables, statements
 
+def getTables(ctx, connection, version=g_version):
+    tables = []
+    statement = connection.createStatement()
+    query = getSqlQuery(ctx, 'getTableNames')
+    result = statement.executeQuery(query)
+    sequence = getSequenceFromResult(result)
+    result.close()
+    statement.close()
+    call = getDataSourceCall(ctx, connection, 'getTables')
+    for table in sequence:
+        view = False
+        versioned = False
+        columns = []
+        primary = []
+        unique = []
+        constraint = []
+        call.setString(1, table)
+        result = call.executeQuery()
+        while result.next():
+            data = getKeyMapFromResult(result, KeyMap())
+            view = data.getValue('View')
+            versioned = data.getValue('Versioned')
+            column = data.getValue('Column')
+            definition = '"%s" %s' % (column, data.getValue('Type'))
+            default = data.getValue('Default')
+            if default:
+                definition += ' DEFAULT %s' % default
+            options = data.getValue('Options')
+            if options:
+                definition += ' %s' % options
+            columns.append(definition)
+            if data.getValue('Primary'):
+                primary.append('"%s"' % column)
+            if data.getValue('Unique'):
+                unique.append({'Table': table, 'Column': column})
+            if data.getValue('ForeignTable') and data.getValue('ForeignColumn'):
+                constraint.append({'Table': table,
+                                   'Column': column,
+                                   'ForeignTable': data.getValue('ForeignTable'),
+                                   'ForeignColumn': data.getValue('ForeignColumn')})
+        if primary:
+            columns.append(getSqlQuery(ctx, 'getPrimayKey', primary))
+        for format in unique:
+            columns.append(getSqlQuery(ctx, 'getUniqueConstraint', format))
+        for format in constraint:
+            columns.append(getSqlQuery(ctx, 'getForeignConstraint', format))
+        if version >= '2.5.0' and versioned:
+            columns.append(getSqlQuery(ctx, 'getPeriodColumns'))
+        format = (table, ','.join(columns))
+        query = getSqlQuery(ctx, 'createTable', format)
+        if version >= '2.5.0' and versioned:
+            query += getSqlQuery(ctx, 'getSystemVersioning')
+        tables.append(query)
+    call.close()
+    return tables
+
 def getViews(ctx, result, name):
     col1 = []
     sel1 = []
     tab1 = []
     queries = []
-    format = {'CardTable': 'Cards',
+    format = {'UserColumn': 'User',
+              'CardTable': 'Cards',
               'CardColumn': 'Card',
+              'AddressbookTable': 'Addressbooks',
+              'AddressbookColumn': 'Addressbook',
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
               'DataValue': 'Value'}
-    q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(CardColumn)s","%(ViewColumn)s") '
-    q += 'AS SELECT "%(CardTable)s"."%(CardColumn)s",%(ViewSelect)s '
+    q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(ViewColumn)s","%(CardColumn)s") '
+    q += 'AS SELECT %(ViewSelect)s,"%(CardTable)s"."%(CardColumn)s" '
     q += 'FROM "%(CardTable)s" %(ViewTable)s'
     t1 = 'LEFT JOIN "%(ViewName)s" ON "%(CardTable)s"."%(CardColumn)s"="%(ViewName)s"."%(CardColumn)s"'
     t2 = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
@@ -233,7 +293,9 @@ def getViews(ctx, result, name):
     format['ViewColumn'] = '","'.join(col1)
     format['ViewSelect'] = ','.join(sel1)
     format['ViewTable'] = ' '.join(tab1)
-    queries.append(q % format)
+    query = q % format
+    print("dbinit.getViews(): \n%s" % query)
+    queries.append(query)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
@@ -306,13 +368,23 @@ def getStaticTables():
     return tables
 
 def getQueries():
-    return (('createInsertUser', None),
+    return (('createSelectUser', None),
+            ('createInsertUser', None),
             ('createInsertAddressbook', None),
-            ('createSelectAddressbook', None),
+            ('createUpdateAddressbookName', None),
             ('createMergeCard', None),
             ('createDeleteCard', None),
             ('createUpdateUser', None),
             ('createSelectChangedCards', None),
             ('insertSuperUser', g_superuser),
+            ('insertSuperAdressbook', None),
+            ('insertSuperGroup', None),
             ('createSelectAddressbookColumns', None),
-            ('createMergeCardValue', None))
+            ('createSelectCardGroup', None),
+            ('createInsertGroup', None),
+            ('createMergeCardValue', None),
+            ('createMergeCardGroup', None),
+            ('createSelectChangedAddressbooks', None),
+            ('createSelectChangedGroups', None),
+            ('createUpdateAddressbook', None),
+            ('createUpdateGroup', None))

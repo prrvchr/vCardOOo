@@ -188,39 +188,46 @@ JOIN "Peoples" AS P ON "Groups"."People"=P."People"
     elif name == 'getAddressBookPredicate':
         query = '''WHERE P."Account"=CURRENT_USER OR CURRENT_USER='SA' ORDER BY "Peoples"."People"'''
 
-    elif name == 'createGroupView':
+    elif name == 'createDefaultAddressbookView':
         view = '''\
-CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
-  SELECT "%(View)s".* FROM "%(View)s"
-  JOIN "Peoples" ON "%(View)s"."Resource"="Peoples"."Resource"
-  JOIN "Connections" ON "Peoples"."People"="Connections"."People"
-  JOIN "Groups" ON "Connections"."Group"="Groups"."Group"
-  WHERE "Groups"."Group"=%(GroupId)s ORDER BY "Peoples"."People";
-GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
+CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
+  JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
+  JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
+  WHERE CURRENT_USER=CONCAT('USER_',%(Public)s."Addressbooks"."User")
+GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
 '''
         query = view % format
 
-# Drop Dynamic View Queries
-    elif name == 'dropGroupView':
-        query = 'DROP VIEW IF EXISTS "%(Schema)s"."%(Name)s"' % format
+    elif name == 'createAddressbookView':
+        view = '''\
+CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
+  JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
+  JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
+  WHERE %(Public)s."Addressbooks"."Addressbook"=%(Addressbook)s ORDER BY %(Public)s."Cards"."Created";
+GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
+'''
+        query = view % format
 
-# Create Trigger Query
-    elif name == 'createTriggerUpdateAddressBook':
-        query = 'CREATE TRIGGER "AddressBookUpdate" INSTEAD OF UPDATE ON "AddressBook" '
-        query += 'REFERENCING NEW AS "new" OLD AS "old" FOR EACH ROW BEGIN ATOMIC %s END' % format
+    elif name == 'createGroupView':
+        view = '''\
+CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
+  JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
+  JOIN %(Public)s."GroupCards" ON %(Public)s."Cards"."Card"=%(Public)s."GroupCards"."Card"
+  JOIN %(Public)s."Groups" ON %(Public)s."GroupCards"."Group"=%(Public)s."Groups"."Group"
+  WHERE %(Public)s."Groups"."Group"=%(Group)s ORDER BY %(Public)s."Cards"."Created";
+GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
+'''
+        query = view % format
 
-    elif name == 'createTriggerUpdateAddressBookCore':
-        q = 'IF "new"."%(View)s" <> "old"."%(View)s" THEN '
-        q += 'UPDATE "%(Table)s" SET "Value"="new"."%(View)s" WHERE '
-        q += '"People"="new"."People" AND "Label"=%(LabelId)s'
-        if format['TypeId'] is not None:
-            q += ' AND "Type"=%(TypeId)s'
-        q += '; END IF;'
-        query = q % format
+    elif name == 'deleteView':
+        query = 'DROP VIEW IF EXISTS "%(Schema)s"."%(OldName)s";' % format
 
-# Create User, Schema and Synonym Query
+# Create User and Schema Query
     elif name == 'createUser':
-        q = """CREATE USER "%(User)s" PASSWORD '%(Password)s'"""
+        q = "CREATE USER %(User)s PASSWORD '%(Password)s'"
         if format.get('Admin', False):
             q += ' ADMIN;'
         else:
@@ -228,16 +235,10 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
         query = q % format
 
     elif name == 'createUserSchema':
-        query = 'CREATE SCHEMA "%(Schema)s" AUTHORIZATION DBA;' % format
-
-    elif name == 'setUserAuthorization':
-        query = 'GRANT SELECT ON PUBLIC."%(View)s" TO "%(User)s";' % format
-
-    elif name == 'createUserSynonym':
-        query = 'CREATE SYNONYM "%(Schema)s"."%(View)s" FOR PUBLIC."%(View)s";' % format
+        query = 'CREATE SCHEMA %(Schema)s AUTHORIZATION %(User)s;' % format
 
     elif name == 'setUserSchema':
-        query = 'ALTER USER "%(User)s" SET INITIAL SCHEMA "%(Schema)s"' % format
+        query = 'ALTER USER %(User)s SET INITIAL SCHEMA %(Schema)s;' % format
 
     elif name == 'setUserPassword':
         query = """ALTER USER "%(User)s" SET PASSWORD '%(Password)s'""" % format
@@ -438,6 +439,16 @@ INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES ('%s','%s','%s','%s
 """
         query = q % format
 
+    elif name == 'insertSuperAdressbook':
+        query = """\
+INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (0,'/','admin','#','#');
+"""
+
+    elif name == 'insertSuperGroup':
+        query = """\
+INSERT INTO "Groups" ("User","Name") VALUES (0,'#');
+"""
+
 # Create Procedure Query
     elif name == 'createSelectGroup':
         query = """\
@@ -463,7 +474,60 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
     OPEN "Result";
   END"""
 
+
+
+
+
+    elif name == 'createSelectUser':
+        query = """\
+CREATE PROCEDURE "SelectUser"(IN SERVER VARCHAR(128),
+                              IN NAME VARCHAR(128))
+  SPECIFIC "SelectUser_1"
+  READS SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT U."User",U."Scheme",U."Server",U."Path",U."Name",
+        ARRAY_AGG(A."Addressbook" ORDER BY A."Addressbook") AS "Addressbooks",
+        ARRAY_AGG(A."Name" ORDER BY A."Addressbook") AS "Names",
+        ARRAY_AGG(A."Path" ORDER BY A."Addressbook") AS "Paths",
+        ARRAY_AGG(A."Tag" ORDER BY A."Addressbook") AS "Tags",
+        ARRAY_AGG(A."Token" ORDER BY A."Addressbook") AS "Tokens"
+      FROM "Users" AS U
+      LEFT JOIN "Addressbooks" AS A ON U."User"=A."User"
+      WHERE U."Server"=SERVER AND U."Name"=NAME
+      GROUP BY U."User",U."Scheme",U."Server",U."Path",U."Name"
+    FOR READ ONLY;
+    OPEN RSLT;
+  END"""
+
     elif name == 'createInsertUser':
+        query = """\
+CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
+                              IN SERVER VARCHAR(128),
+                              IN PATH VARCHAR(256),
+                              IN NAME VARCHAR(128))
+  SPECIFIC "InsertUser_1"
+  MODIFIES SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT U."User",U."Scheme",U."Server",U."Path",U."Name",
+        ARRAY_AGG(A."Addressbook" ORDER BY A."Addressbook") AS "Addressbooks",
+        ARRAY_AGG(A."Name" ORDER BY A."Addressbook") AS "Names",
+        ARRAY_AGG(A."Path" ORDER BY A."Addressbook") AS "Paths",
+        ARRAY_AGG(A."Tag" ORDER BY A."Addressbook") AS "Tags",
+        ARRAY_AGG(A."Token" ORDER BY A."Addressbook") AS "Tokens"
+      FROM "Users" AS U
+      LEFT JOIN "Addressbooks" AS A ON U."User"=A."User"
+      WHERE U."Server"=SERVER AND U."Name"=NAME
+      GROUP BY U."User",U."Scheme",U."Server",U."Path",U."Name"
+    FOR READ ONLY;
+    INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES (SCHEME,SERVER,PATH,NAME);
+    OPEN RSLT;
+  END"""
+
+    elif name == 'createInsertUser2':
         query = """\
 CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
                               IN SERVER VARCHAR(128),
@@ -486,10 +550,11 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
     SET PK1=IDENTITY();
     INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (PK1,URL,NAME,TAG,TOKEN);
     SET PK2=IDENTITY();
-    INSERT INTO "Groups" ("Addressbook") VALUES (PK2);
     UPDATE "Users" SET "Default"=PK2 WHERE "User"=PK1;
     OPEN RSLT;
   END"""
+
+
 
     elif name == 'createSelectAddressbook':
         query = """\
@@ -501,12 +566,11 @@ CREATE PROCEDURE "SelectAddressbook"(IN UID INTEGER,
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT A."Addressbook", G."Group", A."Path", A."Name",A."Tag",
-      A."Token" AS "AdrSync", G."Token" AS "GrpSync",
+      SELECT A."Addressbook", A."Path", A."Name",A."Tag",
+      A."Token" AS "AdrSync",
       A."Created"=A."Modified" AS "New"
       FROM "Users" AS U
       JOIN "Addressbooks" AS A ON U."User"=A."User"
-      JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
       WHERE U."User"=UID AND (A."Addressbook"=AID OR
         (((NAME IS NULL AND A."Addressbook"=U."Default") OR
         (NAME IS NOT NULL AND A."Name"=NAME))))
@@ -520,21 +584,23 @@ CREATE PROCEDURE "InsertAddressbook"(IN UID INTEGER,
                                      IN PATH VARCHAR(256),
                                      IN NAME VARCHAR(128),
                                      IN TAG VARCHAR(128),
-                                     IN TOKEN VARCHAR(128))
+                                     IN TOKEN VARCHAR(128),
+                                     OUT AID INTEGER)
   SPECIFIC "InsertAddressbook_1"
   MODIFIES SQL DATA
-  DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
-    DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT A."Addressbook",G."Group",A."Path",A."Name",A."Tag",
-      A."Token" AS "AdrSync",G."Token" AS "GrpSync",
-      A."Created"=A."Modified" AS "New"
-      FROM "Addressbooks" AS A
-      JOIN "Groups" AS G ON A."Addressbook"=G."Addressbook" AND G."Name" IS NULL
-      WHERE A."User"=UID AND A."Name"=NAME FOR READ ONLY;
     INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (UID,PATH,NAME,TAG,TOKEN);
-    INSERT INTO "Groups" ("Addressbook") VALUES (IDENTITY());
-    OPEN RSLT;
+    SET AID = IDENTITY();
+  END"""
+
+    elif name == 'createUpdateAddressbookName':
+        query = """\
+CREATE PROCEDURE "UpdateAddressbookName"(IN AID INTEGER,
+                                         IN NAME VARCHAR(128))
+  SPECIFIC "UpdateAddressbookName_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    UPDATE "Addressbooks" SET "Name"=NAME WHERE "Addressbook"=AID;
   END"""
 
     elif name == 'createMergeCard':
@@ -562,6 +628,84 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
   BEGIN ATOMIC
     DELETE FROM "Cards" WHERE "Addressbook"=AID AND "Path" IN (UNNEST(URLS));
   END"""
+
+
+
+    elif name == 'createSelectChangedAddressbooks':
+        query = """\
+CREATE PROCEDURE "SelectChangedAddressbooks"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                             INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "SelectChangedAddressbooks_1"
+  MODIFIES SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A1."Addressbook",NULL AS "Name",A1."Name" AS "OldName",'Deleted' AS "Query",A1."RowEnd" AS "Order"
+      FROM "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
+      JOIN "Users" AS U ON A1."User"=U."User"
+      LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
+        ON A1."Addressbook" = A2."Addressbook"
+      WHERE A1."Addressbook"!=0 AND A2."Addressbook" IS NULL)
+      UNION
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A2."Addressbook",A2."Name",NULL AS "OldName",'Inserted' AS "Query",A2."RowStart" AS "Order"
+      FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
+      JOIN "Users" AS U ON A2."User"=U."User"
+      LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
+        ON A2."Addressbook"=A1."Addressbook"
+      WHERE A2."Addressbook"!=0 AND  A1."Addressbook" IS NULL)
+      UNION
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A2."Addressbook",A2."Name",A1."Name" AS "OldName",'Updated' AS "Query",A1."RowEnd" AS "Order"
+      FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
+      JOIN "Users" AS U ON A2."User"=U."User"
+      INNER JOIN "Addressbooks" FOR SYSTEM_TIME FROM FIRST TO LAST AS A1
+        ON A2."Addressbook"=A1."Addressbook" AND A2."RowStart"=A1."RowEnd"
+      WHERE A2."Addressbook"!=0)
+      ORDER BY "Order"
+      FOR READ ONLY;
+    UPDATE "Addressbooks" SET "Modified"=DEFAULT WHERE "Addressbook"=0;
+    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Addressbooks" WHERE "Addressbook"=0);
+    OPEN RSLT;
+  END"""
+
+
+    elif name == 'createSelectChangedGroups':
+        query = """\
+CREATE PROCEDURE "SelectChangedGroups"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                       INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "SelectChangedGroups_1"
+  MODIFIES SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G1."Group",NULL AS "Name",G1."Name" AS "OldName",'Deleted' AS "Query",G1."RowEnd" AS "Order"
+      FROM "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
+      JOIN "Users" AS U ON G1."User"=U."User"
+      LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
+        ON G1."Group" = G2."Group"
+      WHERE G1."Group"!=0 AND G2."Group" IS NULL)
+      UNION
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G2."Group",G2."Name",NULL AS "OldName",'Inserted' AS "Query",G2."RowStart" AS "Order"
+      FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
+      JOIN "Users" AS U ON G2."User"=U."User"
+      LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
+        ON G2."Group"=G1."Group"
+      WHERE G2."Group"!=0 AND  G1."Group" IS NULL)
+      UNION
+      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G2."Group",G2."Name",G1."Name" AS "OldName",'Updated' AS "Query",G1."RowEnd" AS "Order"
+      FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
+      JOIN "Users" AS U ON G2."User"=U."User"
+      INNER JOIN "Groups" FOR SYSTEM_TIME FROM FIRST TO LAST AS G1
+        ON G2."Group"=G1."Group" AND G2."RowStart"=G1."RowEnd"
+      WHERE G2."Group"!=0)
+      ORDER BY "Order"
+      FOR READ ONLY;
+    UPDATE "Groups" SET "Modified"=DEFAULT WHERE "Group"=0;
+    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Groups" WHERE "Group"=0);
+    OPEN RSLT;
+  END"""
+
+
+
 
     elif name == 'createSelectChangedCards':
         query = """\
@@ -612,6 +756,28 @@ CREATE PROCEDURE "UpdateUser"()
     UPDATE "Users" SET "Created"=DATETIME WHERE "User"=0;
   END"""
 
+    elif name == 'createUpdateAddressbook':
+        query = """\
+CREATE PROCEDURE "UpdateAddressbook"()
+  SPECIFIC "UpdateAddressbook_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    DECLARE DATETIME TIMESTAMP(6) WITH TIME ZONE;
+    SET DATETIME = (SELECT "Modified" FROM "Addressbooks" WHERE "Addressbook"=0);
+    UPDATE "Addressbooks" SET "Created"=DATETIME WHERE "Addressbook"=0;
+  END"""
+
+    elif name == 'createUpdateGroup':
+        query = """\
+CREATE PROCEDURE "UpdateGroup"()
+  SPECIFIC "UpdateGroup_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    DECLARE DATETIME TIMESTAMP(6) WITH TIME ZONE;
+    SET DATETIME = (SELECT "Modified" FROM "Groups" WHERE "Group"=0);
+    UPDATE "Groups" SET "Created"=DATETIME WHERE "Group"=0;
+  END"""
+
     elif name == 'createSelectAddressbookColumns':
         query = """\
 CREATE PROCEDURE "SelectAddressbookColumns"()
@@ -653,6 +819,54 @@ CREATE PROCEDURE "MergeCardValue"(IN AID INTEGER,
         WHEN NOT MATCHED THEN INSERT ("Card","Column","Value")
           VALUES vals.x,vals.y,vals.z;
   END"""
+
+    elif name == 'createSelectCardGroup':
+        query = """\
+CREATE PROCEDURE "SelectCardGroup"()
+  SPECIFIC "SelectCardGroup_1"
+  READS SQL DATA
+  DYNAMIC RESULT SETS 1
+  BEGIN ATOMIC
+    DECLARE RSLT CURSOR WITH RETURN FOR
+      SELECT U."User",
+        ARRAY_AGG(G."Name") AS "Names",
+        ARRAY_AGG(G."Group") AS "Groups"
+      FROM "Users" AS U
+      LEFT JOIN "Groups" AS G ON U."User"=G."User"
+      GROUP BY U."User"
+      FOR READ ONLY;
+    OPEN RSLT;
+  END"""
+
+    elif name == 'createInsertGroup':
+        query = """\
+CREATE PROCEDURE "InsertGroup"(IN UID INTEGER,
+                               IN NAME VARCHAR(128),
+                               OUT GID INTEGER)
+  SPECIFIC "InsertGroup_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    INSERT INTO "Groups" ("User","Name") VALUES (UID,NAME);
+    SET GID = IDENTITY();
+  END"""
+
+    elif name == 'createMergeCardGroup':
+        query = """\
+CREATE PROCEDURE "MergeCardGroup"(IN CID INTEGER,
+                                  IN GIDS INTEGER ARRAY)
+  SPECIFIC "MergeCardGroup_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    DECLARE INDEX INTEGER DEFAULT 1;
+    DELETE FROM "GroupCards" WHERE "Card"=CID;
+    WHILE INDEX <= CARDINALITY(GIDS) DO
+      INSERT INTO "GroupCards" ("Group","Card") VALUES (GIDS[INDEX],CID);
+      SET INDEX = INDEX + 1;
+    END WHILE;
+  END"""
+
+
+
 
 
     elif name == 'createInsertUser1':
@@ -840,18 +1054,41 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
         query = q % g_member
 
 # Get Procedure Query
+    elif name == 'selectUser':
+        query = 'CALL "SelectUser"(?,?)'
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?,?,?,?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?)'
     elif name == 'selectAddressbook':
         query = 'CALL "SelectAddressbook"(?,?,?)'
     elif name == 'insertAddressbook':
-        query = 'CALL "InsertAddressbook"(?,?,?,?,?)'
+        query = 'CALL "InsertAddressbook"(?,?,?,?,?,?)'
+    elif name == 'updateAddressbookName':
+        query = 'CALL "UpdateAddressbookName"(?,?)'
     elif name == 'mergeCard':
         query = 'CALL "MergeCard"(?,?,?,?)'
     elif name == 'deleteCard':
         query = 'CALL "DeleteCard"(?,?)'
     elif name == 'getAddressbookColumns':
         query = 'CALL "SelectAddressbookColumns"()'
+    elif name == 'selectChangedAddressbooks':
+        query = 'CALL "SelectChangedAddressbooks"(?,?)'
+    elif name == 'selectChangedGroups':
+        query = 'CALL "SelectChangedGroups"(?,?)'
+    elif name == 'updateAddressbook':
+        query = 'CALL "UpdateAddressbook"()'
+    elif name == 'updateGroup':
+        query = 'CALL "UpdateGroup"()'
+
+
+    elif name == 'getCardGroup':
+        query = 'CALL "SelectCardGroup"()'
+    elif name == 'insertGroup':
+        query = 'CALL "InsertGroup"(?,?,?)'
+    elif name == 'mergeCardGroup':
+        query = 'CALL "MergeCardGroup"(?,?)'
+
+
+
 
     elif name == 'mergePeople':
         query = 'CALL "MergePeople"(?,?,?,?,?)'

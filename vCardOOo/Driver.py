@@ -110,7 +110,7 @@ class Driver(unohelper.Base,
                 self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
                 raise e
             location = ':'.join(protocols[3:]).strip('/')
-            scheme, server, addressbook = self._getUrlParts(location)
+            scheme, server = self._getUrlParts(location)
             if not server:
                 e = self._getSqlException(112, 1101, url)
                 self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
@@ -120,7 +120,7 @@ class Driver(unohelper.Base,
                 e = self._getSqlException(113, 1102, user)
                 self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
                 raise e
-            name, pwd = self.DataSource.getConnectionCredential(scheme, server, addressbook, user, pwd)
+            name, pwd = self.DataSource.getConnectionCredential(scheme, server, user, pwd)
             connection = self.DataSource.getConnection(name, pwd)
             version = connection.getMetaData().getDriverVersion()
             format = (version, name)
@@ -158,7 +158,7 @@ class Driver(unohelper.Base,
         addressbook = url.Name
         if not location.startswith(scheme):
             scheme = g_scheme
-        return scheme, server, addressbook
+        return scheme, server
 
     def _getUserCredential(self, infos):
         user = ''

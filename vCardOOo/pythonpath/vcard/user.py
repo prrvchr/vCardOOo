@@ -36,6 +36,8 @@ from com.sun.star.logging.LogLevel import SEVERE
 from com.sun.star.ucb.ConnectionMode import OFFLINE
 from com.sun.star.ucb.ConnectionMode import ONLINE
 
+from .addressbook import AddressBooks
+
 from .provider import Provider
 
 from .oauth2lib import getRequest
@@ -44,6 +46,8 @@ from .oauth2lib import g_oauth2
 from .unotool import executeDispatch
 
 from .dbtool import getSqlException
+
+from .dbconfig import g_user
 
 from .logger import getMessage
 g_message = 'datasource'
@@ -59,27 +63,21 @@ class User(unohelper.Base):
     def __init__(self, ctx, database, scheme, server, name, pwd=''):
         self._ctx = ctx
         self._password = pwd
-        self._addressbooks = []
-        #self.Fields = database.getUserFields()
-        #url = 'gcontact:request'
-        #executeDispatch(ctx, url)
         print("User.__init__() 1 %s - %s" % (server, name))
         self._request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
         if self._isNewUser():
             provider = Provider(ctx, scheme, server)
-            self._metadata, name = self._getNewUser(database, provider, scheme, server, name, pwd)
-            self.createAddressbook(database, name, self.Default)
+            self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
+            self.createUser(database)
         else:
             provider = Provider(ctx, self.Scheme, self.Server)
         self._provider = provider
+        self._addressbooks = AddressBooks(ctx, self._metadata)
 
     @property
     def Id(self):
         return self._metadata.getValue('User')
-    @property
-    def Default(self):
-        return self._metadata.getValue('Default')
     @property
     def Scheme(self):
         return self._metadata.getValue('Scheme')
@@ -95,33 +93,48 @@ class User(unohelper.Base):
     @property
     def Password(self):
         return self._password
+    @property
+    def Addressbooks(self):
+        return self._addressbooks
+
+    def initAddressbooks(self, database):
+        if self._provider.isOnLine():
+            addressbooks = self._provider.getAllAddressbook(self._request, self.Name, self.Password, self.Path)
+            if not addressbooks:
+                #TODO: Raise SqlException with correct message!
+                print("User.initAddressbooks() 1 %s" % (addressbooks, ))
+                raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+            if self._addressbooks.initAddressbooks(database, self.Id, addressbooks):
+                for data in database.selectChangedAddressbooks():
+                    database.initUserAddressbookView(data)
+                    print("User.initAddressbooks() %s - %s - %s - %s" % (data.get('User'), data.get('Name'), data.get('Addressbook'), data.get('Query')))
+                database.setChangedAddressbook()
 
     def unquoteUrl(self, url):
         return self._request.unquoteUrl(url)
 
     def addAddressbook(self, aid):
-        if aid not in self._addressbooks:
-            self._addressbooks.append(aid)
+        pass
+        #if aid not in self._addressbooks:
+        #    self._addressbooks.append(aid)
 
     def removeAddressbook(self, aid):
-        if aid in self._addressbooks:
-            print("User.removeAddressbook() 1 %s" % (self._addressbooks, ))
-            self._addressbooks.remove(aid)
+        pass
+        #if aid in self._addressbooks:
+        #    print("User.removeAddressbook() 1 %s" % (self._addressbooks, ))
+        #    self._addressbooks.remove(aid)
 
     def getAddressbooks(self):
-        return tuple(self._addressbooks)
+        return self._addressbooks.getAddressbooks()
 
-    def createAddressbook(self, database, name, aid):
-        user, password = self.getDataBaseCredential(aid)
-        if not database.createUser(user, password):
+    def createUser(self, database):
+        user, password = self.getDataBaseCredential()
+        if not database.createUser(self.Id, password):
             raise self._getSqlException(1005, 1106, user)
-        format = {'Schema': user,
-                  'View': name,
-                  'User': user}
-        database.initAddressbook(format)
+        database.createUserSchema(self.Id)
 
-    def getDataBaseCredential(self, aid):
-        name = '%s/%i' % (getUserId(self.Server, self.Name), aid)
+    def getDataBaseCredential(self):
+        name = g_user % self.Id
         password = ''
         return name, password
 
@@ -167,20 +180,10 @@ class User(unohelper.Base):
         print("User._getMetaData() 2 %s" % path)
         path = provider.getAddressbooksUrl(self._request, user, pwd, path)
         print("User._getMetaData() 3 %s" % path)
-        url, name, tag, token = provider.getDefaultAddressbook(self._request, user, pwd, path)
-        if url is None or name is None:
+        if path is None:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
-        if not provider.getAddressbook(self._request, name, name, pwd, url):
-            #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
-        print("User._getMetaData() 4 %s" % user)
-        metadata = database.insertUser(scheme, server, path, user, url, name, tag, token)
-        i = 4
-        for key in metadata.getKeys():
-            print("User._getMetaData() %i %s - %s" % (i, key, metadata.getValue(key)))
-            i += 1
-        return metadata, name
+            raise self._getSqlException(1004, 1108, 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
+        return database.insertUser(scheme, server, path, user)
 
     def _getSqlException(self, state, code, format):
         state = getMessage(self._ctx, g_message, state)

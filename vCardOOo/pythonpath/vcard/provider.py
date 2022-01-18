@@ -177,6 +177,32 @@ class Provider(unohelper.Base):
         response.close()
         return path, name, tag, token
 
+    def getAllAddressbook(self, request, user, password, url):
+        data = '''\
+<?xml version="1.0"?>
+<d:propfind xmlns:d="DAV:">
+  <d:prop>
+    <d:displayname />
+    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
+    <d:sync-token />
+    <d:resourcetype>
+        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
+    </d:resourcetype>
+  </d:prop>
+</d:propfind>
+'''
+        parameter = self._getRequestParameter('getAllAddressbook', user, password, url, data)
+        parser = DataParser(parameter.Name)
+        response = request.getResponse(parameter, parser)
+        if not response.Ok:
+            response.close()
+            #TODO: Raise SqlException with correct message!
+            raise self._getSqlException(1006, 1107, user)
+        addressbooks = response.Data
+        response.close()
+        return addressbooks
+        #return path, name, tag, token
+
     def getAddressbookUrl(self, request, addressbook, user, password, url):
         data = '''\
 <?xml version="1.0"?>
@@ -323,6 +349,16 @@ class Provider(unohelper.Base):
             parameter.Auth = (user, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+
+        elif method == 'getAllAddressbook':
+            parameter.Url = self.BaseUrl + url
+            parameter.Method = 'PROPFIND'
+            parameter.Auth = (user, password)
+            parameter.Data = data
+            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+
+
+
         elif method == 'getAddressbookUrl':
             parameter.Url = self.BaseUrl + url
             parameter.Method = 'PROPFIND'
