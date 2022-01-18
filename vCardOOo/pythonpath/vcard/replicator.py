@@ -119,7 +119,7 @@ class Replicator(unohelper.Base):
                         arguments = getPropertyValueSet({'Connection': self._database.Connection})
                         executeDispatch(self._ctx, url, arguments)
                         print("replicator.run()5 synchronize ended CardSync.jar")
-                        self._initGroup()
+                        self._database.initGroups()
                     self._database.dispose()
                     format = total, mdfd, dltd
                     logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
@@ -140,6 +140,8 @@ class Replicator(unohelper.Base):
         for user in self._users.values():
             if self._canceled():
                 break
+            if not user.hasSession():
+                continue
             if user.isOffLine():
                 logger.logResource(INFO, 111, None, 'Replicator', '_synchronize()')
             elif not self._canceled():
@@ -147,11 +149,6 @@ class Replicator(unohelper.Base):
                 dltd, mdfd = self._syncUser(logger, user, dltd, mdfd)
                 logger.logResource(INFO, 113, user.Name, 'Replicator', '_synchronize()')
         return dltd, mdfd
-
-    def _initGroup(self):
-        for data in self._database.selectChangedGroups():
-            self._database.initUserGroupView(data)
-        self._database.setChangedGroup()
 
     def _syncUser(self, logger, user, dltd, mdfd):
         for addressbook in user.getAddressbooks():

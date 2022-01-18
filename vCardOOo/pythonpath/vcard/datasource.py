@@ -43,7 +43,7 @@ from .configuration import g_compact
 from .database import DataBase
 
 from .user import User
-from .user import getUserId
+from .user import getUserUri
 
 from .addressbook import AddressBook
 
@@ -69,7 +69,7 @@ import traceback
 class DataSource(unohelper.Base):
     def __init__(self, ctx):
         self._ctx = ctx
-        self._count = 0
+        self._maps = {}
         self._users = {}
         self._listener = EventListener(self)
         self._database = DataBase(ctx)
@@ -77,44 +77,39 @@ class DataSource(unohelper.Base):
         listener = TerminateListener(self._replicator)
         getDesktop(ctx).addTerminateListener(listener)
 
-# XRestDataSource
-    def getConnection(self, user, password):
-        connection = self._database.getConnection(user, password)
-        connection.addEventListener(self._listener)
-        self._count += 1
-        return connection
-
+# Procedures called by EventListener
     def closeConnection(self, connection):
-        uid = connection.getMetaData().getUserName()
-        #if uid in self._users:
-        #    self._users.get(uid).removeAddressbook(aid)
-        if self._count > 0:
-            self._count -= 1
-        print("DataSource.closeConnection() 1: %s - %s" % (self._count, uid))
-        if self._count == 0:
-            #self._replicator.stop()
-            pass
+        name = connection.getMetaData().getUserName()
+        if name in self._users:
+            user = self._users.get(name)
+            user.removeSession(self._database.getSessionId(connection))
+            print("DataSource.closeConnection() 1: %s - %s" % (len(self._users), name))
+        if not self._hasSession():
+            self._replicator.stop()
+        print("DataSource.closeConnection() 2")
 
-    def getConnectionCredential(self, scheme, server, name, password):
-        print("DataSource.getDataBaseCredential() 1 %s - %s" % (scheme, server))
-        uid = getUserId(server, name)
-        if uid in self._users:
-            print("DataSource.getDataBaseCredential() 2 %s - %s - %s" % (scheme, server, uid))
-            user = self._users.get(uid)
+# Procedures called by Driver
+    def getConnection(self, scheme, server, account, password):
+        uri = getUserUri(server, account)
+        if uri in self._maps:
+            name = self._maps.get(uri)
+            user = self._users.get(name)
         else:
-            print("DataSource.getDataBaseCredential() 3 %s - %s - %s" % (scheme, server, uid))
-            user = User(self._ctx, self._database, scheme, server, name, password)
-            self._users[uid] = user
+            user = User(self._ctx, self._database, scheme, server, account, password)
+            name = user.getName()
+            self._users[name] = user
+            self._maps[uri] = name
         user.initAddressbooks(self._database)
-        # User and/or AddressBook has been initialized and the connection to the database is done...
+        connection = self._database.getConnection(name, user.getPassword())
+        user.addSession(self._database.getSessionId(connection))
+        # User and/or AddressBooks has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
         self._replicator.start()
-        return user.getDataBaseCredential()
+        connection.addEventListener(self._listener)
+        return connection
 
-    def _getUrlParts(self, location):
-        url = getUrl(self._ctx, location, g_scheme)
-        server = url.Server
-        user = url.Path.strip('/')
-        aid = int(url.Name)
-        return server, user, aid
-
+    def _hasSession(self):
+        for user in self._users.values():
+            if user.hasSession():
+                return True
+        return False

@@ -35,6 +35,7 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from com.sun.star.sdb.CommandType import QUERY
 
+from com.sun.star.sdbc.DataType import BIGINT
 from com.sun.star.sdbc.DataType import INTEGER
 from com.sun.star.sdbc.DataType import TIMESTAMP
 from com.sun.star.sdbc.DataType import VARCHAR
@@ -77,6 +78,7 @@ from .dbtool import getDictFromResult
 from .dbtool import getKeyMapFromResult
 from .dbtool import getRowDict
 from .dbtool import getSequenceFromResult
+from .dbtool import getValueFromResult
 from .dbtool import getKeyMapKeyMapFromResult
 
 from .dbinit import getStaticTables
@@ -185,9 +187,18 @@ class DataBase(unohelper.Base):
         statement.execute(query)
         statement.close()
 
-    def createUser(self, user, password):
+    def getSessionId(self, connection):
+        session = None
+        call = getDataSourceCall(self._ctx, connection, 'getSessionId')
+        result = call.executeQuery()
+        if result.next():
+            session = getValueFromResult(result)
+        call.close()
+        return session
+
+    def createUser(self, name, password):
         statement = self.Connection.createStatement()
-        format = {'User': g_user % user,
+        format = {'User': name,
                   'Password': password,
                   'Admin': g_admin}
         query = getSqlQuery(self._ctx, 'createUser', format)
@@ -195,11 +206,11 @@ class DataBase(unohelper.Base):
         statement.close()
         return status == 0
 
-    def createUserSchema(self, user):
+    def createUserSchema(self, schema, name):
         view = self._getViewName()
-        format = {'Schema': g_schema % user,
+        format = {'Schema': schema,
                   'Public': 'PUBLIC',
-                  'User': g_user % user,
+                  'User': name,
                   'View': view,
                   'Name': view,
                   'OldName': view}
@@ -223,7 +234,18 @@ class DataBase(unohelper.Base):
         call.close()
         return user
 
-    def selectChangedAddressbooks(self):
+    def initAddressbooks(self):
+        for data in self._selectChangedAddressbooks():
+            self._initUserAddressbookView(data)
+            print("DataBase.initAddressbooks() %s - %s - %s - %s" % (data.get('User'), data.get('Name'), data.get('Addressbook'), data.get('Query')))
+        self._setChangedAddressbook()
+
+    def initGroups(self):
+        for data in self._selectChangedGroups():
+            self._initUserGroupView(data)
+        self._setChangedGroup()
+
+    def _selectChangedAddressbooks(self):
         addressbooks = []
         call = self._getCall('selectChangedAddressbooks')
         call.setNull(1, TIMESTAMP)
@@ -234,12 +256,12 @@ class DataBase(unohelper.Base):
         call.close()
         return addressbooks
 
-    def setChangedAddressbook(self):
+    def _setChangedAddressbook(self):
         call = self._getCall('updateAddressbook')
         status = call.executeUpdate()
         call.close()
 
-    def selectChangedGroups(self):
+    def _selectChangedGroups(self):
         groups = []
         call = self._getCall('selectChangedGroups')
         call.setNull(1, TIMESTAMP)
@@ -250,12 +272,12 @@ class DataBase(unohelper.Base):
         call.close()
         return groups
 
-    def setChangedGroup(self):
+    def _setChangedGroup(self):
         call = self._getCall('updateGroup')
         status = call.executeUpdate()
         call.close()
 
-    def initUserAddressbookView(self, format):
+    def _initUserAddressbookView(self, format):
         statement = self.Connection.createStatement()
         query = format.get('Query')
         format['Public'] = 'PUBLIC'
@@ -269,7 +291,7 @@ class DataBase(unohelper.Base):
             self._createUserView(statement, 'createAddressbookView', format)
         statement.close()
 
-    def initUserGroupView(self, format):
+    def _initUserGroupView(self, format):
         statement = self.Connection.createStatement()
         query = format.get('Query')
         format['Public'] = 'PUBLIC'

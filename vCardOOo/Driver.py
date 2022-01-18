@@ -120,9 +120,9 @@ class Driver(unohelper.Base,
                 e = self._getSqlException(113, 1102, user)
                 self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
                 raise e
-            name, pwd = self.DataSource.getConnectionCredential(scheme, server, user, pwd)
-            connection = self.DataSource.getConnection(name, pwd)
+            connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
+            name = connection.getMetaData().getUserName()
             format = (version, name)
             self._logger.logResource(INFO, 114, format, 'Driver', 'connect()')
             return connection
@@ -155,7 +155,6 @@ class Driver(unohelper.Base,
             raise e
         scheme = url.Protocol
         server = url.Server
-        addressbook = url.Name
         if not location.startswith(scheme):
             scheme = g_scheme
         return scheme, server

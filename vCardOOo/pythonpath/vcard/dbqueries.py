@@ -190,35 +190,35 @@ JOIN "Peoples" AS P ON "Groups"."People"=P."People"
 
     elif name == 'createDefaultAddressbookView':
         view = '''\
-CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
   SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
   JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
   JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
-  WHERE CURRENT_USER=CONCAT('USER_',%(Public)s."Addressbooks"."User")
-GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
+  WHERE %(Public)s."Addressbooks"."User"=CURRENT_USER
+GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 '''
         query = view % format
 
     elif name == 'createAddressbookView':
         view = '''\
-CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
   SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
   JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
   JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
   WHERE %(Public)s."Addressbooks"."Addressbook"=%(Addressbook)s ORDER BY %(Public)s."Cards"."Created";
-GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
+GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 '''
         query = view % format
 
     elif name == 'createGroupView':
         view = '''\
-CREATE VIEW IF NOT EXISTS %(Schema)s."%(Name)s" AS
+CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
   SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
   JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
   JOIN %(Public)s."GroupCards" ON %(Public)s."Cards"."Card"=%(Public)s."GroupCards"."Card"
   JOIN %(Public)s."Groups" ON %(Public)s."GroupCards"."Group"=%(Public)s."Groups"."Group"
   WHERE %(Public)s."Groups"."Group"=%(Group)s ORDER BY %(Public)s."Cards"."Created";
-GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
+GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 '''
         query = view % format
 
@@ -227,7 +227,7 @@ GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
 
 # Create User and Schema Query
     elif name == 'createUser':
-        q = "CREATE USER %(User)s PASSWORD '%(Password)s'"
+        q = """CREATE USER "%(User)s" PASSWORD '%(Password)s'"""
         if format.get('Admin', False):
             q += ' ADMIN;'
         else:
@@ -235,10 +235,10 @@ GRANT SELECT ON %(Schema)s."%(Name)s" TO %(User)s;
         query = q % format
 
     elif name == 'createUserSchema':
-        query = 'CREATE SCHEMA %(Schema)s AUTHORIZATION %(User)s;' % format
+        query = 'CREATE SCHEMA "%(Schema)s" AUTHORIZATION "%(User)s";' % format
 
     elif name == 'setUserSchema':
-        query = 'ALTER USER %(User)s SET INITIAL SCHEMA %(Schema)s;' % format
+        query = 'ALTER USER "%(User)s" SET INITIAL SCHEMA "%(Schema)s";' % format
 
     elif name == 'setUserPassword':
         query = """ALTER USER "%(User)s" SET PASSWORD '%(Password)s'""" % format
@@ -640,21 +640,21 @@ CREATE PROCEDURE "SelectChangedAddressbooks"(INOUT FIRST TIMESTAMP(6) WITH TIME 
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A1."Addressbook",NULL AS "Name",A1."Name" AS "OldName",'Deleted' AS "Query",A1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A1."Addressbook",NULL AS "Name",A1."Name" AS "OldName",'Deleted' AS "Query",A1."RowEnd" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
       JOIN "Users" AS U ON A1."User"=U."User"
       LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
         ON A1."Addressbook" = A2."Addressbook"
       WHERE A1."Addressbook"!=0 AND A2."Addressbook" IS NULL)
       UNION
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A2."Addressbook",A2."Name",NULL AS "OldName",'Inserted' AS "Query",A2."RowStart" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A2."Addressbook",A2."Name",NULL AS "OldName",'Inserted' AS "Query",A2."RowStart" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
       JOIN "Users" AS U ON A2."User"=U."User"
       LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
         ON A2."Addressbook"=A1."Addressbook"
       WHERE A2."Addressbook"!=0 AND  A1."Addressbook" IS NULL)
       UNION
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",A2."Addressbook",A2."Name",A1."Name" AS "OldName",'Updated' AS "Query",A1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A2."Addressbook",A2."Name",A1."Name" AS "OldName",'Updated' AS "Query",A1."RowEnd" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
       JOIN "Users" AS U ON A2."User"=U."User"
       INNER JOIN "Addressbooks" FOR SYSTEM_TIME FROM FIRST TO LAST AS A1
@@ -677,21 +677,21 @@ CREATE PROCEDURE "SelectChangedGroups"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G1."Group",NULL AS "Name",G1."Name" AS "OldName",'Deleted' AS "Query",G1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G1."Group",NULL AS "Name",G1."Name" AS "OldName",'Deleted' AS "Query",G1."RowEnd" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
       JOIN "Users" AS U ON G1."User"=U."User"
       LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
         ON G1."Group" = G2."Group"
       WHERE G1."Group"!=0 AND G2."Group" IS NULL)
       UNION
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G2."Group",G2."Name",NULL AS "OldName",'Inserted' AS "Query",G2."RowStart" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G2."Group",G2."Name",NULL AS "OldName",'Inserted' AS "Query",G2."RowStart" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
       JOIN "Users" AS U ON G2."User"=U."User"
       LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
         ON G2."Group"=G1."Group"
       WHERE G2."Group"!=0 AND  G1."Group" IS NULL)
       UNION
-      (SELECT CONCAT('SCHEMA_',U."User") AS "Schema",CONCAT('USER_',U."User") AS "User",G2."Group",G2."Name",G1."Name" AS "OldName",'Updated' AS "Query",G1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G2."Group",G2."Name",G1."Name" AS "OldName",'Updated' AS "Query",G1."RowEnd" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
       JOIN "Users" AS U ON G2."User"=U."User"
       INNER JOIN "Groups" FOR SYSTEM_TIME FROM FIRST TO LAST AS G1
@@ -1078,6 +1078,8 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
         query = 'CALL "UpdateAddressbook"()'
     elif name == 'updateGroup':
         query = 'CALL "UpdateGroup"()'
+    elif name == 'getSessionId':
+        query = 'CALL SESSION_ID()'
 
 
     elif name == 'getCardGroup':

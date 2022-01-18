@@ -48,6 +48,7 @@ from .unotool import executeDispatch
 from .dbtool import getSqlException
 
 from .dbconfig import g_user
+from .dbconfig import g_schema
 
 from .logger import getMessage
 g_message = 'datasource'
@@ -55,7 +56,7 @@ g_message = 'datasource'
 import traceback
 
 
-def getUserId(server, name):
+def getUserUri(server, name):
     return server + '/' + name
 
 
@@ -63,9 +64,9 @@ class User(unohelper.Base):
     def __init__(self, ctx, database, scheme, server, name, pwd=''):
         self._ctx = ctx
         self._password = pwd
-        print("User.__init__() 1 %s - %s" % (server, name))
         self._request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
+        self._sessions = []
         if self._isNewUser():
             provider = Provider(ctx, scheme, server)
             self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
@@ -97,6 +98,30 @@ class User(unohelper.Base):
     def Addressbooks(self):
         return self._addressbooks
 
+# Procedures called by DataSource
+    def getUri(self):
+        return getUserUri(self.Server, self.Name)
+
+    def getName(self):
+        return g_user % self.Id
+
+    def getSchema(self):
+        return g_schema % self.Id
+
+    def getPassword(self):
+        password = ''
+        return password
+
+    def hasSession(self):
+        return len(self._sessions) > 0
+
+    def addSession(self, session):
+        self._sessions.append(session)
+
+    def removeSession(self, session):
+        if session in self._sessions:
+            self._sessions.remove(session)
+
     def initAddressbooks(self, database):
         if self._provider.isOnLine():
             addressbooks = self._provider.getAllAddressbook(self._request, self.Name, self.Password, self.Path)
@@ -105,10 +130,7 @@ class User(unohelper.Base):
                 print("User.initAddressbooks() 1 %s" % (addressbooks, ))
                 raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
             if self._addressbooks.initAddressbooks(database, self.Id, addressbooks):
-                for data in database.selectChangedAddressbooks():
-                    database.initUserAddressbookView(data)
-                    print("User.initAddressbooks() %s - %s - %s - %s" % (data.get('User'), data.get('Name'), data.get('Addressbook'), data.get('Query')))
-                database.setChangedAddressbook()
+                database.initAddressbooks()
 
     def unquoteUrl(self, url):
         return self._request.unquoteUrl(url)
@@ -128,15 +150,10 @@ class User(unohelper.Base):
         return self._addressbooks.getAddressbooks()
 
     def createUser(self, database):
-        user, password = self.getDataBaseCredential()
-        if not database.createUser(self.Id, password):
-            raise self._getSqlException(1005, 1106, user)
-        database.createUserSchema(self.Id)
-
-    def getDataBaseCredential(self):
-        name = g_user % self.Id
-        password = ''
-        return name, password
+        name = self.getName()
+        if not database.createUser(name, self.getPassword()):
+            raise self._getSqlException(1005, 1106, name)
+        database.createUserSchema(self.getSchema(), name)
 
     def isOffLine(self):
         return self._provider.isOffLine()
