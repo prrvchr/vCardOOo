@@ -139,7 +139,7 @@ public final class DataBase
 		XPreparedStatement call = m_xConnection.prepareCall(query);
 		XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
 		parameters.setInt(1, card);
-		parameters.setArray(2, new Array(groups, DataType.INTEGER));
+		parameters.setArray(2, new Array(groups, "INTEGER"));
 		call.executeUpdate();
 		_closeCall(call);
 	}
