@@ -1,10 +1,10 @@
 #UNO project configuration file
-#Thu Jan 13 11:09:54 CET 2022
+#Thu Jan 27 16:19:18 CET 2022
 project.prefix=io.github.prrvchr.uno
 project.language=Java
-project.ooo=LibreOffice 7.2 \#1
+project.ooo=LibreOffice 7.2
 project.idl=/idl
-regclassname=io.github.prrvchr.uno.carddav.RegistrationHandler
+regclassname=io.github.prrvchr.carddav.RegistrationHandler
 project.implementation=carddav
 project.build=build
 project.sdk=7.2.5.2
