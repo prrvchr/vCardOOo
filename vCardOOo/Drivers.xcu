@@ -51,7 +51,7 @@
                 </node>
                 <node oor:name="AddIndexAppendix" oor:op="replace">
                     <prop oor:name="Value" oor:type="xs:boolean">
-                        <value>false</value>
+                        <value>true</value>
                     </prop>
                 </node>
                 <node oor:name="UseKeywordAsBeforeAlias" oor:op="replace">
@@ -64,6 +64,11 @@
                         <value>true</value>
                     </prop>
                 </node>
+                <node oor:name="RespectDriverResultSetType" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>true</value>
+                    </prop>
+                </node>
             </node>
             <node oor:name="MetaData">
                 <node oor:name="Authentication" oor:op="replace">
@@ -71,14 +76,9 @@
                         <value>UserPassword</value>
                     </prop>
                 </node>
-                <node oor:name="FileSystemBased" oor:op="replace">
+                <node oor:name="UseJava" oor:op="replace">
                     <prop oor:name="Value" oor:type="xs:boolean">
-                        <value>false</value>
-                    </prop>
-                </node>
-                <node oor:name="SupportsBrowsing" oor:op="replace">
-                    <prop oor:name="Value" oor:type="xs:boolean">
-                        <value>false</value>
+                        <value>true</value>
                     </prop>
                 </node>
                 <node oor:name="SupportsTableCreation" oor:op="replace">
@@ -92,6 +92,40 @@
                     </prop>
                 </node>
             </node>
+            <node oor:name="Properties">
+            <!-- "Properties" node is the _supported_ properties -->
+                <node oor:name="EscapeDateTime" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>true</value>
+                    </prop>
+                </node>
+                <node oor:name="AddIndexAppendix" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>true</value>
+                    </prop>
+                </node>
+                <node oor:name="PreferDosLikeLineEnds" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>false</value>
+                    </prop>
+                </node>
+                <node oor:name="FormsCheckRequiredFields" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>true</value>
+                    </prop>
+                </node>
+                <node oor:name="GenerateASBeforeCorrelationName" oor:op="replace">
+                <!-- Corresponds to UseKeywordAsBeforeAlias in Features - see connectivity/registry/README -->
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>true</value>
+                    </prop>
+                </node>
+                <node oor:name="RespectDriverResultSetType" oor:op="replace">
+                    <prop oor:name="Value" oor:type="xs:boolean">
+                        <value>false</value>
+                    </prop>
+                </node>
+            </node> 
         </node>
      </node>
 </oor:component-data>
