@@ -188,24 +188,32 @@ JOIN "Peoples" AS P ON "Groups"."People"=P."People"
     elif name == 'getAddressBookPredicate':
         query = '''WHERE P."Account"=CURRENT_USER OR CURRENT_USER='SA' ORDER BY "Peoples"."People"'''
 
-    elif name == 'createDefaultAddressbookView':
+    elif name == 'createUserView':
         view = '''\
-CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
-  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
-  JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
-  JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
-  WHERE %(Public)s."Addressbooks"."User"=CURRENT_USER
-GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
+CREATE VIEW IF NOT EXISTS "%(Name)s" AS
+  SELECT "%(ViewName)s".*,ROWNUM() AS "%(Bookmark)s" FROM "%(ViewName)s"
+  JOIN "%(CardTable)s" ON "%(ViewName)s"."%(CardColumn)s"="%(CardTable)s"."%(CardColumn)s"
+  JOIN "%(AddressbookTable)s" ON "%(CardTable)s"."%(AddressbookColumn)s"="%(AddressbookTable)s"."%(AddressbookColumn)s"
+  WHERE CURRENT_USER="%(AddressbookTable)s"."%(UserColumn)s" OR CURRENT_USER='%(Admin)s'
+  ORDER BY "%(CardTable)s"."Created";
 '''
         query = view % format
+
+    elif name == 'createUserSynonym':
+        synonym = '''\
+CREATE SYNONYM "%(Schema)s"."%(Name)s" FOR %(Public)s."%(View)s";
+GRANT SELECT ON "%(Public)s"."%(View)s" TO "%(User)s";
+'''
+        query = synonym % format
 
     elif name == 'createAddressbookView':
         view = '''\
 CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
-  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
+  SELECT %(Public)s."%(View)s".*,ROWNUM() AS "%(Bookmark)s" FROM %(Public)s."%(View)s"
   JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
   JOIN %(Public)s."Addressbooks" ON %(Public)s."Cards"."Addressbook"=%(Public)s."Addressbooks"."Addressbook"
-  WHERE %(Public)s."Addressbooks"."Addressbook"=%(Addressbook)s ORDER BY %(Public)s."Cards"."Created";
+  WHERE %(Public)s."Addressbooks"."Addressbook"=%(Addressbook)s
+  ORDER BY %(Public)s."%(View)s"."Created";
 GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 '''
         query = view % format
@@ -213,11 +221,11 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
     elif name == 'createGroupView':
         view = '''\
 CREATE VIEW IF NOT EXISTS "%(Schema)s"."%(Name)s" AS
-  SELECT %(Public)s."%(View)s".*,%(Public)s."Cards"."Created",%(Public)s."Cards"."Modified",ROWNUM() AS "RowNum" FROM %(Public)s."%(View)s"
-  JOIN %(Public)s."Cards" ON %(Public)s."%(View)s"."Card"=%(Public)s."Cards"."Card"
-  JOIN %(Public)s."GroupCards" ON %(Public)s."Cards"."Card"=%(Public)s."GroupCards"."Card"
+  SELECT %(Public)s."%(View)s".*,ROWNUM() AS "%(Bookmark)s" FROM %(Public)s."%(View)s"
+  JOIN %(Public)s."GroupCards" ON %(Public)s."%(View)s"."Card"=%(Public)s."GroupCards"."Card"
   JOIN %(Public)s."Groups" ON %(Public)s."GroupCards"."Group"=%(Public)s."Groups"."Group"
-  WHERE %(Public)s."Groups"."Group"=%(Group)s ORDER BY %(Public)s."Cards"."Created";
+  WHERE %(Public)s."Groups"."Group"=%(Group)s
+  ORDER BY %(Public)s."%(View)s"."Created";
 GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 '''
         query = view % format

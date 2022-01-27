@@ -37,6 +37,8 @@ from .unotool import getSimpleFile
 from .dbconfig import g_folder
 from .dbconfig import g_version
 from .dbconfig import g_superuser
+from .dbconfig import g_cardview
+from .dbconfig import g_dba
 
 from .dbqueries import getSqlQuery
 
@@ -249,7 +251,6 @@ def getTables(ctx, connection, version=g_version):
     return tables
 
 def getViews(ctx, result, name):
-    col1 = []
     sel1 = []
     tab1 = []
     queries = []
@@ -260,42 +261,52 @@ def getViews(ctx, result, name):
               'AddressbookColumn': 'Addressbook',
               'DataTable': 'CardValues',
               'DataColumn': 'Column',
-              'DataValue': 'Value'}
-    q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" ("%(ViewColumn)s","%(CardColumn)s") '
-    q += 'AS SELECT %(ViewSelect)s,"%(CardTable)s"."%(CardColumn)s" '
-    q += 'FROM "%(CardTable)s" %(ViewTable)s'
+              'DataValue': 'Value',
+              'Bookmark': 'Bookmark',
+              'Admin': g_dba}
+
+    q = 'CREATE VIEW IF NOT EXISTS "%(ViewName)s" AS SELECT %(ViewSelect)s FROM "%(CardTable)s" %(ViewTable)s'
+
     t1 = 'LEFT JOIN "%(ViewName)s" ON "%(CardTable)s"."%(CardColumn)s"="%(ViewName)s"."%(CardColumn)s"'
     t2 = 'LEFT JOIN "%(DataTable)s" AS C%(AliasNum)s ON "%(CardTable)s"."%(CardColumn)s"=C%(AliasNum)s."%(CardColumn)s" '
     t2 += 'AND C%(AliasNum)s."%(DataColumn)s"=%(ColumnId)s'
+
     s1 = '"%(ViewName)s"."%(ColumnName)s"'
-    s2 = 'C%(AliasNum)s."%(DataValue)s"'
+    s2 = 'C%(AliasNum)s."%(DataValue)s" AS "%(ColumnName)s"'
+    s3 = '"%(CardTable)s"."%(CardColumn)s"'
+    s4 = '"%(CardTable)s"."Created","%(CardTable)s"."Modified"'
+
     for view, columns in result.items():
         i = 0
         col2 = columns.keys()
         sel2 = []
         tab2 = []
-        col1 += col2
         format['ViewName'] = view
         for column, index in columns.items():
             format['ColumnName'] = column
             format['ColumnId'] = index
             format['AliasNum'] = i
-            tab2.append(t2 % format)
             sel1.append(s1 % format)
+            tab2.append(t2 % format)
             sel2.append(s2 % format)
             i += 1
-        format['ViewColumn'] = '","'.join(col2)
+        sel2.append(s3 % format)
         format['ViewSelect'] = ','.join(sel2)
         format['ViewTable'] = ' '.join(tab2)
+        print("dbinit.getViews() 1: %s" % format['ViewTable'])
         tab1.append(t1 % format)
         queries.append(q % format)
-    format['ViewName'] = name
-    format['ViewColumn'] = '","'.join(col1)
+    sel1.append(s3 % format)
+    sel1.append(s4 % format)
+    format['ViewName'] = g_cardview
     format['ViewSelect'] = ','.join(sel1)
     format['ViewTable'] = ' '.join(tab1)
-    query = q % format
-    print("dbinit.getViews(): \n%s" % query)
-    queries.append(query)
+    print("dbinit.getViews() 2: %s" % format['ViewTable'])
+    queries.append(q % format)
+    format['Name'] = name
+    queries.append(getSqlQuery(ctx, 'createUserView', format))
+    for query in queries:
+        print("dbinit.getViews() 3: \n%s" % query)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):

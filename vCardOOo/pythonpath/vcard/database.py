@@ -61,6 +61,8 @@ from .dbconfig import g_jar
 from .dbconfig import g_role
 from .dbconfig import g_schema
 from .dbconfig import g_user
+from .dbconfig import g_cardview
+from .dbconfig import g_bookmark
 
 from .dbtool import Array
 from .dbtool import checkDataBase
@@ -209,8 +211,8 @@ class DataBase(unohelper.Base):
     def createUserSchema(self, schema, name):
         view = self._getViewName()
         format = {'Schema': schema,
-                  'Public': 'PUBLIC',
                   'User': name,
+                  'Public': 'PUBLIC',
                   'View': view,
                   'Name': view,
                   'OldName': view}
@@ -220,7 +222,7 @@ class DataBase(unohelper.Base):
         query = getSqlQuery(self._ctx, 'setUserSchema', format)
         statement.execute(query)
         self._deleteUserView(statement, format)
-        self._createUserView(statement, 'createDefaultAddressbookView', format)
+        self._createUserView(statement, 'createUserSynonym', format)
         statement.close()
 
     def selectUser(self, server, name):
@@ -281,7 +283,8 @@ class DataBase(unohelper.Base):
         statement = self.Connection.createStatement()
         query = format.get('Query')
         format['Public'] = 'PUBLIC'
-        format['View'] = self._getViewName()
+        format['View'] = g_cardview
+        format['Bookmark'] = g_bookmark
         if query == 'Deleted':
             self._deleteUserView(statement, format)
         elif query == 'Inserted':
@@ -295,7 +298,8 @@ class DataBase(unohelper.Base):
         statement = self.Connection.createStatement()
         query = format.get('Query')
         format['Public'] = 'PUBLIC'
-        format['View'] = self._getViewName()
+        format['View'] = g_cardview
+        format['Bookmark'] = g_bookmark
         if query == 'Deleted':
             self._deleteUserView(statement, format)
         elif query == 'Inserted':
@@ -307,7 +311,7 @@ class DataBase(unohelper.Base):
 
     def _createUserView(self, statement, view, format):
         query = getSqlQuery(self._ctx, view, format)
-        print("DataBase._createUserView() 1: %s\n%s" % (view, query))
+        print("DataBase._createUserView() 1: %s **********************************\n%s" % (view, query))
         statement.execute(query)
 
     def _deleteUserView(self, statement, format):
