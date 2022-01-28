@@ -46,7 +46,7 @@ You must install this extension, if it is not already installed.
 
 You must install this extension, if it is not already installed.
 
-- Install ![vCardOOo logo](img/vCardOOo.png) **[vCardOOo.oxt](https://github.com/prrvchr/vCardOOo/raw/master/vCardOOo.oxt)** extension version 0.0.1.
+- Install ![vCardOOo logo](img/vCardOOo.png) **[vCardOOo.oxt](https://github.com/prrvchr/vCardOOo/raw/main/vCardOOo.oxt)** extension version 0.0.1.
 
 Restart LibreOffice / OpenOffice after installation.
 
