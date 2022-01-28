@@ -95,7 +95,7 @@ Have fun...
 
 ## Has been tested with:
 
-* LibreOffice 7.2.5.2 - Ubuntu 20.04.3 LTS -  LXQt 0.14.1
+* LibreOffice 7.2.5.2 - Ubuntu 20.04.3 LTS - LxQt 0.14.1
 
 I encourage you in case of problem :-(  
 to create an [issue](https://github.com/prrvchr/vCardOOo/issues/new)  
