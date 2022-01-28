@@ -293,7 +293,6 @@ def getViews(ctx, result, name):
         sel2.append(s3 % format)
         format['ViewSelect'] = ','.join(sel2)
         format['ViewTable'] = ' '.join(tab2)
-        print("dbinit.getViews() 1: %s" % format['ViewTable'])
         tab1.append(t1 % format)
         queries.append(q % format)
     sel1.append(s3 % format)
@@ -301,12 +300,9 @@ def getViews(ctx, result, name):
     format['ViewName'] = g_cardview
     format['ViewSelect'] = ','.join(sel1)
     format['ViewTable'] = ' '.join(tab1)
-    print("dbinit.getViews() 2: %s" % format['ViewTable'])
     queries.append(q % format)
     format['Name'] = name
     queries.append(getSqlQuery(ctx, 'createUserView', format))
-    for query in queries:
-        print("dbinit.getViews() 3: \n%s" % query)
     return queries
 
 def getViewsAndTriggers(ctx, statement, name):
@@ -361,7 +357,6 @@ def getViewsAndTriggers(ctx, statement, name):
         f1.append(getSqlQuery(ctx, 'getAddressBookPredicate'))
         format = (name, ','.join(c1), ','.join(s1), ' '.join(f1))
         query = getSqlQuery(ctx, 'createView', format)
-        #print("dbinit.getViewsAndTriggers()\n%s" % query)
         queries.append(query)
         trigger = getSqlQuery(ctx, 'createTriggerUpdateAddressBook', ' '.join(triggercore))
         triggers.append(trigger)

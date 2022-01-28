@@ -239,7 +239,6 @@ class DataBase(unohelper.Base):
     def initAddressbooks(self):
         for data in self._selectChangedAddressbooks():
             self._initUserAddressbookView(data)
-            print("DataBase.initAddressbooks() %s - %s - %s - %s" % (data.get('User'), data.get('Name'), data.get('Addressbook'), data.get('Query')))
         self._setChangedAddressbook()
 
     def initGroups(self):
@@ -311,12 +310,10 @@ class DataBase(unohelper.Base):
 
     def _createUserView(self, statement, view, format):
         query = getSqlQuery(self._ctx, view, format)
-        print("DataBase._createUserView() 1: %s **********************************\n%s" % (view, query))
         statement.execute(query)
 
     def _deleteUserView(self, statement, format):
         query = getSqlQuery(self._ctx, 'deleteView', format)
-        print("DataBase._deleteUserView() 1: %s" % (query, ))
         statement.execute(query)
 
     def selectAddressbook(self, uid, aid, name):
@@ -402,7 +399,6 @@ class DataBase(unohelper.Base):
         call.setInt(1, aid)
         call.setArray(2, array)
         status = call.executeUpdate()
-        print("DataBase.deleteCard() %s" % status)
         call.close()
         return len(urls)
 
