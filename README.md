@@ -74,7 +74,7 @@ In Database type list:
 ![vCardOOo screenshot 4](img/vCardOOo-4.png)
 
 In General: Datasource Url:
-- put the url of your vCard instance.
+- put the url of your Nextcloud instance (ie: nuage.distrilab.fr).
 
 In General: User:
 - put your username.
@@ -86,10 +86,6 @@ Then:
 - click on: Test connection (button)
 
 ![vCardOOo screenshot 5](img/vCardOOo-5.png)
-
-After authorizing the [OAuth2OOo](https://prrvchr.github.io/OAuth2OOo) application to access your Contacts, normally you should see: Connection Test: The connection was established successfully.
-
-![vCardOOo screenshot 6](img/vCardOOo-6.png)
 
 Have fun...
 
@@ -107,13 +103,22 @@ I will try to solve it ;-)
 
 This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your address book) stored in your Android phone.
 
-With the [smtpMailerOOo](https://github.com/prrvchr/smtpMailerOOo/blob/master/smtpMailerOOo.oxt) extension, it can be the data source for [mail merge](https://en.wikipedia.org/wiki/Mail_merge) by email, to your correspondents contained in your phone.
+With the [smtpMailerOOo](https://prrvchr.github.io/smtpMailerOOo) extension, it can be the data source for [mail merge](https://en.wikipedia.org/wiki/Mail_merge) by email, to your correspondents contained in your phone.
 
 It will give you access to an information system that only larges companies are able, today, to implement.
 
 ### What has been done for version 0.0.1:
 
-- Many other fix...
+- Writing of the UNO service [com.sun.star.sdbc.Driver](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/Driver.py) responding to the call from the url `sdbc:address:vcard:*`  
+  The `connect(url, info)` method of this Driver calls the [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/datasource.py) singleton to return the UNO service `com.sun.star.sdbc.Connection`.
+
+- This DataSource singleton is responsible for:
+
+  - When created, create a [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/replicator.py) thread to track remote changes on Nextcloud servers.
+  - Create and cache a [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) Interface needed for the underlying database connection.
+  - Start the Replicator each time you connect to the database.
+
+-  To analyze the content of vCards, the Replicator uses a UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) service written in Java and using the [ez-vcard](https://github.com/mangstadt/ez-vcard) library.
 
 ### What remains to be done for version 0.0.1:
 
