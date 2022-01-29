@@ -115,7 +115,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Ce singleton DataSource est responsable de:
 
   - Lors de sa création, créer un thread [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/replicator.py) pour suivre les modifications distantes sur les serveurs Nextcloud.
-  - Créez et mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) nécessaire pour la création de la connexion à la base de données sous-jacente.
+  - Créer et de mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) nécessaire pour, la création de la connexion à la base de données sous-jacente et la connexion du Replicator au serveurs Nextcloud.
   - Démarrer le Replicator à chaque connexion à la base de données.
 
 - Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) écrit en Java et utilisant la bibliothèque [ez-vcard](https://github.com/mangstadt/ez-vcard).
