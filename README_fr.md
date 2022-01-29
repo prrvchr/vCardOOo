@@ -110,15 +110,15 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 ### Ce qui a été fait pour la version 0.0.1:
 
 - Ecriture du service UNO [com.sun.star.sdbc.Driver](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/Driver.py) repondant à l'appel de l'url `sdbc:address:vcard:*`  
-  La méthode `connect(url, info)` de ce pilote appelle le singleton [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/datasource.py) pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
+  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/datasource.py) pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
 
 - Ce singleton DataSource est responsable de:
 
   - Lors de sa création, créer un thread [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/replicator.py) pour suivre les modifications distantes sur les serveurs Nextcloud.
-  - Créez et mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) nécessaire pour la connexion à la base de données sous-jacente.
+  - Créez et mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) nécessaire pour la création de la connexion à la base de données sous-jacente.
   - Démarrer le Replicator à chaque connexion à la base de données.
 
-- Pour analyser le contenu des vCards, le Replicator utilise un service UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) écrit en Java et utilisant la bibliothèque [ez-vcard](https://github.com/mangstadt/ez-vcard).
+- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) écrit en Java et utilisant la bibliothèque [ez-vcard](https://github.com/mangstadt/ez-vcard).
 
 ### Que reste-t-il à faire pour la version 0.0.1:
 

@@ -110,15 +110,15 @@ It will give you access to an information system that only larges companies are 
 ### What has been done for version 0.0.1:
 
 - Writing of the UNO service [com.sun.star.sdbc.Driver](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/Driver.py) responding to the call from the url `sdbc:address:vcard:*`  
-  The `connect(url, info)` method of this Driver calls the [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/datasource.py) singleton to return the UNO service `com.sun.star.sdbc.Connection`.
+  The `connect(url, info)` method of this Driver use the [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/datasource.py) singleton to return the UNO service `com.sun.star.sdbc.Connection`.
 
 - This DataSource singleton is responsible for:
 
   - When created, create a [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/replicator.py) thread to track remote changes on Nextcloud servers.
-  - Create and cache a [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) Interface needed for the underlying database connection.
+  - Create and cache a [User](https://github.com/prrvchr/vCardOOo/blob/main/vCardOOo/pythonpath/vcard/user.py) Interface needed for creating the connection to the underlying database.
   - Start the Replicator each time you connect to the database.
 
--  To analyze the content of vCards, the Replicator uses a UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) service written in Java and using the [ez-vcard](https://github.com/mangstadt/ez-vcard) library.
+-  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/java/CardSync/source/io/github/prrvchr/carddav/CardSync.java) service written in Java and using the [ez-vcard](https://github.com/mangstadt/ez-vcard) library.
 
 ### What remains to be done for version 0.0.1:
 
