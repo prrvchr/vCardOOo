@@ -51,21 +51,25 @@ class OptionsHandler(unohelper.Base,
 
     # XContainerWindowEventHandler
     def callHandlerMethod(self, window, event, method):
-        handled = False
-        if method == 'external_event':
-            if event == 'initialize':
-                self._manager.initialize(window)
+        try:
+            handled = False
+            if method == 'external_event':
+                if event == 'initialize':
+                    self._manager.initialize(window)
+                    handled = True
+                elif event == 'ok':
+                    self._manager.saveSetting()
+                    handled = True
+                elif event == 'back':
+                    self._manager.reloadSetting()
+                    handled = True
+            elif method == 'ViewData':
+                self._manager.viewData()
                 handled = True
-            elif event == 'ok':
-                self._manager.saveSetting()
-                handled = True
-            elif event == 'back':
-                self._manager.reloadSetting()
-                handled = True
-        elif method == 'ViewData':
-            self._manager.viewData()
-            handled = True
-        return handled
+            return handled
+        except Exception as e:
+            msg = "OptionsHandler.callHandlerMethod() Error: %s" % traceback.print_exc()
+            print(msg)
 
     def getSupportedMethodNames(self):
         return ('external_event',
