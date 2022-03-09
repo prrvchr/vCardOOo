@@ -47,6 +47,7 @@ from .unotool import createService
 from .unotool import getConfiguration
 from .unotool import getResourceLocation
 from .unotool import getSimpleFile
+from .unotool import getUrlPresentation
 
 from .configuration import g_identifier
 from .configuration import g_admin
@@ -104,7 +105,8 @@ class DataBase(unohelper.Base):
         self._fieldsMap = {}
         self._batchedCalls = OrderedDict()
         self._addressbook = None
-        url = getResourceLocation(ctx, g_identifier, g_folder)
+        location = getResourceLocation(ctx, g_identifier, g_folder)
+        url = getUrlPresentation(ctx, location)
         self._url = url + '/' + g_host
         if self._embedded:
             self._path = url + '/' + g_jar

@@ -125,17 +125,17 @@ def _createPreparedStatement(ctx, datasource, statements):
             query.Command = sql
             queries.insertByName(name, query)
 
+def _getTableNames(ctx, statement):
+    result = statement.executeQuery(getSqlQuery(ctx, 'getTableNames'))
+    names = getSequenceFromResult(result)
+    result.close()
+    return names
+
 def getTablesAndStatements(ctx, connection, version=g_version):
     tables = []
     statements = []
-    statement = connection.createStatement()
-    query = getSqlQuery(ctx, 'getTableNames')
-    result = statement.executeQuery(query)
-    sequence = getSequenceFromResult(result)
-    result.close()
-    statement.close()
     call = getDataSourceCall(ctx, connection, 'getTables')
-    for table in sequence:
+    for table in _getTableNames(ctx, statement):
         view = False
         versioned = False
         columns = []
