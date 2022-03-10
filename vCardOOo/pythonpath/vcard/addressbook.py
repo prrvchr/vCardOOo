@@ -80,12 +80,12 @@ class AddressBooks(unohelper.Base):
 
     def _getAddressbooks(self, metadata):
         addressbooks = OrderedDict()
-        indexes = metadata.getValue('Addressbooks').getArray(None)
-        names = metadata.getValue('Names').getArray(None)
-        tags = metadata.getValue('Tags').getArray(None)
-        tokens = metadata.getValue('Tokens').getArray(None)
+        indexes = metadata.getValue('Addressbooks')
+        names = metadata.getValue('Names')
+        tags = metadata.getValue('Tags')
+        tokens = metadata.getValue('Tokens')
         i = 0
-        for url in metadata.getValue('Paths').getArray(None):
+        for url in metadata.getValue('Paths'):
             addressbooks[url] = AddressBook(self._ctx, indexes[i], url, names[i], tags[i], tokens[i])
             i += 1
         return addressbooks
