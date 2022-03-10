@@ -265,6 +265,7 @@ class DataBase(unohelper.Base):
         call.close()
 
     def _selectChangedGroups(self):
+        print("DataBase._selectChangedGroups() 1")
         groups = []
         call = self._getCall('selectChangedGroups')
         call.setNull(1, TIMESTAMP)
@@ -272,6 +273,7 @@ class DataBase(unohelper.Base):
         result = call.executeQuery()
         while result.next():
             groups.append(getDataFromResult(result))
+        print("DataBase._selectChangedGroups() 2 %s" % (groups,))
         call.close()
         return groups
 
