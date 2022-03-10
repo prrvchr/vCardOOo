@@ -41,10 +41,7 @@ g_message = 'dbqueries'
 def getSqlQuery(ctx, name, format=None):
 
 # Create Text Table Queries
-    if name == 'createTextTable':
-        query = 'CREATE TEXT TABLE IF NOT EXISTS "%s" (%s)' % format
-
-    elif name == 'createTableTables':
+    if name == 'createTableTables':
         c1 = '"Table" INTEGER NOT NULL PRIMARY KEY'
         c2 = '"Name" VARCHAR(100) NOT NULL'
         c3 = '"Identity" INTEGER DEFAULT NULL'
@@ -52,16 +49,14 @@ def getSqlQuery(ctx, name, format=None):
         c5 = '"Versioned" BOOLEAN DEFAULT FALSE'
         k1 = 'CONSTRAINT "UniqueTablesName" UNIQUE("Name")'
         c = (c1, c2, c3, c4, c5, k1)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "Tables"(%s)' % ','.join(c)
 
     elif name == 'createTableColumns':
         c1 = '"Column" INTEGER NOT NULL PRIMARY KEY'
         c2 = '"Name" VARCHAR(100) NOT NULL'
         k1 = 'CONSTRAINT "UniqueColumnsName" UNIQUE("Name")'
         c = (c1, c2, k1)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "Columns"(%s)' % ','.join(c)
 
     elif name == 'createTableTableColumn':
         c1 = '"Table" INTEGER NOT NULL'
@@ -79,8 +74,7 @@ def getSqlQuery(ctx, name, format=None):
         k3 = 'CONSTRAINT "ForeignTableColumnColumn" FOREIGN KEY("Column") REFERENCES '
         k3 += '"Columns"("Column") ON DELETE CASCADE ON UPDATE CASCADE'
         c = (c1, c2, c3, c4, c5, c6, c7, c8, c9, k1, k2, k3)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "TableColumn"(%s)' % ','.join(c)
 
     elif name == 'createTableProperties':
         c1 = '"Property" INTEGER NOT NULL PRIMARY KEY'
@@ -89,15 +83,13 @@ def getSqlQuery(ctx, name, format=None):
         c4 = '"Method" SMALLINT NOT NULL'
         c5 = '"View" VARCHAR(100) DEFAULT NULL'
         c = (c1, c2, c3, c4, c5)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "Properties"(%s)' % ','.join(c)
 
     elif name == 'createTableParameters':
         c1 = '"Parameter" INTEGER NOT NULL PRIMARY KEY'
         c2 = '"Getter" VARCHAR(100) NOT NULL'
         c = (c1, c2)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "Parameters"(%s)' % ','.join(c)
 
     elif name == 'createTableTypes':
         c1 = '"Type" INTEGER NOT NULL PRIMARY KEY'
@@ -105,24 +97,21 @@ def getSqlQuery(ctx, name, format=None):
         c3 = '"Column" VARCHAR(100) NOT NULL'
         c4 = '"Order" INTEGER NOT NULL'
         c = (c1, c2, c3, c4)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "Types"(%s)' % ','.join(c)
 
     elif name == 'createTablePropertyParameter':
         c1 = '"Property" INTEGER NOT NULL'
         c2 = '"Parameter" INTEGER NOT NULL'
         c3 = '"Column" VARCHAR(100)'
         c = (c1, c2, c3)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "PropertyParameter"(%s)' % ','.join(c)
 
     elif name == 'createTablePropertyType':
         c1 = '"Property" INTEGER NOT NULL'
         c2 = '"Type" INTEGER NOT NULL'
         c3 = '"Group" INTEGER NOT NULL'
         c = (c1, c2, c3)
-        f = (format, ','.join(c))
-        query = getSqlQuery(ctx, 'createTextTable', f)
+        query = 'CREATE TEXT TABLE IF NOT EXISTS "PropertyType"(%s)' % ','.join(c)
 
     elif name == 'setTableSource':
         query = 'SET TABLE "%s" SOURCE "%s"' % (format, g_csv % format)
