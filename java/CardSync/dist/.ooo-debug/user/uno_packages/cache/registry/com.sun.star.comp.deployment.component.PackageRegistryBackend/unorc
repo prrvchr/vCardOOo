@@ -1,7 +1,0 @@
-ORIGIN=$UNO_USER_PACKAGES_CACHE/registry/com.sun.star.comp.deployment.component.PackageRegistryBackend
-<<<<<<< HEAD
-=======
-UNO_JAVA_CLASSPATH=$UNO_USER_PACKAGES_CACHE/uno_packages/lu175064rnqdo5.tmp_/CardSync.oxt/CardSync.jar
-UNO_TYPES=?$UNO_USER_PACKAGES_CACHE/uno_packages/lu175064rnqdo5.tmp_/CardSync.oxt/types.rdb
->>>>>>> d882c1dc4a5e11deeafe6ccf36542848e178d539
-UNO_SERVICES=?$ORIGIN/common.rdb ${$ORIGIN/${_OS}_${_ARCH}rc:UNO_SERVICES}
