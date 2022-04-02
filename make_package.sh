@@ -24,6 +24,10 @@
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 COMMENT
+
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+cd $SCRIPTPATH
+
 #./rdb/make_rdb.sh
 
 unzip -o -d ./java/CardSync/dist/ ./java/CardSync/dist/CardSync.oxt
