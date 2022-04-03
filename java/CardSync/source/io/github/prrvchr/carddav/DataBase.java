@@ -50,249 +50,249 @@ import io.github.prrvchr.uno.sdbc.Array;
 
 public final class DataBase
 {
-	private XConnection m_xConnection;
+    private XConnection m_xConnection;
 
-	public DataBase(NamedValue[] arguments)
-	{
-		this(_getConnection(arguments));
-	}
+    public DataBase(NamedValue[] arguments)
+    {
+        this(_getConnection(arguments));
+    }
 
-	public DataBase(XConnection connection)
-	{
-		m_xConnection = connection;
-	}
+    public DataBase(XConnection connection)
+    {
+        m_xConnection = connection;
+    }
 
-	public String getUserName() throws SQLException
-	{
-		return m_xConnection.getMetaData().getUserName();
-	}
+    public String getUserName() throws SQLException
+    {
+        return m_xConnection.getMetaData().getUserName();
+    }
 
-	public String getDriverVersion() throws SQLException
-	{
-		return m_xConnection.getMetaData().getDriverVersion();
-	}
+    public String getDriverVersion() throws SQLException
+    {
+        return m_xConnection.getMetaData().getDriverVersion();
+    }
 
-	public List<Map<String, Object>> getChangedCards() throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
-		XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setNull(1, DataType.TIMESTAMP);
-		parameters.setNull(2, DataType.TIMESTAMP);
-		XResultSet result = call.executeQuery();
-		List<Map<String, Object>> maps = _getChangedCards(result);
-		_closeCall(call);
-		return maps;
-	}
+    public List<Map<String, Object>> getChangedCards() throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
+        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        parameters.setNull(1, DataType.TIMESTAMP);
+        parameters.setNull(2, DataType.TIMESTAMP);
+        XResultSet result = call.executeQuery();
+        List<Map<String, Object>> maps = _getChangedCards(result);
+        _closeCall(call);
+        return maps;
+    }
 
-	public void updateUser() throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"()");
-		call.executeUpdate();
-		_closeCall(call);
-	}
+    public void updateUser() throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"()");
+        call.executeUpdate();
+        _closeCall(call);
+    }
 
-	public Map<String, CardColumn> getAddressbookColumn()
-	throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
-		XResultSet result = call.executeQuery();
-		Map<String, CardColumn> maps = _getAddressbookColumn(result, "PropertyName", "PropertyGetter", "Method");
-		_closeCall(call);
-		return maps;
-	}
+    public Map<String, CardColumn> getAddressbookColumn()
+    throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
+        XResultSet result = call.executeQuery();
+        Map<String, CardColumn> maps = _getAddressbookColumn(result, "PropertyName", "PropertyGetter", "Method");
+        _closeCall(call);
+        return maps;
+    }
 
-	public Map<Integer, CardGroup> getCardGroup()
-	throws SQLException
-	{
-		XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectCardGroup\"()");
-		XResultSet result = call.executeQuery();
-		Map<Integer,  CardGroup> maps = _getCardGroup(result, "User", "Names", "Groups");
-		_closeCall(call);
-		return maps;
-	}
+    public Map<Integer, CardGroup> getCardGroup()
+    throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectCardGroup\"()");
+        XResultSet result = call.executeQuery();
+        Map<Integer,  CardGroup> maps = _getCardGroup(result, "User", "Names", "Groups");
+        _closeCall(call);
+        return maps;
+    }
 
-	public Integer insertGroup(int user,
-							   String group)
-	throws SQLException
-	{
-		Integer id = null;
-		String query = "CALL \"InsertGroup\"(?,?,?)";
-		System.out.println("DataBase.insertGroup() UserdId: " + user + " - Group: " + group);
-		XPreparedStatement call = m_xConnection.prepareCall(query);
-		XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setInt(1, user);
-		parameters.setString(2, group);
-		call.executeUpdate();
-		XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
-		id = row.getInt(3);
-		_closeCall(call);
-		return id;
-	}
+    public Integer insertGroup(int user,
+                               String group)
+    throws SQLException
+    {
+        Integer id = null;
+        String query = "CALL \"InsertGroup\"(?,?,?)";
+        System.out.println("DataBase.insertGroup() UserdId: " + user + " - Group: " + group);
+        XPreparedStatement call = m_xConnection.prepareCall(query);
+        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        parameters.setInt(1, user);
+        parameters.setString(2, group);
+        call.executeUpdate();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
+        id = row.getInt(3);
+        _closeCall(call);
+        return id;
+    }
 
 
-	public void mergeGroup(int card,
-						   Object[] groups)
-	throws SQLException
-	{
-		String query = "CALL \"MergeCardGroup\"(?,?)";
-		System.out.println("DataBase.mergeGroup() CardId: " + card + " - Group: " + groups);
-		XPreparedStatement call = m_xConnection.prepareCall(query);
-		XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setInt(1, card);
-		parameters.setArray(2, new Array(groups, "INTEGER"));
-		call.executeUpdate();
-		_closeCall(call);
-	}
+    public void mergeGroup(int card,
+                           Object[] groups)
+    throws SQLException
+    {
+        String query = "CALL \"MergeCardGroup\"(?,?)";
+        System.out.println("DataBase.mergeGroup() CardId: " + card + " - Group: " + groups);
+        XPreparedStatement call = m_xConnection.prepareCall(query);
+        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        parameters.setInt(1, card);
+        parameters.setArray(2, new Array(groups, "INTEGER"));
+        call.executeUpdate();
+        _closeCall(call);
+    }
 
-	public void parseCard(int card,
-						  int column,
-						  String value)
-	throws SQLException
-	{
-		String query = "CALL \"MergeCardValue\"(?,?,?)";
-		System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value);
-		XPreparedStatement call = m_xConnection.prepareCall(query);
-		XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-		parameters.setInt(1, card);
-		parameters.setInt(2, column);
-		if (value == null)
-		{
-			parameters.setNull(3, DataType.VARCHAR);
-		}
-		else
-		{
-			parameters.setString(3, value);
-		}
-		call.executeUpdate();
-		_closeCall(call);
-	}
+    public void parseCard(int card,
+                          int column,
+                          String value)
+    throws SQLException
+    {
+        String query = "CALL \"MergeCardValue\"(?,?,?)";
+        System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value);
+        XPreparedStatement call = m_xConnection.prepareCall(query);
+        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        parameters.setInt(1, card);
+        parameters.setInt(2, column);
+        if (value == null)
+        {
+            parameters.setNull(3, DataType.VARCHAR);
+        }
+        else
+        {
+            parameters.setString(3, value);
+        }
+        call.executeUpdate();
+        _closeCall(call);
+    }
 
-	private static List<Map<String, Object>> _getChangedCards(XResultSet result) throws SQLException
-	{
-		System.out.println("DataBase._getChangedCards() 1");
-		List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
-		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-		int len = metadata.getMetaData().getColumnCount();
-		XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-		while(result != null && result.next())
-		{
-			maps.add(_getRowMap(metadata, row, len));
-		}
-		System.out.println("DataBase._getChangedCards() 2");
-		return maps;
-	}
+    private static List<Map<String, Object>> _getChangedCards(XResultSet result) throws SQLException
+    {
+        System.out.println("DataBase._getChangedCards() 1");
+        List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
+        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
+        int len = metadata.getMetaData().getColumnCount();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        while(result != null && result.next())
+        {
+            maps.add(_getRowMap(metadata, row, len));
+        }
+        System.out.println("DataBase._getChangedCards() 2");
+        return maps;
+    }
 
-	private static Map<Integer, CardGroup> _getCardGroup(XResultSet result,
-														 String key,
-														 String name,
-														 String group)
-	throws SQLException
-	{
-		Map<Integer, CardGroup> maps = new HashMap<Integer, CardGroup>();
-		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-		int len = metadata.getMetaData().getColumnCount();
-		XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-		while(result != null && result.next())
-		{
-			CardGroup groups = new CardGroup(_getRowMap(metadata, row, len), key, name, group);
-			maps.put(groups.getUser(), groups);
-		}
-		return maps;
-	}
+    private static Map<Integer, CardGroup> _getCardGroup(XResultSet result,
+                                                         String key,
+                                                         String name,
+                                                         String group)
+    throws SQLException
+    {
+        Map<Integer, CardGroup> maps = new HashMap<Integer, CardGroup>();
+        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
+        int len = metadata.getMetaData().getColumnCount();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        while(result != null && result.next())
+        {
+            CardGroup groups = new CardGroup(_getRowMap(metadata, row, len), key, name, group);
+            maps.put(groups.getUser(), groups);
+        }
+        return maps;
+    }
 
-	private static Map<String, CardColumn> _getAddressbookColumn(XResultSet result, String key, String getter, String method) 
-	throws SQLException
-	{
-		String mapkey = null;
-		CardColumn column = null;
-		Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
-		XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-		int len = metadata.getMetaData().getColumnCount();
-		XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-		while(result != null && result.next())
-		{
-			Map<String, Object> map = _getRowMap(metadata, row, len);
-			if (mapkey == null || !mapkey.equals(map.get(key))) 
-			{
-				if (mapkey != null) maps.put(mapkey, new CardColumn(column));
-				mapkey = (String) map.get(key);
-				column = new CardColumn(mapkey, (String) map.get(getter), (Short) map.get(method));
-			}
-			column.add(map);
-		}
-		if (column != null) maps.put(mapkey, new CardColumn(column));
-		return maps;
-	}
+    private static Map<String, CardColumn> _getAddressbookColumn(XResultSet result, String key, String getter, String method) 
+    throws SQLException
+    {
+        String mapkey = null;
+        CardColumn column = null;
+        Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
+        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
+        int len = metadata.getMetaData().getColumnCount();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        while(result != null && result.next())
+        {
+            Map<String, Object> map = _getRowMap(metadata, row, len);
+            if (mapkey == null || !mapkey.equals(map.get(key))) 
+            {
+                if (mapkey != null) maps.put(mapkey, new CardColumn(column));
+                mapkey = (String) map.get(key);
+                column = new CardColumn(mapkey, (String) map.get(getter), (Short) map.get(method));
+            }
+            column.add(map);
+        }
+        if (column != null) maps.put(mapkey, new CardColumn(column));
+        return maps;
+    }
 
-	private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int len) throws SQLException
-	{
-		return  _getRowMap(metadata, row, 1, len);
-	}
-	
-	private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int start, int len) throws SQLException
-	{
-		Map<String, Object> map = new HashMap<String, Object>();
-		for (int i = 1; i <= len; i++)
-		{
-			String name = metadata.getMetaData().getColumnLabel(i);
-			String dbtype = metadata.getMetaData().getColumnTypeName(i);
-			map.put(name, _getRowValue(row, dbtype, i));
-		}
-		return map;
-	}
+    private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int len) throws SQLException
+    {
+        return  _getRowMap(metadata, row, 1, len);
+    }
+    
+    private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int start, int len) throws SQLException
+    {
+        Map<String, Object> map = new HashMap<String, Object>();
+        for (int i = 1; i <= len; i++)
+        {
+            String name = metadata.getMetaData().getColumnLabel(i);
+            String dbtype = metadata.getMetaData().getColumnTypeName(i);
+            map.put(name, _getRowValue(row, dbtype, i));
+        }
+        return map;
+    }
 
-	private static Object _getRowValue(XRow row, String dbtype, int index) throws SQLException
-	{
-		return _getRowValue(row, dbtype, index, null);
-	}
+    private static Object _getRowValue(XRow row, String dbtype, int index) throws SQLException
+    {
+        return _getRowValue(row, dbtype, index, null);
+    }
 
-	private static Object _getRowValue(XRow row, String dbtype, int index, Object value) throws SQLException
-	{
-		if (dbtype.equals("VARCHAR")) value = row.getString(index);
-		else if (dbtype.equals("CHARACTER")) value = row.getString(index);
-		else if (dbtype.equals("BOOLEAN")) value = row.getBoolean(index);
-		else if (dbtype.equals("TINYINT")) value = row.getByte(index);
-		else if (dbtype.equals("SMALLINT")) value = row.getShort(index);
-		else if (dbtype.equals("INTEGER")) value = row.getInt(index);
-		else if (dbtype.equals("BIGINT")) value = row.getLong(index);
-		else if (dbtype.equals("FLOAT")) value = row.getFloat(index);
-		else if (dbtype.equals("DOUBLE")) value = row.getDouble(index);
-		else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
-		else if (dbtype.equals("TIME")) value = row.getTime(index);
-		else if (dbtype.equals("DATE")) value = row.getDate(index);
-		else if (dbtype.equals("BINARY")) value = row.getBytes(index);
-		else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
-		if(row.wasNull()) value = null;
-		return value;
-	}
+    private static Object _getRowValue(XRow row, String dbtype, int index, Object value) throws SQLException
+    {
+        if (dbtype.equals("VARCHAR")) value = row.getString(index);
+        else if (dbtype.equals("CHARACTER")) value = row.getString(index);
+        else if (dbtype.equals("BOOLEAN")) value = row.getBoolean(index);
+        else if (dbtype.equals("TINYINT")) value = row.getByte(index);
+        else if (dbtype.equals("SMALLINT")) value = row.getShort(index);
+        else if (dbtype.equals("INTEGER")) value = row.getInt(index);
+        else if (dbtype.equals("BIGINT")) value = row.getLong(index);
+        else if (dbtype.equals("FLOAT")) value = row.getFloat(index);
+        else if (dbtype.equals("DOUBLE")) value = row.getDouble(index);
+        else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
+        else if (dbtype.equals("TIME")) value = row.getTime(index);
+        else if (dbtype.equals("DATE")) value = row.getDate(index);
+        else if (dbtype.equals("BINARY")) value = row.getBytes(index);
+        else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
+        if(row.wasNull()) value = null;
+        return value;
+    }
 
-	private static void _closeCall(XPreparedStatement call) throws SQLException
-	{
-		XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(XCloseable.class, call);
-		closeable.close();
-	}
+    private static void _closeCall(XPreparedStatement call) throws SQLException
+    {
+        XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(XCloseable.class, call);
+        closeable.close();
+    }
 
-	private static XConnection _getConnection(NamedValue[] arguments)
-	{
-		XConnection connection = null;
-		for (NamedValue argument: arguments)
-		{
-			if (argument.Name.equals("DynamicData"))
-			{
-				NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
-				for (NamedValue value: values)
-				{
-					if (value.Name.equals("Connection"))
-					{
-						connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
-						break;
-					}
-				}
-				break;
-			}
-		}
-		return connection;
-	}
+    private static XConnection _getConnection(NamedValue[] arguments)
+    {
+        XConnection connection = null;
+        for (NamedValue argument: arguments)
+        {
+            if (argument.Name.equals("DynamicData"))
+            {
+                NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
+                for (NamedValue value: values)
+                {
+                    if (value.Name.equals("Connection"))
+                    {
+                        connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        return connection;
+    }
 
 
 }

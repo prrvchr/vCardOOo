@@ -43,124 +43,124 @@ import io.github.prrvchr.uno.sdbc.Array;
 public final class CardColumn
 {
 
-	private String m_property = null;
-	private String m_method = null;
-	private Short m_type = null;
+    private String m_property = null;
+    private String m_method = null;
+    private Short m_type = null;
 
-	private Map<String, Integer> m_methods = new HashMap<String, Integer>();
-	private Map<String, Map<List<String>, Integer>> m_types = new HashMap<String, Map<List<String>, Integer>>();
+    private Map<String, Integer> m_methods = new HashMap<String, Integer>();
+    private Map<String, Map<List<String>, Integer>> m_types = new HashMap<String, Map<List<String>, Integer>>();
 
-	public CardColumn(CardColumn original)
-	{
-		m_property = original.getProperty();
-		m_method = original.getMethod();
-		m_type = original.getType();
-		m_methods = original.getMethods();
-		if (isTyped()) 
-		{
-			m_types = original.getTypes();
-		}
-	}
+    public CardColumn(CardColumn original)
+    {
+        m_property = original.getProperty();
+        m_method = original.getMethod();
+        m_type = original.getType();
+        m_methods = original.getMethods();
+        if (isTyped()) 
+        {
+            m_types = original.getTypes();
+        }
+    }
 
-	public CardColumn(String property, String method, Short type)
-	{
-		m_property = property;
-		m_method = method;
-		m_type = type;
-	}
+    public CardColumn(String property, String method, Short type)
+    {
+        m_property = property;
+        m_method = method;
+        m_type = type;
+    }
 
-	public String getProperty()
-	{
-		return m_property;
-	}
+    public String getProperty()
+    {
+        return m_property;
+    }
 
-	public String getMethod()
-	{
-		return m_method;
-	}
+    public String getMethod()
+    {
+        return m_method;
+    }
 
-	public Short getType()
-	{
-		return m_type;
-	}
+    public Short getType()
+    {
+        return m_type;
+    }
 
-	public Boolean isGroup()
-	{
-		return m_type == 0;
-	}
+    public Boolean isGroup()
+    {
+        return m_type == 0;
+    }
 
-	public Boolean isTyped()
-	{
-		return m_type == 2;
-	}
+    public Boolean isTyped()
+    {
+        return m_type == 2;
+    }
 
-	public Map<String, Map<List<String>, Integer>> getTypes()
-	{
-		return new HashMap<String, Map<List<String>, Integer>>(m_types);
-	}
+    public Map<String, Map<List<String>, Integer>> getTypes()
+    {
+        return new HashMap<String, Map<List<String>, Integer>>(m_types);
+    }
 
-	public Map<String, Integer> getMethods()
-	{
-		return new HashMap<String, Integer>(m_methods);
-	}
+    public Map<String, Integer> getMethods()
+    {
+        return new HashMap<String, Integer>(m_methods);
+    }
 
-	public Set<String> getGetters()
-	{
-		return m_methods.keySet();
-	}
-	
-	public Integer getColumnId(List<VCardParameter> types, String getter)
-	{
-		Integer id = null;
-		if (isTyped()) 
-		{
-			id = m_types.get(getter).get(_getTypes(types));
-		}
-		else
-		{
-			id = m_methods.get(getter);
-		}
-		return id;
-	}
+    public Set<String> getGetters()
+    {
+        return m_methods.keySet();
+    }
+    
+    public Integer getColumnId(List<VCardParameter> types, String getter)
+    {
+        Integer id = null;
+        if (isTyped()) 
+        {
+            id = m_types.get(getter).get(_getTypes(types));
+        }
+        else
+        {
+            id = m_methods.get(getter);
+        }
+        return id;
+    }
 
-	public void add(Map<String, Object> map)
-	throws SQLException
-	{
-		String getter = (String) map.get("ParameterGetter");
-		int id = (int) map.get("ColumnId");
-		if (!m_methods.containsKey(getter))
-		{
-			m_methods.put(getter, id);
-			if (isTyped()) 
-			{
-				Map<List<String>, Integer> type = new HashMap<List<String>, Integer>();
-				type.put(_getTypes(map), id);
-				m_types.put(getter, type);
-			}
-		}
-		else if (isTyped()) 
-		{
-			m_types.get(getter).put(_getTypes(map), id);
-		}
-	}
+    public void add(Map<String, Object> map)
+    throws SQLException
+    {
+        String getter = (String) map.get("ParameterGetter");
+        int id = (int) map.get("ColumnId");
+        if (!m_methods.containsKey(getter))
+        {
+            m_methods.put(getter, id);
+            if (isTyped()) 
+            {
+                Map<List<String>, Integer> type = new HashMap<List<String>, Integer>();
+                type.put(_getTypes(map), id);
+                m_types.put(getter, type);
+            }
+        }
+        else if (isTyped()) 
+        {
+            m_types.get(getter).put(_getTypes(map), id);
+        }
+    }
 
-	private static List<String> _getTypes(List<VCardParameter> types)
-	{
-		List<String> type = new ArrayList<String>();
-		for (VCardParameter t: types)
-		{
-			type.add(t.getValue());
-		}
-		return type;
-	}
+    private static List<String> _getTypes(List<VCardParameter> types)
+    {
+        List<String> type = new ArrayList<String>();
+        for (VCardParameter t: types)
+        {
+            type.add(t.getValue());
+        }
+        return type;
+    }
 
-	private static List<String> _getTypes(Map<String, Object> map)
-	throws SQLException
-	{
-		Object[] object = ((Array) map.get("TypeValues")).getArray(null);
-		List<String> types = Stream.of(object).map(Object::toString).collect(Collectors.toList());
-		return types;
-	}
+    private static List<String> _getTypes(Map<String, Object> map)
+    throws SQLException
+    {
+        Object[] object = ((Array) map.get("TypeValues")).getArray(null);
+        List<String> types = Stream.of(object).map(Object::toString).collect(Collectors.toList());
+        return types;
+    }
 
 
 }

@@ -37,56 +37,56 @@ import io.github.prrvchr.uno.sdbc.Array;
 public final class CardGroup
 {
 
-	private Integer m_user = null;
-	private Map<String, Integer> m_groups = null;
+    private Integer m_user = null;
+    private Map<String, Integer> m_groups = null;
 
-	public CardGroup(Map<String, Object> map,
-					String key,
-					String name,
-					String group)
-	throws SQLException
-	{
-		m_user = (Integer) map.get(key);
-		Map<String, Integer> maps = new HashMap<String, Integer>();
-		Object[] names = ((Array) map.get(name)).getArray(null);
-		Object[] groups = ((Array) map.get(group)).getArray(null);
-		for (int i=0; i<names.length; i++)
-		{
-			maps.put((String) names[i], (Integer) groups[i]);
-		}
-		m_groups = maps;
-	}
+    public CardGroup(Map<String, Object> map,
+                    String key,
+                    String name,
+                    String group)
+    throws SQLException
+    {
+        m_user = (Integer) map.get(key);
+        Map<String, Integer> maps = new HashMap<String, Integer>();
+        Object[] names = ((Array) map.get(name)).getArray(null);
+        Object[] groups = ((Array) map.get(group)).getArray(null);
+        for (int i=0; i<names.length; i++)
+        {
+            maps.put((String) names[i], (Integer) groups[i]);
+        }
+        m_groups = maps;
+    }
 
-	
-	public void parse(DataBase database,
-					  int card,
-					  String[] groups)
-	throws SQLException
-	{
-		for (int i=0; i<groups.length; i++)
-		{
-			String group = groups[i];
-			if (!m_groups.containsKey(group))
-			{
-				m_groups.put(group, database.insertGroup(m_user, group));
-			}
-		}
-		database.mergeGroup(card, _getGroupIds(groups));
-	}
+    
+    public void parse(DataBase database,
+                      int card,
+                      String[] groups)
+    throws SQLException
+    {
+        for (int i=0; i<groups.length; i++)
+        {
+            String group = groups[i];
+            if (!m_groups.containsKey(group))
+            {
+                m_groups.put(group, database.insertGroup(m_user, group));
+            }
+        }
+        database.mergeGroup(card, _getGroupIds(groups));
+    }
 
-	public Integer getUser()
-	{
-		return m_user;
-	}
+    public Integer getUser()
+    {
+        return m_user;
+    }
 
-	private Object[] _getGroupIds(String[] groups)
-	{
-		Object[] ids = new Object[groups.length];
-		for (int i=0; i<groups.length; i++)
-		{
-			ids[i] = m_groups.get(groups[i]);
-			
-		}
-		return ids;
-	}
+    private Object[] _getGroupIds(String[] groups)
+    {
+        Object[] ids = new Object[groups.length];
+        for (int i=0; i<groups.length; i++)
+        {
+            ids[i] = m_groups.get(groups[i]);
+            
+        }
+        return ids;
+    }
 }

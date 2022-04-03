@@ -50,132 +50,132 @@ public final class CardSync
 extends ServiceComponent
 implements XJob
 {
-	@SuppressWarnings("unused")
-	private final XComponentContext m_xContext;
-	private static final String m_name = CardSync.class.getName();
-	private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
+    @SuppressWarnings("unused")
+    private final XComponentContext m_xContext;
+    private static final String m_name = CardSync.class.getName();
+    private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
                                                 "com.sun.star.task.Job"};
-	@SuppressWarnings("unused")
-	private static final String m_identifier = "io.github.prrvchr.vCardOOo";
+    @SuppressWarnings("unused")
+    private static final String m_identifier = "io.github.prrvchr.vCardOOo";
 
-	public CardSync(XComponentContext context)
-	{
-		super(m_name, m_services);
-		m_xContext = context;
-	}
+    public CardSync(XComponentContext context)
+    {
+        super(m_name, m_services);
+        m_xContext = context;
+    }
 
 
-	// UNO Service Registration:
-	public static XSingleComponentFactory __getComponentFactory(String name)
-	{
-		XSingleComponentFactory xFactory = null;
-		if (name.equals(m_name))
-		{
-			xFactory = Factory.createComponentFactory(CardSync.class, m_services);
-		}
-		return xFactory;
-	}
+    // UNO Service Registration:
+    public static XSingleComponentFactory __getComponentFactory(String name)
+    {
+        XSingleComponentFactory xFactory = null;
+        if (name.equals(m_name))
+        {
+            xFactory = Factory.createComponentFactory(CardSync.class, m_services);
+        }
+        return xFactory;
+    }
 
-	public static boolean __writeRegistryServiceInfo(XRegistryKey key)
-	{
-		return Factory.writeRegistryServiceInfo(m_name, m_services, key);
-	}
+    public static boolean __writeRegistryServiceInfo(XRegistryKey key)
+    {
+        return Factory.writeRegistryServiceInfo(m_name, m_services, key);
+    }
 
-	// com.sun.star.task.XJob:
-	public Object execute(NamedValue[] arguments)
-	throws SQLException
-	{
-		DataBase database = new DataBase(arguments);
-		Map<Integer, CardGroup> groups = database.getCardGroup();
-		try
-		{
-			boolean status = true;
-			String name = database.getUserName();
-			String version = database.getDriverVersion();
-			System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
-			Map<String, CardColumn> columns = database.getAddressbookColumn();
-			//for (String key: columns.keySet())
-			//{
-			//	CardColumn column = columns.get(key);
-			//	for (Map<String, Object> object: column.getColumns())
-			//	{
-			//		System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
-			//	}
-			//}
-			for (Map<String, Object> result: database.getChangedCards())
-			{
-				System.out.println("CardSync.execute() 3");
-				String query = (String) result.get("Query");
-				if (!query.equals("Deleted"))
-				{
-					System.out.println("CardSync.execute() 4");
-					int user = (int) result.get("User");
-					int card = (int) result.get("Card");
-					String data = (String) result.get("Data");
-					status = _parseCard(database, groups.get(user), card, data, columns);
-				}
-			}
-			if (status) database.updateUser();
-			System.out.println("CardSync.execute() 5");
-		}
-		catch (Exception e)
-		{
-			System.out.println("Error happened: " + e.getMessage());
-			e.printStackTrace();
-		}
-		System.out.println("CardSync.execute() 3");
-		return null;
-	}
+    // com.sun.star.task.XJob:
+    public Object execute(NamedValue[] arguments)
+    throws SQLException
+    {
+        DataBase database = new DataBase(arguments);
+        Map<Integer, CardGroup> groups = database.getCardGroup();
+        try
+        {
+            boolean status = true;
+            String name = database.getUserName();
+            String version = database.getDriverVersion();
+            System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
+            Map<String, CardColumn> columns = database.getAddressbookColumn();
+            //for (String key: columns.keySet())
+            //{
+            //    CardColumn column = columns.get(key);
+            //    for (Map<String, Object> object: column.getColumns())
+            //    {
+            //        System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
+            //    }
+            //}
+            for (Map<String, Object> result: database.getChangedCards())
+            {
+                System.out.println("CardSync.execute() 3");
+                String query = (String) result.get("Query");
+                if (!query.equals("Deleted"))
+                {
+                    System.out.println("CardSync.execute() 4");
+                    int user = (int) result.get("User");
+                    int card = (int) result.get("Card");
+                    String data = (String) result.get("Data");
+                    status = _parseCard(database, groups.get(user), card, data, columns);
+                }
+            }
+            if (status) database.updateUser();
+            System.out.println("CardSync.execute() 5");
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error happened: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("CardSync.execute() 3");
+        return null;
+    }
 
-	private boolean _parseCard(DataBase database,
-							   CardGroup group,
-							   int id,
-							   String data,
-							   Map<String, CardColumn> columns)
-	throws IOException,
-		   NoSuchMethodException,
-		   IllegalAccessException,
-		   IllegalArgumentException,
-		   InvocationTargetException,
-		   SecurityException,
-		   SQLException,
-		   InstantiationException
-	{
-		VCard card = Ezvcard.parse(data).first();
-		ScribeIndex index = new ScribeIndex();
-		int i = 0;
-		for (VCardProperty property: card)
-		{
-			String name = index.getPropertyScribe(property).getPropertyName();
-			// XXX: We do not parse Properties that do not have a Column
-			if (!columns.containsKey(name))
-			{
-				continue;
-			}
-			System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);
-			CardColumn column = columns.get(name);
-			_parseCardProperty(database, group, id, card, column);
-			i ++;
-		}
-		return true;
-	}
+    private boolean _parseCard(DataBase database,
+                               CardGroup group,
+                               int id,
+                               String data,
+                               Map<String, CardColumn> columns)
+    throws IOException,
+           NoSuchMethodException,
+           IllegalAccessException,
+           IllegalArgumentException,
+           InvocationTargetException,
+           SecurityException,
+           SQLException,
+           InstantiationException
+    {
+        VCard card = Ezvcard.parse(data).first();
+        ScribeIndex index = new ScribeIndex();
+        int i = 0;
+        for (VCardProperty property: card)
+        {
+            String name = index.getPropertyScribe(property).getPropertyName();
+            // XXX: We do not parse Properties that do not have a Column
+            if (!columns.containsKey(name))
+            {
+                continue;
+            }
+            System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);
+            CardColumn column = columns.get(name);
+            _parseCardProperty(database, group, id, card, column);
+            i ++;
+        }
+        return true;
+    }
 
-	private <T> void _parseCardProperty(DataBase database,
-										CardGroup group,
-										int id,
-										VCard card,
-										CardColumn column)
-	throws NoSuchMethodException,
-		   IllegalAccessException,
-		   IllegalArgumentException,
-		   InvocationTargetException,
-		   SecurityException,
-		   SQLException,
-		   InstantiationException
-	{
-		CardProperty<T> property = new CardProperty<T>(card, column);
-		property.parse(database, group, id, column);
-	}
+    private <T> void _parseCardProperty(DataBase database,
+                                        CardGroup group,
+                                        int id,
+                                        VCard card,
+                                        CardColumn column)
+    throws NoSuchMethodException,
+           IllegalAccessException,
+           IllegalArgumentException,
+           InvocationTargetException,
+           SecurityException,
+           SQLException,
+           InstantiationException
+    {
+        CardProperty<T> property = new CardProperty<T>(card, column);
+        property.parse(database, group, id, column);
+    }
 
 
 }
