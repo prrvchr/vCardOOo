@@ -107,18 +107,18 @@ class Driver(unohelper.Base,
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
                 e = self._getSqlException(112, 1101, url)
-                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
                 raise e
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
                 e = self._getSqlException(112, 1101, url)
-                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
                 raise e
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
                 e = self._getSqlException(113, 1102, user)
-                self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
                 raise e
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
@@ -151,7 +151,7 @@ class Driver(unohelper.Base,
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
             e = self._getSqlException(112, 1101, location)
-            self._logger.logMessage(SEVERE, e.Message, None, 'Driver', 'connect()')
+            self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
             raise e
         scheme = url.Protocol
         server = url.Server
