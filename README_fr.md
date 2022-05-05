@@ -2,7 +2,7 @@
 
 **This [document](https://prrvchr.github.io/vCardOOo) in English.**
 
-**L'utilisation de ce logiciel vous soumet à nos** [**Conditions d'utilisation**](https://prrvchr.github.io/vCardOOo/source/CardSync/registration/TermsOfUse_fr) **et à notre** [**Politique de protection des données**](https://prrvchr.github.io/vCardOOo/source/CardSync/registration/PrivacyPolicy_fr)
+**L'utilisation de ce logiciel vous soumet à nos** [**Conditions d'utilisation**](https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr) **et à notre** [**Politique de protection des données**](https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr)
 
 # version [0.0.1](https://prrvchr.github.io/vCardOOo/README_fr#historique)
 
@@ -109,16 +109,16 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 
 ### Ce qui a été fait pour la version 0.0.1:
 
-- Ecriture du service UNO [com.sun.star.sdbc.Driver](https://github.com/prrvchr/vCardOOo/blob/main/source/CardSync/Driver.py) repondant à l'appel de l'url `sdbc:address:vcard:*`  
-  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/source/CardSync/pythonpath/vcard/datasource.py) pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
+- Ecriture du service UNO [com.sun.star.sdbc.Driver](https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/Driver.py) repondant à l'appel de l'url `sdbc:address:vcard:*`  
+  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource](https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/pythonpath/vcard/datasource.py) pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
 
 - Ce singleton DataSource est responsable de:
 
-  - Lors de sa création, créer un thread [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/source/CardSync/pythonpath/vcard/replicator.py) pour suivre les modifications distantes sur les serveurs Nextcloud.
-  - Créer et de mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/source/CardSync/pythonpath/vcard/user.py) nécessaire pour, la création de la connexion à la base de données sous-jacente et la connexion du Replicator au serveurs Nextcloud.
+  - Lors de sa création, créer un thread [Replicator](https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/pythonpath/vcard/replicator.py) pour suivre les modifications distantes sur les serveurs Nextcloud.
+  - Créer et de mettre en cache une interface [User](https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/pythonpath/vcard/user.py) nécessaire pour, la création de la connexion à la base de données sous-jacente et la connexion du Replicator au serveurs Nextcloud.
   - Démarrer le Replicator à chaque connexion à la base de données.
 
-- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/source/CardSync/source/io/github/prrvchr/carddav/CardSync.java) écrit en Java et utilisant la bibliothèque [ez-vcard](https://github.com/mangstadt/ez-vcard).
+- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync](https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java) écrit en Java et utilisant la bibliothèque [ez-vcard](https://github.com/mangstadt/ez-vcard).
 
 ### Que reste-t-il à faire pour la version 0.0.1:
 

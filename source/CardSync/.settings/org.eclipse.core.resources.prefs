@@ -1,9 +1,0 @@
-eclipse.preferences.version=1
-encoding//pythonpath/vcard/__init__.py=utf-8
-encoding//pythonpath/vcard/dbconfig.py=utf-8
-encoding//pythonpath/vcard/oauth2lib/__init__.py=utf-8
-encoding//pythonpath/vcard/oauth2lib/oauth2core.py=utf-8
-encoding//pythonpath/vcard/options/__init__.py=utf-8
-encoding//pythonpath/vcard/unolib/__init__.py=utf-8
-encoding//pythonpath/vcard/unolib/unocore.py=utf-8
-encoding//pythonpath/vcard/unotool/__init__.py=utf-8
