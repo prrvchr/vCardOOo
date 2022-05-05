@@ -54,24 +54,24 @@ Redémarrez LibreOffice / OpenOffice après l'installation.
 
 Dans LibreOffice / OpenOffice aller à: Fichier -> Assistants -> Source de données des adresses...:
 
-![vCardOOo screenshot 1](img/vCardOOo-1_fr.png)
+<!--- ![vCardOOo screenshot 1](img/vCardOOo-1_fr.png) --->
 
 À l'étape: 1. Type de carnet d'adresses:
 - sélectionner: Autre source de données externes
 - cliquez sur: Suivant (bouton)
 
-![vCardOOo screenshot 2](img/vCardOOo-2_fr.png)
+<!--- ![vCardOOo screenshot 2](img/vCardOOo-2_fr.png) --->
 
 À l'étape: 2. Paramètres de Connexion:
 - cliquez sur: Paramètres (bouton)
 
-![vCardOOo screenshot 3](img/vCardOOo-3_fr.png)
+<!--- ![vCardOOo screenshot 3](img/vCardOOo-3_fr.png) --->
 
 Dans Type de base de données:
 - sélectionner: Contacts vCard
 - cliquez sur: Suivant (bouton)
 
-![vCardOOo screenshot 4](img/vCardOOo-4_fr.png)
+<!--- ![vCardOOo screenshot 4](img/vCardOOo-4_fr.png) --->
 
 Dans Général: URL de la source de données:
 - mettre l'url de votre instance Nextcloud (ie: nuage.distrilab.fr).
@@ -85,7 +85,7 @@ Dans Général: Mot de passe:
 Puis:
 - cliquez sur: Tester la connexion (bouton)
 
-![vCardOOo screenshot 5](img/vCardOOo-5_fr.png)
+<!--- ![vCardOOo screenshot 5](img/vCardOOo-5_fr.png) --->
 
 Maintenant à vous d'en profiter...
 

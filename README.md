@@ -54,24 +54,24 @@ Restart LibreOffice / OpenOffice after installation.
 
 In LibreOffice / OpenOffice go to File -> Wizards -> Address Data Source...:
 
-![vCardOOo screenshot 1](img/vCardOOo-1.png)
+<!--- ![vCardOOo screenshot 1](img/vCardOOo-1.png) --->
 
 In step: 1. Address Book Type:
 - select: Other external data source
 - click on: Next(Button)
 
-![vCardOOo screenshot 2](img/vCardOOo-2.png)
+<!--- ![vCardOOo screenshot 2](img/vCardOOo-2.png) --->
 
 In step: 2. Connection Settings:
 - click on: Settings(Button)
 
-![vCardOOo screenshot 3](img/vCardOOo-3.png)
+<!--- ![vCardOOo screenshot 3](img/vCardOOo-3.png) --->
 
 In Database type list:
 - select: vCard Contacts
 - click on: Next(Button)
 
-![vCardOOo screenshot 4](img/vCardOOo-4.png)
+<!--- ![vCardOOo screenshot 4](img/vCardOOo-4.png) --->
 
 In General: Datasource Url:
 - put the url of your Nextcloud instance (ie: nuage.distrilab.fr).
@@ -85,7 +85,7 @@ In General: Password:
 Then:
 - click on: Test connection (button)
 
-![vCardOOo screenshot 5](img/vCardOOo-5.png)
+<!--- ![vCardOOo screenshot 5](img/vCardOOo-5.png) --->
 
 Have fun...
 
