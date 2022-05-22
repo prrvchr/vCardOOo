@@ -28,12 +28,14 @@ package io.github.prrvchr.carddav;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import com.sun.star.lang.XServiceInfo;
 import java.util.Map;
 
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
 import ezvcard.property.VCardProperty;
+import io.github.prrvchr.uno.lang.ServiceInfo;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
@@ -43,12 +45,13 @@ import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
 import com.sun.star.task.XJob;
 
-import io.github.prrvchr.uno.lang.ServiceComponent;
+import com.sun.star.lib.uno.helper.ComponentBase;
 
 
 public final class CardSync
-extends ServiceComponent
-implements XJob
+    extends ComponentBase
+    implements XServiceInfo,
+               XJob
 {
     @SuppressWarnings("unused")
     private final XComponentContext m_xContext;
@@ -60,7 +63,7 @@ implements XJob
 
     public CardSync(XComponentContext context)
     {
-        super(m_name, m_services);
+        super();
         m_xContext = context;
     }
 
@@ -80,6 +83,27 @@ implements XJob
     {
         return Factory.writeRegistryServiceInfo(m_name, m_services, key);
     }
+
+
+    // com.sun.star.lang.XServiceInfo:
+    @Override
+    public String getImplementationName()
+    {
+        return ServiceInfo.getImplementationName(m_name);
+    }
+
+    @Override
+    public String[] getSupportedServiceNames()
+    {
+        return ServiceInfo.getSupportedServiceNames(m_services);
+    }
+
+    @Override
+    public boolean supportsService(String service)
+    {
+        return ServiceInfo.supportsService(m_services, service);
+    }
+
 
     // com.sun.star.task.XJob:
     public Object execute(NamedValue[] arguments)
