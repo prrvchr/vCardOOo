@@ -36,9 +36,6 @@ from ..unotool import getDesktop
 
 from ..logger import LogManager
 
-from ..configuration import g_extension
-from ..configuration import g_identifier
-
 import os
 import sys
 import traceback
@@ -59,7 +56,7 @@ class OptionsManager(unohelper.Base):
         path = os.pathsep.join(sys.path)
         loggers = {'Driver': True, 'Replicator': True}
         infos = {111: version, 112: path}
-        self._logger = LogManager(self._ctx, window.Peer, g_extension, loggers, infos)
+        self._logger = LogManager(self._ctx, window.Peer, loggers, infos)
 
     def saveSetting(self):
         timeout = self._view.getTimeout()
