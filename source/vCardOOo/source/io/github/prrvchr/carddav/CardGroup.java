@@ -31,7 +31,7 @@ import java.util.Map;
 
 import com.sun.star.sdbc.SQLException;
 
-import io.github.prrvchr.uno.sdbc.Array;
+import io.github.prrvchr.uno.helper.Array;
 
 
 public final class CardGroup

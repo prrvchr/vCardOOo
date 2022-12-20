@@ -45,7 +45,7 @@ import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
 
-import io.github.prrvchr.uno.sdbc.Array;
+import io.github.prrvchr.uno.helper.Array;
 
 
 public final class DataBase
