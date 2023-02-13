@@ -79,7 +79,7 @@ class Driver(unohelper.Base,
         self._ctx = ctx
         self._supportedProtocol = 'sdbc:address:vcard'
         self._logger = Pool(ctx).getLogger('Driver')
-        self._logger.logResource(INFO, 101, None, 'Driver', '__init__()')
+        self._logger.logResource(INFO, 101, 'Driver', '__init__()')
 
     _datasource = None
 
@@ -103,7 +103,7 @@ class Driver(unohelper.Base,
 # XDriver
     def connect(self, url, infos):
         try:
-            self._logger.logResource(INFO, 111, url, 'Driver', 'connect()')
+            self._logger.logResource(INFO, 111, 'Driver', 'connect()', url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
                 e = self._getSqlException(112, 1101, url)
@@ -123,14 +123,12 @@ class Driver(unohelper.Base,
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
-            format = (version, name)
-            self._logger.logResource(INFO, 114, format, 'Driver', 'connect()')
+            self._logger.logResource(INFO, 114, 'Driver', 'connect()', version, name)
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            format = (e, traceback.print_exc())
-            self._logger.logResource(SEVERE, 115, format, 'Driver', 'connect()')
+            self._logger.logResource(SEVERE, 115, 'Driver', 'connect()', e, traceback.print_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -171,9 +169,9 @@ class Driver(unohelper.Base,
                 break
         return user, pwd
 
-    def _getSqlException(self, state, code, format):
+    def _getSqlException(self, state, code, *args):
         state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, format)
+        msg = getMessage(self._ctx, g_message, code, args)
         error = getSqlException(state, code, msg, self)
         return error
 

@@ -121,8 +121,7 @@ class Replicator(unohelper.Base):
                         print("replicator.run()5 synchronize ended CardSync.jar")
                         self._database.initGroups()
                     self._database.dispose()
-                    format = total, mdfd, dltd
-                    logger.logResource(INFO, 101, format, 'Replicator', '_replicate()')
+                    logger.logResource(INFO, 101, 'Replicator', '_replicate()', total, mdfd, dltd)
                     print("replicator.run()6 synchronize ended query=%s modified=%s deleted=%s *******************************************" % format)
                     if self._started.is_set():
                         print("replicator.run()7 start waitting *******************************************")
@@ -143,11 +142,11 @@ class Replicator(unohelper.Base):
             if not user.hasSession():
                 continue
             if user.isOffLine():
-                logger.logResource(INFO, 111, None, 'Replicator', '_synchronize()')
+                logger.logResource(INFO, 111, 'Replicator', '_synchronize()')
             elif not self._canceled():
-                logger.logResource(INFO, 112, user.Name, 'Replicator', '_synchronize()')
+                logger.logResource(INFO, 112, 'Replicator', '_synchronize()', user.Name)
                 dltd, mdfd = self._syncUser(logger, user, dltd, mdfd)
-                logger.logResource(INFO, 113, user.Name, 'Replicator', '_synchronize()')
+                logger.logResource(INFO, 113, 'Replicator', '_synchronize()', user.Name)
         return dltd, mdfd
 
     def _syncUser(self, logger, user, dltd, mdfd):
