@@ -40,13 +40,15 @@ from .unotool import getUrl
 
 from .dbtool import getSqlException
 
+from .logger import getLogger
+
 from .configuration import g_host
 from .configuration import g_url
 from .configuration import g_page
 from .configuration import g_member
-from .logger import logMessage
-from .logger import getMessage
-g_message = 'datasource'
+from .configuration import g_errorlog
+
+g_basename = 'Provider'
 
 import json
 
@@ -91,12 +93,12 @@ class Provider(unohelper.Base):
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, '%s Response not Ok' % url)
+            raise self._getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s Response not Ok' % url)
         location = response.getHeader('Location')
         response.close()
         if not location:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, '%s url is None' % url)
+            raise self._getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s url is None' % url)
         redirect = location.endswith(self._url)
         return redirect, location
 
@@ -114,7 +116,7 @@ class Provider(unohelper.Base):
         response = request.getResponse(parameter, parser)
         if not response.Ok:
             response.close()
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getUserUrl()', user)
         url = response.Data
         response.close()
         return url
@@ -125,7 +127,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'supportAddressbook()', user)
         headers = response.getHeader('DAV')
         response.close()
         for headers in self._headers:
@@ -147,7 +149,7 @@ class Provider(unohelper.Base):
         response = request.getResponse(parameter, parser)
         if not response.Ok:
             response.close()
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getAddressbooksUrl()', user)
         url = response.Data
         response.close()
         return url
@@ -172,7 +174,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getDefaultAddressbook()', user)
         path, name, tag, token = response.Data
         response.close()
         return path, name, tag, token
@@ -197,7 +199,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getAllAddressbook()', user)
         addressbooks = response.Data
         response.close()
         return addressbooks
@@ -223,7 +225,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getAddressbookUrl()', user)
         path, name, tag, token = response.Data
         response.close()
         return path, name, tag, token
@@ -248,7 +250,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getAddressbook()', user)
         isopen = response.Data == url
         response.close()
         return isopen
@@ -269,7 +271,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getAddressbookCards()', user)
         cards = response.Data
         response.close()
         return cards
@@ -291,7 +293,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getModifiedCardByToken()', user)
         data = response.Data
         response.close()
         return data
@@ -313,7 +315,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, user)
+            raise self._getSqlException(1006, 1107, 'getModifiedCard()', user)
         cards = response.Data
         response.close()
         return cards
@@ -391,8 +393,10 @@ class Provider(unohelper.Base):
                 return False
         return True
 
-    def _getSqlException(self, state, code, *args):
-        state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, args)
+    def _getSqlException(self, state, code, method, *args):
+        logger = getLogger(self._ctx, g_errorlog, g_basename)
+        state = logger.resolveString(state)
+        msg = logger.resolveString(code, *args)
+        logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error

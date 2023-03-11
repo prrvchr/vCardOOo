@@ -57,10 +57,6 @@ from .unotool import getUrl
 
 from .dbtool import getSqlException
 
-from .logger import logMessage
-from .logger import getMessage
-g_message = 'datasource'
-
 from .configuration import g_scheme
 
 import traceback

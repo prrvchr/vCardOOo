@@ -35,8 +35,10 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from .dbtool import getSqlException
 
-from .logger import getMessage
-g_message = 'datasource'
+from .logger import getLogger
+
+from .configuration import g_errorlog
+g_basename = 'AddressBooks'
 
 from collections import OrderedDict
 import traceback
@@ -128,8 +130,10 @@ class AddressBook(unohelper.Base):
     def setName(self, name):
         self.Name = name
 
-    def _getSqlException(self, state, code, *args):
-        state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, args)
+    def _getSqlException(self, state, code, method, *args):
+        logger = getLogger(self._ctx, g_errorlog, g_basename)
+        state = logger.resolveString(state)
+        msg = logger.resolveString(code, *args)
+        logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error

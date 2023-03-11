@@ -89,9 +89,6 @@ from .dbinit import getQueries
 from .dbinit import getTables
 from .dbinit import getViews
 
-from .logger import logMessage
-from .logger import getMessage
-
 from collections import OrderedDict
 import traceback
 from time import sleep

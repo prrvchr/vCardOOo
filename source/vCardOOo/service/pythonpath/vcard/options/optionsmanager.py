@@ -60,9 +60,9 @@ class OptionsManager(unohelper.Base):
         self._model.setTimeout(self._view.getTimeout())
         self._logger.saveSetting()
 
-    def reloadSetting(self):
+    def loadSetting(self):
         self._view.setTimeout(self._model.getTimeout())
-        self._logger.reloadSetting()
+        self._logger.loadSetting()
 
     def viewData(self):
         url = self._model.getDatasourceUrl()

@@ -32,19 +32,13 @@ from .configuration import g_extension
 from .configuration import g_scheme
 from .configuration import g_host
 from .configuration import g_driverlog
+from .configuration import g_errorlog
 
 from .dbconfig  import g_class
 from .dbconfig  import g_folder
 from .dbconfig  import g_jar
 
-from .logger import Pool
-from .logger import LogManager
-from .logger import clearLogger
-from .logger import getLoggerSetting
-from .logger import getLoggerUrl
-from .logger import getMessage
-from .logger import logMessage
-from .logger import setLoggerSetting
+from .logger import getLogger
 
 from .datasource import DataSource
 

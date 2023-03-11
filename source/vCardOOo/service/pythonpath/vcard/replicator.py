@@ -47,11 +47,10 @@ from .addressbook import AddressBook
 
 from .configuration import g_identifier
 from .configuration import g_filter
+from .configuration import g_synclog
 
-from .logger import Pool
-from .logger import logMessage
-from .logger import getMessage
-g_message = 'Replicator'
+from .logger import getLogger
+g_basename = 'Replicator'
 
 from threading import Thread
 from threading import Event
@@ -105,7 +104,7 @@ class Replicator(unohelper.Base):
         print("replicator.run()1")
         try:
             print("replicator.run()1 begin ****************************************")
-            logger = Pool(self._ctx).getLogger('Replicator')
+            logger = getLogger(self._ctx, g_synclog, g_basename)
             while not self._disposed.is_set():
                 print("replicator.run()2 wait to start ****************************************")
                 self._started.wait()
@@ -121,7 +120,7 @@ class Replicator(unohelper.Base):
                         print("replicator.run()5 synchronize ended CardSync.jar")
                         self._database.initGroups()
                     self._database.dispose()
-                    logger.logResource(INFO, 101, 'Replicator', '_replicate()', total, mdfd, dltd)
+                    logger.logprb(INFO, 'Replicator', '_replicate()', 101, total, mdfd, dltd)
                     print("replicator.run()6 synchronize ended query=%s modified=%s deleted=%s *******************************************" % format)
                     if self._started.is_set():
                         print("replicator.run()7 start waitting *******************************************")
@@ -142,11 +141,11 @@ class Replicator(unohelper.Base):
             if not user.hasSession():
                 continue
             if user.isOffLine():
-                logger.logResource(INFO, 111, 'Replicator', '_synchronize()')
+                logger.logprb(INFO, 'Replicator', '_synchronize()', 111)
             elif not self._canceled():
-                logger.logResource(INFO, 112, 'Replicator', '_synchronize()', user.Name)
+                logger.logprb(INFO, 'Replicator', '_synchronize()', 112, user.Name)
                 dltd, mdfd = self._syncUser(logger, user, dltd, mdfd)
-                logger.logResource(INFO, 113, 'Replicator', '_synchronize()', user.Name)
+                logger.logprb(INFO, 'Replicator', '_synchronize()', 113, user.Name)
         return dltd, mdfd
 
     def _syncUser(self, logger, user, dltd, mdfd):
