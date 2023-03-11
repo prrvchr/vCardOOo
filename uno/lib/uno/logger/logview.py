@@ -36,14 +36,14 @@ from ..unotool import getDialog
 from ..configuration import g_extension
 
 
-class LogWindow(unohelper.Base):
+class LogWindow():
     def __init__(self, ctx, handler, parent):
         self._window = getContainerWindow(ctx, parent, handler, g_extension, 'LogWindow')
         self._window.setVisible(True)
 
 # LogWindow getter methods
     def getParent(self):
-        return self._window.Peer
+        return self._window.getPeer()
 
     def getLogger(self):
         return self._getLoggers().getSelectedItem()
@@ -66,20 +66,20 @@ class LogWindow(unohelper.Base):
     def updateLoggers(self, loggers):
         self._getLoggers().Model.StringItemList = loggers
 
-    def setLoggerSetting(self, enabled, level, handler):
-        self._getHandler(handler).State = 1
-        self._getLevel().selectItemPos(level, True)
-        self.toggleLogger(enabled)
-
     def toggleLogger(self, enabled):
         self._getLogger().State = int(enabled)
         self._getLevelLabel().Model.Enabled = enabled
         self._getLevel().Model.Enabled = enabled
-        self._getOutputLabel().Model.Enabled = enabled
         self._getConsoleHandler().Model.Enabled = enabled
+        self._getOutputLabel().Model.Enabled = enabled
         control = self._getFileHandler()
         control.Model.Enabled = enabled
         self.toggleViewer(enabled and control.State)
+
+    def setLoggerSetting(self, enabled, level, handler):
+        self._getHandler(handler).State = 1
+        self._getLevel().selectItemPos(level, True)
+        self.toggleLogger(enabled)
 
     def toggleViewer(self, enabled):
         self._getViewer().Model.Enabled = enabled
@@ -113,19 +113,19 @@ class LogWindow(unohelper.Base):
         return self._window.getControl('CommandButton1')
 
 
-class LogDialog(unohelper.Base):
-    def __init__(self, ctx, handler, parent, extension, url, writable, text, length):
+class LogDialog():
+    def __init__(self, ctx, handler, parent, extension, writable, url, text, length):
         self._dialog = getDialog(ctx, extension, 'LogDialog', handler, parent)
         self._dialog.Title = url
         self._getButtonClear().Model.Enabled = writable
-        self.setLogger(text, length)
+        self.updateLogger(text, length)
 
 # LogDialog getter methods
     def getDialog(self):
         return self._dialog
 
 # LogDialog setter methods
-    def setLogger(self, text, length):
+    def updateLogger(self, text, length):
         control = self._getLogger()
         control.Text = text
         selection = uno.createUnoStruct('com.sun.star.awt.Selection', length, length)

@@ -27,88 +27,79 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import uno
 import unohelper
 
-from com.sun.star.logging.LogLevel import INFO
-from com.sun.star.logging.LogLevel import SEVERE
-
-from .logmodel import LogModel
-from .logview import LogWindow
-from .logview import LogDialog
-from .loghandler import WindowHandler
-from .loghandler import DialogHandler
-from .loghandler import PoolListener
-from .loghandler import LoggerListener
-
-from ..unotool import getDialog
 from ..unotool import getFileSequence
+from ..unotool import getResourceLocation
+from ..unotool import getStringResourceWithLocation
 
-from .loghelper import getLoggerName
+from .loghelper import LogController
+from .loghelper import getPool
 
-from ..configuration import g_extension
 from ..configuration import g_identifier
+from ..configuration import g_resource
+from ..configuration import g_basename
 
-import traceback
 
-
-class LogManager(unohelper.Base):
-    def __init__(self, ctx, parent, infos, filter, default):
+class LogModel(LogController):
+    def __init__(self, ctx, name, listener):
         self._ctx = ctx
-        self._model = LogModel(ctx, default, PoolListener(self))
-        self._view = LogWindow(ctx, WindowHandler(self), parent)
-        self._infos = infos
-        self._filter = filter
-        self._dialog = None
-        self._view.initLogger(self._model.getLoggerNames(filter))
+        self._basename = g_basename
+        self._pool = getPool(ctx)
+        self._url = getResourceLocation(ctx, g_identifier, g_resource)
+        self._logger = None
+        self._listener = listener
+        self._resolver = getStringResourceWithLocation(ctx, self._url, 'Logger')
+        self._debug = (True, 7, 'com.sun.star.logging.FileHandler')
+        self._settings = None
+        self._default = name
+        self._pool.addModifyListener(listener)
 
-# LogManager setter methods
+    # Public getter method
+    def getLoggerNames(self, filter=None):
+        names = self._pool.getLoggerNames() if filter is None else self._pool.getFilteredLoggerNames(filter)
+        if self._default not in names:
+            names = list(names)
+            names.insert(0, self._default)
+        return names
+
+    def isLoggerEnabled(self):
+        level = self._getLogConfig().LogLevel
+        enabled = self._isLogEnabled(level)
+        return enabled
+
+    def getLoggerSetting(self):
+        enabled, index, handler = self._getLoggerSetting()
+        state = self._getState(handler)
+        return enabled, index, state
+
+    def getLoggerUrl(self):
+        return self._getLoggerUrl()
+
+    def getLoggerData(self):
+        url = self._getLoggerUrl()
+        length, sequence = getFileSequence(self._ctx, url)
+        text = sequence.value.decode('utf-8')
+        return url, text, length
+
+# Public setter method
     def dispose(self):
-        self._model.dispose()
+        self._pool.removeModifyListener(self._listener)
 
-    def updateLoggers(self):
-        logger = self._view.getLogger()
-        loggers = self._model.getLoggerNames(self._filter)
-        self._view.updateLoggers(loggers)
-        if logger in loggers:
-            self._view.setLogger(logger)
+    def setLogger(self, name):
+        self._logger =  self._pool.getLocalizedLogger(name, self._url, g_basename)
 
-    def saveSetting(self):
-        settings = self._view.getLoggerSetting()
-        self._model.setLoggerSetting(*settings)
+    def setLoggerSetting(self, enabled, index, state):
+        handler = self._getHandler(state)
+        self._setLoggerSetting(enabled, index, handler)
 
-    def reloadSetting(self):
-        settings = self._model.getLoggerSetting()
-        self._view.setLoggerSetting(*settings)
+# Private getter method
+    def _getHandler(self, state):
+        handlers = {True: 'ConsoleHandler', False: 'FileHandler'}
+        return 'com.sun.star.logging.%s' % handlers.get(state)
 
-    def changeLogger(self, name):
-        logger = name if self._filter is None else getLoggerName(name)
-        self._model.setLogger(logger)
-        self.reloadSetting()
-
-    def toggleLogger(self, enabled):
-        self._view.toggleLogger(enabled)
-
-    def toggleViewer(self, enabled):
-        self._view.toggleViewer(enabled)
-
-    def viewLog(self):
-        handler = DialogHandler(self)
-        parent = self._view.getParent()
-        writable = True
-        data = self._model.getLoggerData()
-        self._dialog = LogDialog(self._ctx, handler, parent, g_extension, True, *data)
-        listener = LoggerListener(self)
-        self._model.addListener(listener)
-        dialog = self._dialog.getDialog()
-        dialog.execute()
-        dialog.dispose()
-        self._model.removeListener(listener)
-        self._dialog = None
-
-    def logInfos(self):
-        self._model.logInfos(INFO, self._infos, 'LogManager', 'logInfos()')
-
-    def updateLogger(self):
-        self._dialog.updateLogger(*self._model.getLogContent())
+    def _getState(self, handler):
+        states = {'com.sun.star.logging.ConsoleHandler': 1,
+                  'com.sun.star.logging.FileHandler': 2}
+        return states.get(handler)
 
