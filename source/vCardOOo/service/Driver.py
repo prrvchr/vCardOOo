@@ -50,13 +50,13 @@ from vcard import getResourceLocation
 from vcard import getSqlException
 from vcard import getUrl
 
-from vcard import logMessage
-from vcard import getMessage
-g_message = 'Driver'
+from vcard import getLogger
+g_basename = 'Driver'
 
 from vcard import g_identifier
 from vcard import g_scheme
 from vcard import g_host
+from vcard import g_driverlog
 
 from vcard import g_class
 from vcard import g_folder
@@ -78,8 +78,8 @@ class Driver(unohelper.Base,
     def __init__(self, ctx):
         self._ctx = ctx
         self._supportedProtocol = 'sdbc:address:vcard'
-        self._logger = Pool(ctx).getLogger('Driver')
-        self._logger.logResource(INFO, 101, 'Driver', '__init__()')
+        self._logger = getLogger(ctx, g_driverlog, g_basename)
+        self._logger.logprb(INFO, 'Driver', '__init__()', 101)
 
     _datasource = None
 
@@ -103,32 +103,32 @@ class Driver(unohelper.Base,
 # XDriver
     def connect(self, url, infos):
         try:
-            self._logger.logResource(INFO, 111, 'Driver', 'connect()', url)
+            self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
                 e = self._getSqlException(112, 1101, url)
-                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
+                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
                 raise e
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
                 e = self._getSqlException(112, 1101, url)
-                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
+                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
                 raise e
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
                 e = self._getSqlException(113, 1102, user)
-                self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
+                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
                 raise e
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
-            self._logger.logResource(INFO, 114, 'Driver', 'connect()', version, name)
+            self._logger.logprb(INFO, 'Driver', 'connect()', 114, version, name)
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            self._logger.logResource(SEVERE, 115, 'Driver', 'connect()', e, traceback.print_exc())
+            self._logger.logprb(SEVERE, 'Driver', 'connect()', 115, e, traceback.print_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -149,7 +149,7 @@ class Driver(unohelper.Base,
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
             e = self._getSqlException(112, 1101, location)
-            self._logger.logMessage(SEVERE, e.Message, 'Driver', 'connect()')
+            self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
             raise e
         scheme = url.Protocol
         server = url.Server

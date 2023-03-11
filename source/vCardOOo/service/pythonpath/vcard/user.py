@@ -50,8 +50,10 @@ from .dbtool import getSqlException
 from .dbconfig import g_user
 from .dbconfig import g_schema
 
-from .logger import getMessage
-g_message = 'datasource'
+from .configuration import g_errorlog
+
+from .logger import getLogger
+g_basename = 'User'
 
 import traceback
 
@@ -128,7 +130,7 @@ class User(unohelper.Base):
             if not addressbooks:
                 #TODO: Raise SqlException with correct message!
                 print("User.initAddressbooks() 1 %s" % (addressbooks, ))
-                raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % self.User.Server)
+                raise self._getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % self.User.Server)
             if self._addressbooks.initAddressbooks(database, self.Id, addressbooks):
                 database.initAddressbooks()
 
@@ -152,7 +154,7 @@ class User(unohelper.Base):
     def createUser(self, database):
         name = self.getName()
         if not database.createUser(name, self.getPassword()):
-            raise self._getSqlException(1005, 1106, name)
+            raise self._getSqlException(1005, 1106, 'createUser', name)
         database.createUserSchema(self.getSchema(), name)
 
     def isOffLine(self):
@@ -178,9 +180,9 @@ class User(unohelper.Base):
 
     def _getNewUser(self, database, provider, scheme, server, user, pwd):
         if self._request is None:
-            raise self._getSqlException(1003, 1105, g_oauth2)
+            raise self._getSqlException(1003, 1105, '_getNewUser', g_oauth2)
         if provider.isOffLine():
-            raise self._getSqlException(1004, 1108, user)
+            raise self._getSqlException(1004, 1108, '_getNewUser', user)
         url = provider.getWellKnownUrl()
         redirect, url = provider.getDiscoveryUrl(self._request, user, pwd, url)
         print("User._getMetaData() 1 %s" % url)
@@ -190,20 +192,22 @@ class User(unohelper.Base):
         path = provider.getUserUrl(self._request, user, pwd, url)
         if path is None:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
+            raise self._getSqlException(1004, 1108, '_getNewUser', 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
         if not provider.supportAddressbook(self._request, user, pwd, path):
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, '%s has no support of CardDAV!' % server)
+            raise self._getSqlException(1004, 1108, '_getNewUser', '%s has no support of CardDAV!' % server)
         print("User._getMetaData() 2 %s" % path)
         path = provider.getAddressbooksUrl(self._request, user, pwd, path)
         print("User._getMetaData() 3 %s" % path)
         if path is None:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1004, 1108, 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
+            raise self._getSqlException(1004, 1108, '_getNewUser', 'Server: %s Bad password: %s!' % (self.User.Server, pwd))
         return database.insertUser(scheme, server, path, user)
 
-    def _getSqlException(self, state, code, *args):
-        state = getMessage(self._ctx, g_message, state)
-        msg = getMessage(self._ctx, g_message, code, args)
+    def _getSqlException(self, state, code, method, *args):
+        logger = getLogger(ctx, g_errorlog, g_basname)
+        state = logger.resolveString(state)
+        msg = logger.resolveString(code, *args)
+        logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error

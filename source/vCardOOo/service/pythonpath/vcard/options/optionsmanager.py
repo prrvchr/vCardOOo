@@ -36,37 +36,33 @@ from ..unotool import getDesktop
 
 from ..logger import LogManager
 
+from ..configuration import g_identifier
+from ..configuration import g_driverlog
+
 import os
 import sys
 import traceback
 
 
 class OptionsManager(unohelper.Base):
-    def __init__(self, ctx):
+    def __init__(self, ctx, window):
         self._ctx = ctx
         self._model = OptionsModel(ctx)
-        self._view = None
-        self._logger = None
-
-    def initialize(self, window):
         timeout = self._model.getTimeout()
         enabled = self._model.hasDatasource()
         self._view = OptionsView(window, timeout, enabled)
         version  = ' '.join(sys.version.split())
         path = os.pathsep.join(sys.path)
-        loggers = {'Driver': True, 'Replicator': True}
         infos = {111: version, 112: path}
-        self._logger = LogManager(self._ctx, window.Peer, loggers, infos)
+        self._logger = LogManager(self._ctx, window.Peer, infos, g_identifier, g_driverlog)
 
     def saveSetting(self):
-        timeout = self._view.getTimeout()
-        self._model.setTimeout(timeout)
-        self._logger.saveLoggerSetting()
+        self._model.setTimeout(self._view.getTimeout())
+        self._logger.saveSetting()
 
     def reloadSetting(self):
-        timeout = self._model.getTimeout()
-        self._view.setTimeout(timeout)
-        self._logger.setLoggerSetting()
+        self._view.setTimeout(self._model.getTimeout())
+        self._logger.reloadSetting()
 
     def viewData(self):
         url = self._model.getDatasourceUrl()

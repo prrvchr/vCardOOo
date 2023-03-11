@@ -33,6 +33,11 @@ g_identifier = 'io.github.prrvchr.%s' % g_extension
 g_logger = '%s.Logger' % g_identifier
 # Resource strings files folder
 g_resource = 'resource'
+g_basename = 'Driver'
+
+g_driverlog = 'DriverLogger'
+g_synclog = 'SyncLogger'
+g_errorlog = 'vCardError'
 
 g_scheme = 'https://'
 g_host = 'nextcloud'
