@@ -30,8 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.sun.star.sdbc.SQLException;
-
-import io.github.prrvchr.uno.helper.Array;
+import com.sun.star.sdbc.XArray;
 
 
 public final class CardGroup
@@ -48,8 +47,8 @@ public final class CardGroup
     {
         m_user = (Integer) map.get(key);
         Map<String, Integer> maps = new HashMap<String, Integer>();
-        Object[] names = ((Array) map.get(name)).getArray(null);
-        Object[] groups = ((Array) map.get(group)).getArray(null);
+        Object[] names = ((XArray) map.get(name)).getArray(null);
+        Object[] groups = ((XArray) map.get(group)).getArray(null);
         for (int i=0; i<names.length; i++) {
             maps.put((String) names[i], (Integer) groups[i]);
         }

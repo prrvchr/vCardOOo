@@ -35,10 +35,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.sun.star.sdbc.SQLException;
+import com.sun.star.sdbc.XArray;
 
 import ezvcard.parameter.VCardParameter;
 
-import io.github.prrvchr.uno.helper.Array;
 
 public final class CardColumn
 {
@@ -150,7 +150,7 @@ public final class CardColumn
     private static List<String> _getTypes(Map<String, Object> map)
     throws SQLException
     {
-        Object[] object = ((Array) map.get("TypeValues")).getArray(null);
+        Object[] object = ((XArray) map.get("TypeValues")).getArray(null);
         List<String> types = Stream.of(object).map(Object::toString).collect(Collectors.toList());
         return types;
     }
