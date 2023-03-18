@@ -72,8 +72,7 @@ public final class CardSync
     public static XSingleComponentFactory __getComponentFactory(String name)
     {
         XSingleComponentFactory xFactory = null;
-        if (name.equals(m_name))
-        {
+        if (name.equals(m_name)) {
             xFactory = Factory.createComponentFactory(CardSync.class, m_services);
         }
         return xFactory;
@@ -109,14 +108,15 @@ public final class CardSync
     public Object execute(NamedValue[] arguments)
     throws SQLException
     {
+        System.out.println("CardSync.execute() 1");
         DataBase database = new DataBase(arguments);
-        Map<Integer, CardGroup> groups = database.getCardGroup();
-        try
-        {
+        System.out.println("CardSync.execute() 2");
+        try {
+            Map<Integer, CardGroup> groups = database.getCardGroup();
             boolean status = true;
             String name = database.getUserName();
             String version = database.getDriverVersion();
-            System.out.println("CardSync.execute() 1 Name: " + name + " - Version: " + version);
+            System.out.println("CardSync.execute() 3 Name: " + name + " - Version: " + version);
             Map<String, CardColumn> columns = database.getAddressbookColumn();
             //for (String key: columns.keySet())
             //{
@@ -126,13 +126,11 @@ public final class CardSync
             //        System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
             //    }
             //}
-            for (Map<String, Object> result: database.getChangedCards())
-            {
-                System.out.println("CardSync.execute() 3");
+            for (Map<String, Object> result: database.getChangedCards()) {
+                System.out.println("CardSync.execute() 4");
                 String query = (String) result.get("Query");
-                if (!query.equals("Deleted"))
-                {
-                    System.out.println("CardSync.execute() 4");
+                if (!query.equals("Deleted")) {
+                    System.out.println("CardSync.execute() 5");
                     int user = (int) result.get("User");
                     int card = (int) result.get("Card");
                     String data = (String) result.get("Data");
@@ -140,14 +138,13 @@ public final class CardSync
                 }
             }
             if (status) database.updateUser();
-            System.out.println("CardSync.execute() 5");
+            System.out.println("CardSync.execute() 6");
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             System.out.println("Error happened: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("CardSync.execute() 3");
+        System.out.println("CardSync.execute() 7");
         return null;
     }
 
@@ -168,12 +165,10 @@ public final class CardSync
         VCard card = Ezvcard.parse(data).first();
         ScribeIndex index = new ScribeIndex();
         int i = 0;
-        for (VCardProperty property: card)
-        {
+        for (VCardProperty property: card) {
             String name = index.getPropertyScribe(property).getPropertyName();
             // XXX: We do not parse Properties that do not have a Column
-            if (!columns.containsKey(name))
-            {
+            if (!columns.containsKey(name)) {
                 continue;
             }
             System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);

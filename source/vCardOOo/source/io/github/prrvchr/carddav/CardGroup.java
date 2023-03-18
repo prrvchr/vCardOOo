@@ -50,8 +50,7 @@ public final class CardGroup
         Map<String, Integer> maps = new HashMap<String, Integer>();
         Object[] names = ((Array) map.get(name)).getArray(null);
         Object[] groups = ((Array) map.get(group)).getArray(null);
-        for (int i=0; i<names.length; i++)
-        {
+        for (int i=0; i<names.length; i++) {
             maps.put((String) names[i], (Integer) groups[i]);
         }
         m_groups = maps;
@@ -63,11 +62,9 @@ public final class CardGroup
                       String[] groups)
     throws SQLException
     {
-        for (int i=0; i<groups.length; i++)
-        {
+        for (int i=0; i<groups.length; i++) {
             String group = groups[i];
-            if (!m_groups.containsKey(group))
-            {
+            if (!m_groups.containsKey(group)) {
                 m_groups.put(group, database.insertGroup(m_user, group));
             }
         }
@@ -82,8 +79,7 @@ public final class CardGroup
     private Object[] _getGroupIds(String[] groups)
     {
         Object[] ids = new Object[groups.length];
-        for (int i=0; i<groups.length; i++)
-        {
+        for (int i=0; i<groups.length; i++) {
             ids[i] = m_groups.get(groups[i]);
             
         }

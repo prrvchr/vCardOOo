@@ -104,10 +104,12 @@ public final class DataBase
     public Map<Integer, CardGroup> getCardGroup()
     throws SQLException
     {
+        System.out.println("DataBase.getCardGroup() 1");
         XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectCardGroup\"()");
         XResultSet result = call.executeQuery();
         Map<Integer,  CardGroup> maps = _getCardGroup(result, "User", "Names", "Groups");
         _closeCall(call);
+        System.out.println("DataBase.getCardGroup() 2");
         return maps;
     }
 
@@ -155,12 +157,10 @@ public final class DataBase
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
         parameters.setInt(1, card);
         parameters.setInt(2, column);
-        if (value == null)
-        {
+        if (value == null) {
             parameters.setNull(3, DataType.VARCHAR);
         }
-        else
-        {
+        else {
             parameters.setString(3, value);
         }
         call.executeUpdate();
@@ -174,11 +174,10 @@ public final class DataBase
         XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
         int len = metadata.getMetaData().getColumnCount();
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-        while(result != null && result.next())
-        {
+        while(result != null && result.next()) {
             maps.add(_getRowMap(metadata, row, len));
         }
-        System.out.println("DataBase._getChangedCards() 2");
+        System.out.println("DataBase._getChangedCards() 2 Card Count: " + maps.size());
         return maps;
     }
 
@@ -192,8 +191,7 @@ public final class DataBase
         XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
         int len = metadata.getMetaData().getColumnCount();
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-        while(result != null && result.next())
-        {
+        while(result != null && result.next()) {
             CardGroup groups = new CardGroup(_getRowMap(metadata, row, len), key, name, group);
             maps.put(groups.getUser(), groups);
         }
@@ -209,11 +207,9 @@ public final class DataBase
         XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
         int len = metadata.getMetaData().getColumnCount();
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-        while(result != null && result.next())
-        {
+        while(result != null && result.next()) {
             Map<String, Object> map = _getRowMap(metadata, row, len);
-            if (mapkey == null || !mapkey.equals(map.get(key))) 
-            {
+            if (mapkey == null || !mapkey.equals(map.get(key))) {
                 if (mapkey != null) maps.put(mapkey, new CardColumn(column));
                 mapkey = (String) map.get(key);
                 column = new CardColumn(mapkey, (String) map.get(getter), (Short) map.get(method));
@@ -232,8 +228,7 @@ public final class DataBase
     private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int start, int len) throws SQLException
     {
         Map<String, Object> map = new HashMap<String, Object>();
-        for (int i = 1; i <= len; i++)
-        {
+        for (int i = 1; i <= len; i++) {
             String name = metadata.getMetaData().getColumnLabel(i);
             String dbtype = metadata.getMetaData().getColumnTypeName(i);
             map.put(name, _getRowValue(row, dbtype, i));
@@ -262,6 +257,7 @@ public final class DataBase
         else if (dbtype.equals("DATE")) value = row.getDate(index);
         else if (dbtype.equals("BINARY")) value = row.getBytes(index);
         else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
+        else 
         if(row.wasNull()) value = null;
         return value;
     }
@@ -275,15 +271,11 @@ public final class DataBase
     private static XConnection _getConnection(NamedValue[] arguments)
     {
         XConnection connection = null;
-        for (NamedValue argument: arguments)
-        {
-            if (argument.Name.equals("DynamicData"))
-            {
+        for (NamedValue argument: arguments) {
+            if (argument.Name.equals("DynamicData")) {
                 NamedValue[] values = (NamedValue[]) AnyConverter.toArray(argument.Value);
-                for (NamedValue value: values)
-                {
-                    if (value.Name.equals("Connection"))
-                    {
+                for (NamedValue value: values) {
+                    if (value.Name.equals("Connection")) {
                         connection = (XConnection) AnyConverter.toObject(new Type(XConnection.class), value.Value);
                         break;
                     }

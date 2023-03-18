@@ -55,13 +55,10 @@ public final class CardProperty<T>
            InvocationTargetException
     {
         Object object = card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
-        if (object instanceof List)
-        {
+        if (object instanceof List) {
             m_properties = (List<T>) object;
-            
         }
-        else
-        {
+        else {
             m_properties = new ArrayList<T>(Arrays.asList((T) object));
         }
     }
@@ -81,23 +78,18 @@ public final class CardProperty<T>
     {
         for (T property: m_properties)
         {
-            for (String getter: columns.getGetters())
-            {
-                if (columns.isGroup())
-                {
+            for (String getter: columns.getGetters()) {
+                if (columns.isGroup()) {
                     group.parse(database, card, _getCardGroup(property, getter));
                 }
-                else
-                {
+                else {
                     List<VCardParameter> types = null;
                     String value = _getCardValue(property, getter);
-                    if (columns.isTyped())
-                    {
+                    if (columns.isTyped()) {
                         types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
                     }
                     Integer column = columns.getColumnId(types, getter);
-                    if (column != null)
-                    {
+                    if (column != null) {
                         database.parseCard(card, column, value);
                     }
                 }
@@ -116,8 +108,7 @@ public final class CardProperty<T>
         Object object = property.getClass().getMethod(getter).invoke(property);
         List<?> list = _convertObjectToList(object);
         List<String> strings = new ArrayList<>(list.size());
-        for (Object o: list)
-        {
+        for (Object o: list) {
             strings.add(Objects.toString(o, null));
         }
         System.out.println("CardProperty._getCardGroup(): 1 List: " + strings);
@@ -134,16 +125,13 @@ public final class CardProperty<T>
     {
         String value = null;
         Object object = property.getClass().getMethod(getter).invoke(property);
-        if (object instanceof List)
-        {
+        if (object instanceof List) {
             List<?> list = (List<?>) object;
-            if (list.size() > 0)
-            {
+            if (list.size() > 0) {
                 value = (String) list.get(0);
             }
         }
-        else
-        {
+        else {
             value = (String) object;
         }
         System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
@@ -153,12 +141,10 @@ public final class CardProperty<T>
     private List<?> _convertObjectToList(Object object)
     {
         List<?> list = new ArrayList<>();
-        if (object.getClass().isArray())
-        {
+        if (object.getClass().isArray()) {
             list = Arrays.asList((Object[]) object);
         }
-        else if (object instanceof Collection)
-        {
+        else if (object instanceof Collection) {
             list = new ArrayList<>((Collection<?>) object);
         }
         System.out.println("CardProperty._convertObjectToList(): 1 List: " + list);

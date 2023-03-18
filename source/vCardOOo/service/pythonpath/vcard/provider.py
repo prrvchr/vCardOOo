@@ -30,6 +30,8 @@
 import uno
 import unohelper
 
+from com.sun.star.logging.LogLevel import SEVERE
+
 from com.sun.star.ucb.ConnectionMode import OFFLINE
 from com.sun.star.ucb.ConnectionMode import ONLINE
 

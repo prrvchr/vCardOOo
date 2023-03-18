@@ -55,7 +55,7 @@ g_basename = 'Driver'
 from vcard import g_identifier
 from vcard import g_scheme
 from vcard import g_host
-from vcard import g_driverlog
+from vcard import g_defaultlog
 from vcard import g_errorlog
 
 from vcard import g_class
@@ -78,7 +78,7 @@ class Driver(unohelper.Base,
     def __init__(self, ctx):
         self._ctx = ctx
         self._supportedProtocol = 'sdbc:address:vcard'
-        self._logger = getLogger(ctx, g_driverlog, g_basename)
+        self._logger = getLogger(ctx, g_defaultlog, g_basename)
         self._logger.logprb(INFO, 'Driver', '__init__()', 101)
 
     _datasource = None
@@ -170,10 +170,9 @@ class Driver(unohelper.Base,
         return user, pwd
 
     def _getSqlException(self, state, code, method, *args):
-        logger = getLogger(self._ctx, g_errorlog, g_basename)
-        state = logger.resolveString(state)
-        msg = logger.resolveString(code, *args)
-        logger.logp(SEVERE, g_basename, method, msg)
+        state = self._logger.resolveString(state)
+        msg = self._logger.resolveString(code, *args)
+        self._logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error
 

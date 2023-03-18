@@ -56,8 +56,7 @@ public final class CardColumn
         m_method = original.getMethod();
         m_type = original.getType();
         m_methods = original.getMethods();
-        if (isTyped()) 
-        {
+        if (isTyped()) {
             m_types = original.getTypes();
         }
     }
@@ -112,12 +111,10 @@ public final class CardColumn
     public Integer getColumnId(List<VCardParameter> types, String getter)
     {
         Integer id = null;
-        if (isTyped()) 
-        {
+        if (isTyped()) {
             id = m_types.get(getter).get(_getTypes(types));
         }
-        else
-        {
+        else {
             id = m_methods.get(getter);
         }
         return id;
@@ -128,18 +125,15 @@ public final class CardColumn
     {
         String getter = (String) map.get("ParameterGetter");
         int id = (int) map.get("ColumnId");
-        if (!m_methods.containsKey(getter))
-        {
+        if (!m_methods.containsKey(getter)) {
             m_methods.put(getter, id);
-            if (isTyped()) 
-            {
+            if (isTyped()) {
                 Map<List<String>, Integer> type = new HashMap<List<String>, Integer>();
                 type.put(_getTypes(map), id);
                 m_types.put(getter, type);
             }
         }
-        else if (isTyped()) 
-        {
+        else if (isTyped()) {
             m_types.get(getter).put(_getTypes(map), id);
         }
     }
@@ -147,8 +141,7 @@ public final class CardColumn
     private static List<String> _getTypes(List<VCardParameter> types)
     {
         List<String> type = new ArrayList<String>();
-        for (VCardParameter t: types)
-        {
+        for (VCardParameter t: types) {
             type.add(t.getValue());
         }
         return type;

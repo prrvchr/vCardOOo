@@ -31,7 +31,7 @@ from .configuration import g_identifier
 from .configuration import g_extension
 from .configuration import g_scheme
 from .configuration import g_host
-from .configuration import g_driverlog
+from .configuration import g_defaultlog
 from .configuration import g_errorlog
 
 from .dbconfig  import g_class
