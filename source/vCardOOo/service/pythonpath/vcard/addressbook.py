@@ -70,7 +70,7 @@ class AddressBooks(unohelper.Base):
                     print("AddressBooks.initAddressbooks() 3 %s" % (name, ))
         print("AddressBooks.initAddressbooks() 4")
         return changed
-            
+
     def getAddressbooks(self):
         return self._addressbooks.values()
 
