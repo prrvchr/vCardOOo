@@ -35,7 +35,9 @@ import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.io.scribe.ScribeIndex;
 import ezvcard.property.VCardProperty;
+import io.github.prrvchr.uno.helper.UnoHelper;
 import io.github.prrvchr.uno.lang.ServiceInfo;
+import io.github.prrvchr.css.util.DateTimeWithTimezone;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
@@ -126,7 +128,9 @@ public final class CardSync
             //        System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
             //    }
             //}
-            for (Map<String, Object> result: database.getChangedCards()) {
+            DateTimeWithTimezone start = database.getLastUserSync();
+            DateTimeWithTimezone stop = UnoHelper.currentDateTimeInTZ();
+            for (Map<String, Object> result: database.getChangedCards(start, stop)) {
                 System.out.println("CardSync.execute() 4");
                 String query = (String) result.get("Query");
                 if (!query.equals("Deleted")) {
@@ -137,7 +141,7 @@ public final class CardSync
                     status = _parseCard(database, groups.get(user), card, data, columns);
                 }
             }
-            if (status) database.updateUser();
+            if (status) database.updateUser(stop);
             System.out.println("CardSync.execute() 6");
         }
         catch (Exception e) {

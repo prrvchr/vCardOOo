@@ -45,7 +45,9 @@ import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
 
+import io.github.prrvchr.css.util.DateTimeWithTimezone;
 import io.github.prrvchr.uno.helper.Array;
+import io.github.prrvchr.uno.helper.UnoHelper;
 
 
 public final class DataBase
@@ -72,21 +74,38 @@ public final class DataBase
         return m_xConnection.getMetaData().getDriverVersion();
     }
 
-    public List<Map<String, Object>> getChangedCards() throws SQLException
+
+    public DateTimeWithTimezone getLastUserSync()
+        throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"GetLastUserSync\"()");
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
+        call.execute();
+        DateTimeWithTimezone timeout = (DateTimeWithTimezone) row.getObject(1, null);
+        _closeCall(call);
+        return timeout;
+    }
+
+    public List<Map<String, Object>> getChangedCards(DateTimeWithTimezone start,
+                                                     DateTimeWithTimezone stop)
+        throws SQLException
     {
         XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-        parameters.setNull(1, DataType.TIMESTAMP);
-        parameters.setNull(2, DataType.TIMESTAMP);
+        parameters.setObject(1, start);
+        parameters.setObject(2, stop);
         XResultSet result = call.executeQuery();
         List<Map<String, Object>> maps = _getChangedCards(result);
         _closeCall(call);
+        System.out.println("DataBase.getChangedCards() Count: " + maps.size());
         return maps;
     }
 
-    public void updateUser() throws SQLException
+    public void updateUser(DateTimeWithTimezone timestamp) throws SQLException
     {
-        XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"()");
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"(?)");
+        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        parameters.setObject(1, timestamp);
         call.executeUpdate();
         _closeCall(call);
     }
@@ -230,36 +249,10 @@ public final class DataBase
         Map<String, Object> map = new HashMap<String, Object>();
         for (int i = 1; i <= len; i++) {
             String name = metadata.getMetaData().getColumnLabel(i);
-            String dbtype = metadata.getMetaData().getColumnTypeName(i);
-            map.put(name, _getRowValue(row, dbtype, i));
+            int dbtype = metadata.getMetaData().getColumnType(i);
+            map.put(name, UnoHelper.getRowValue(row, dbtype, i));
         }
         return map;
-    }
-
-    private static Object _getRowValue(XRow row, String dbtype, int index) throws SQLException
-    {
-        return _getRowValue(row, dbtype, index, null);
-    }
-
-    private static Object _getRowValue(XRow row, String dbtype, int index, Object value) throws SQLException
-    {
-        if (dbtype.equals("VARCHAR")) value = row.getString(index);
-        else if (dbtype.equals("CHARACTER")) value = row.getString(index);
-        else if (dbtype.equals("BOOLEAN")) value = row.getBoolean(index);
-        else if (dbtype.equals("TINYINT")) value = row.getByte(index);
-        else if (dbtype.equals("SMALLINT")) value = row.getShort(index);
-        else if (dbtype.equals("INTEGER")) value = row.getInt(index);
-        else if (dbtype.equals("BIGINT")) value = row.getLong(index);
-        else if (dbtype.equals("FLOAT")) value = row.getFloat(index);
-        else if (dbtype.equals("DOUBLE")) value = row.getDouble(index);
-        else if (dbtype.startsWith("TIMESTAMP")) value = row.getTimestamp(index);
-        else if (dbtype.equals("TIME")) value = row.getTime(index);
-        else if (dbtype.equals("DATE")) value = row.getDate(index);
-        else if (dbtype.equals("BINARY")) value = row.getBytes(index);
-        else if (dbtype.endsWith("ARRAY")) value = row.getArray(index);
-        else 
-        if(row.wasNull()) value = null;
-        return value;
     }
 
     private static void _closeCall(XPreparedStatement call) throws SQLException

@@ -69,6 +69,7 @@ from .dbtool import Array
 from .dbtool import checkDataBase
 from .dbtool import createDataSource
 from .dbtool import createStaticTable
+from .dbtool import currentDateTimeInTZ
 from .dbtool import getConnectionInfo
 from .dbtool import getDataBaseConnection
 from .dbtool import getDataBaseUrl
@@ -233,37 +234,56 @@ class DataBase(unohelper.Base):
         return user
 
     def initAddressbooks(self):
-        for data in self._selectChangedAddressbooks():
+        start = self._getLastAddressbookSync()
+        stop = currentDateTimeInTZ()
+        for data in self._selectChangedAddressbooks(start, stop):
             self._initUserAddressbookView(data)
-        self._setChangedAddressbook()
+        self._updateAddressbook(stop)
 
     def initGroups(self):
-        for data in self._selectChangedGroups():
+        start = self._getLastGroupSync()
+        stop = currentDateTimeInTZ()
+        for data in self._selectChangedGroups(start, stop):
             self._initUserGroupView(data)
-        self._setChangedGroup()
+        self._updateGroup(stop)
 
-    def _selectChangedAddressbooks(self):
+    def _selectChangedAddressbooks(self, start, stop):
         addressbooks = []
         call = self._getCall('selectChangedAddressbooks')
-        call.setNull(1, TIMESTAMP)
-        call.setNull(2, TIMESTAMP)
+        call.setObject(1, start)
+        call.setObject(2, stop)
         result = call.executeQuery()
         while result.next():
             addressbooks.append(getDataFromResult(result))
         call.close()
         return addressbooks
 
-    def _setChangedAddressbook(self):
+    def _getLastAddressbookSync(self):
+        call = self._getCall('getLastAddressbookSync')
+        call.execute()
+        start = call.getObject(1, None)
+        call.close()
+        return start
+
+    def _updateAddressbook(self, stop):
         call = self._getCall('updateAddressbook')
-        status = call.executeUpdate()
+        call.setObject(1, stop)
+        call.execute()
         call.close()
 
-    def _selectChangedGroups(self):
+    def _getLastGroupSync(self):
+        call = self._getCall('getLastGroupSync')
+        call.execute()
+        start = call.getObject(1, None)
+        call.close()
+        return start
+
+    def _selectChangedGroups(self, start, stop):
         print("DataBase._selectChangedGroups() 1")
         groups = []
         call = self._getCall('selectChangedGroups')
-        call.setNull(1, TIMESTAMP)
-        call.setNull(2, TIMESTAMP)
+        call.setObject(1, start)
+        call.setObject(2, stop)
         result = call.executeQuery()
         while result.next():
             groups.append(getDataFromResult(result))
@@ -271,9 +291,10 @@ class DataBase(unohelper.Base):
         call.close()
         return groups
 
-    def _setChangedGroup(self):
+    def _updateGroup(self, stop):
         call = self._getCall('updateGroup')
-        status = call.executeUpdate()
+        call.setObject(1, stop)
+        status = call.execute()
         call.close()
 
     def _initUserAddressbookView(self, format):

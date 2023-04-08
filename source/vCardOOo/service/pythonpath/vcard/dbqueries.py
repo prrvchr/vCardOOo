@@ -383,8 +383,7 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
     elif name == 'updateAddressbookToken':
         query = 'UPDATE "Addressbooks" SET "Token"=?,"Modified"=DEFAULT WHERE "Addressbook"=?'
 
-
-    elif name == 'updateUser':
+    elif name == 'updateUser1':
         query = 'UPDATE "Users" SET "Scheme"=?,"Password"=? WHERE "User"=?'
 
     elif name == 'updateUserScheme':
@@ -472,10 +471,6 @@ CREATE PROCEDURE "SelectGroup"(IN "Prefix" VARCHAR(50),
     OPEN "Result";
   END"""
 
-
-
-
-
     elif name == 'createSelectUser':
         query = """\
 CREATE PROCEDURE "SelectUser"(IN SERVER VARCHAR(128),
@@ -552,8 +547,6 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
     OPEN RSLT;
   END"""
 
-
-
     elif name == 'createSelectAddressbook':
         query = """\
 CREATE PROCEDURE "SelectAddressbook"(IN UID INTEGER,
@@ -627,12 +620,21 @@ CREATE PROCEDURE "DeleteCard"(IN AID INTEGER,
     DELETE FROM "Cards" WHERE "Addressbook"=AID AND "Path" IN (UNNEST(URLS));
   END"""
 
-
+    elif name == 'createGetLastAddressbookSync':
+        query = """\
+CREATE PROCEDURE "GetLastAddressbookSync"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "GetLastAddressbookSync_1"
+  READS SQL DATA
+  BEGIN ATOMIC
+    DECLARE TMP TIMESTAMP(6) WITH TIME ZONE;
+    SELECT "Created" INTO TMP FROM "Addressbooks" WHERE "Addressbook"=0;
+    SET FIRST = TMP;
+  END"""
 
     elif name == 'createSelectChangedAddressbooks':
         query = """\
-CREATE PROCEDURE "SelectChangedAddressbooks"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
-                                             INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
+CREATE PROCEDURE "SelectChangedAddressbooks"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                             IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedAddressbooks_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
@@ -660,16 +662,33 @@ CREATE PROCEDURE "SelectChangedAddressbooks"(INOUT FIRST TIMESTAMP(6) WITH TIME 
       WHERE A2."Addressbook"!=0)
       ORDER BY "Order"
       FOR READ ONLY;
-    UPDATE "Addressbooks" SET "Modified"=DEFAULT WHERE "Addressbook"=0;
-    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Addressbooks" WHERE "Addressbook"=0);
     OPEN RSLT;
   END"""
 
+    elif name == 'createUpdateAddressbook':
+        query = """\
+CREATE PROCEDURE "UpdateAddressbook"(IN LAST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "UpdateAddressbook_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    UPDATE "Addressbooks" SET "Created"=LAST WHERE "Addressbook"=0;
+  END"""
+
+    elif name == 'createGetLastGroupSync':
+        query = """\
+CREATE PROCEDURE "GetLastGroupSync"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "GetLastGroupSync_1"
+  READS SQL DATA
+  BEGIN ATOMIC
+    DECLARE TMP TIMESTAMP(6) WITH TIME ZONE;
+    SELECT "Created" INTO TMP FROM "Groups" WHERE "Group"=0;
+    SET FIRST = TMP;
+  END"""
 
     elif name == 'createSelectChangedGroups':
         query = """\
-CREATE PROCEDURE "SelectChangedGroups"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
-                                       INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
+CREATE PROCEDURE "SelectChangedGroups"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                       IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedGroups_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
@@ -697,20 +716,35 @@ CREATE PROCEDURE "SelectChangedGroups"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
       WHERE G2."Group"!=0)
       ORDER BY "Order"
       FOR READ ONLY;
-    UPDATE "Groups" SET "Modified"=DEFAULT WHERE "Group"=0;
-    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Groups" WHERE "Group"=0);
     OPEN RSLT;
   END"""
 
+    elif name == 'createUpdateGroup':
+        query = """\
+CREATE PROCEDURE "UpdateGroup"(IN LAST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "UpdateGroup_1"
+  MODIFIES SQL DATA
+  BEGIN ATOMIC
+    UPDATE "Groups" SET "Created"=LAST WHERE "Group"=0;
+  END"""
 
-
+    elif name == 'createGetLastUserSync':
+        query = """\
+CREATE PROCEDURE "GetLastUserSync"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE)
+  SPECIFIC "GetLastUserSync_1"
+  READS SQL DATA
+  BEGIN ATOMIC
+    DECLARE TMP TIMESTAMP(6) WITH TIME ZONE;
+    SELECT "Created" INTO TMP FROM "Users" WHERE "User"=0;
+    SET FIRST = TMP;
+  END"""
 
     elif name == 'createSelectChangedCards':
         query = """\
-CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
-                                      INOUT LAST TIMESTAMP(6) WITH TIME ZONE)
+CREATE PROCEDURE "SelectChangedCards"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+                                      IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedCards_1"
-  MODIFIES SQL DATA
+  READS SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
@@ -738,42 +772,16 @@ CREATE PROCEDURE "SelectChangedCards"(INOUT FIRST TIMESTAMP(6) WITH TIME ZONE,
         ON C2."Card"=C1."Card" AND C2."RowStart"=C1."RowEnd")
       ORDER BY "Order"
       FOR READ ONLY;
-    UPDATE "Users" SET "Modified"=DEFAULT WHERE "User"=0;
-    SET (FIRST, LAST) = (SELECT "Created", "Modified" FROM "Users" WHERE "User"=0);
     OPEN RSLT;
   END"""
 
     elif name == 'createUpdateUser':
         query = """\
-CREATE PROCEDURE "UpdateUser"()
+CREATE PROCEDURE "UpdateUser"(IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "UpdateUser_1"
   MODIFIES SQL DATA
   BEGIN ATOMIC
-    DECLARE DATETIME TIMESTAMP(6) WITH TIME ZONE;
-    SET DATETIME = (SELECT "Modified" FROM "Users" WHERE "User"=0);
-    UPDATE "Users" SET "Created"=DATETIME WHERE "User"=0;
-  END"""
-
-    elif name == 'createUpdateAddressbook':
-        query = """\
-CREATE PROCEDURE "UpdateAddressbook"()
-  SPECIFIC "UpdateAddressbook_1"
-  MODIFIES SQL DATA
-  BEGIN ATOMIC
-    DECLARE DATETIME TIMESTAMP(6) WITH TIME ZONE;
-    SET DATETIME = (SELECT "Modified" FROM "Addressbooks" WHERE "Addressbook"=0);
-    UPDATE "Addressbooks" SET "Created"=DATETIME WHERE "Addressbook"=0;
-  END"""
-
-    elif name == 'createUpdateGroup':
-        query = """\
-CREATE PROCEDURE "UpdateGroup"()
-  SPECIFIC "UpdateGroup_1"
-  MODIFIES SQL DATA
-  BEGIN ATOMIC
-    DECLARE DATETIME TIMESTAMP(6) WITH TIME ZONE;
-    SET DATETIME = (SELECT "Modified" FROM "Groups" WHERE "Group"=0);
-    UPDATE "Groups" SET "Created"=DATETIME WHERE "Group"=0;
+    UPDATE "Users" SET "Created"=LAST WHERE "User"=0;
   END"""
 
     elif name == 'createSelectAddressbookColumns':
@@ -862,10 +870,6 @@ CREATE PROCEDURE "MergeCardGroup"(IN CID INTEGER,
       SET INDEX = INDEX + 1;
     END WHILE;
   END"""
-
-
-
-
 
     elif name == 'createInsertUser1':
         query = """\
@@ -1072,10 +1076,14 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
         query = 'CALL "SelectChangedAddressbooks"(?,?)'
     elif name == 'selectChangedGroups':
         query = 'CALL "SelectChangedGroups"(?,?)'
+    elif name == 'getLastAddressbookSync':
+        query = 'CALL "GetLastAddressbookSync"(?)'
+    elif name == 'getLastGroupSync':
+        query = 'CALL "GetLastGroupSync"(?)'
     elif name == 'updateAddressbook':
-        query = 'CALL "UpdateAddressbook"()'
+        query = 'CALL "UpdateAddressbook"(?)'
     elif name == 'updateGroup':
-        query = 'CALL "UpdateGroup"()'
+        query = 'CALL "UpdateGroup"(?)'
     elif name == 'getSessionId':
         query = 'CALL SESSION_ID()'
 
