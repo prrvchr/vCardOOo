@@ -78,7 +78,7 @@ public final class DataBase
     public DateTimeWithTimezone getLastUserSync()
         throws SQLException
     {
-        XPreparedStatement call = m_xConnection.prepareCall("CALL \"GetLastUserSync\"()");
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"GetLastUserSync\"(?)");
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
         call.execute();
         DateTimeWithTimezone timeout = (DateTimeWithTimezone) row.getObject(1, null);
