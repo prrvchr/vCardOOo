@@ -155,7 +155,7 @@ class User(unohelper.Base):
             raise self._provider.getSqlException(1003, 1105, '_getNewUser', g_oauth2)
         if provider.isOffLine():
             raise self._provider.getSqlException(1004, 1108, '_getNewUser', user)
-        userid = provider.getNewUserId(self._request, server, user, pwd)
+        userid = provider.getNewUserId(database, self._request, server, user, pwd)
         return database.insertUser(scheme, server, userid, user)
 
     def _initNewUser(self, database, provider):
@@ -163,5 +163,4 @@ class User(unohelper.Base):
         if not database.createUser(name, self.getPassword()):
             raise provider.getSqlException(1005, 1106, '_initNewUser', name)
         database.createUserSchema(self.getSchema(), name)
-        provider.initNewUser(database, self)
 

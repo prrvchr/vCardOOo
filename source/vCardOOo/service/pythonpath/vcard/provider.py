@@ -47,7 +47,7 @@ class Provider(ProviderBase):
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
 
-    def getNewUserId(self, request, server, name, pwd):
+    def getNewUserId(self, database, request, server, name, pwd):
         url = self._scheme + self._server + self._url
         redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
         print("Provider.getNewUserId() 1 %s" % url)
@@ -68,9 +68,6 @@ class Provider(ProviderBase):
             #TODO: Raise SqlException with correct message!
             raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
         return userid
-
-    def initNewUser(self, database, user):
-        pass
 
     def initAddressbooks(self, database, user, request):
         if self.isOnLine():

@@ -70,10 +70,7 @@ class ProviderBase(unohelper.Base):
         return error
 
     # Need to be implemented method
-    def getNewUserId(self, request, server, name, pwd):
-        raise NotImplementedError
-
-    def createUser(self, database, name):
+    def getNewUserId(self, database, request, server, name, pwd):
         raise NotImplementedError
 
     def initAddressbooks(self, database, user, request):
