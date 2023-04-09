@@ -155,7 +155,7 @@ class User(unohelper.Base):
             raise self._provider.getSqlException(1003, 1105, '_getNewUser', g_oauth2)
         if provider.isOffLine():
             raise self._provider.getSqlException(1004, 1108, '_getNewUser', name)
-        return provider.insertUser(database, self._request, scheme, server, user, pwd)
+        return provider.insertUser(database, self._request, scheme, server, name, pwd)
 
     def _initNewUser(self, database, provider):
         name = self.getName()

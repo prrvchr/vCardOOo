@@ -49,7 +49,7 @@ class Provider(ProviderBase):
 
     def insertUser(self, database, request, scheme, server, name, pwd):
         userid = self._getNewUserId(request, server, name, pwd)
-        return database.insertUser(scheme, server, userid, user)
+        return database.insertUser(scheme, server, userid, name)
 
     def _getNewUserId(self, request, server, name, pwd):
         url = self._scheme + self._server + self._url
