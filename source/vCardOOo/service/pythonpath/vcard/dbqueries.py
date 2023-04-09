@@ -226,10 +226,7 @@ GRANT SELECT ON "%(Schema)s"."%(Name)s" TO "%(User)s";
 # Create User and Schema Query
     elif name == 'createUser':
         q = """CREATE USER "%(User)s" PASSWORD '%(Password)s'"""
-        if format.get('Admin', False):
-            q += ' ADMIN;'
-        else:
-            q += ';'
+        q += ' ADMIN;' if format.get('Admin', False) else ';'
         query = q % format
 
     elif name == 'createUserSchema':

@@ -86,6 +86,7 @@ class DataSource(unohelper.Base):
 
 # Procedures called by Driver
     def getConnection(self, scheme, server, account, password):
+        print("DataSource.getConnection () 1")
         uri = getUserUri(server, account)
         if uri in self._maps:
             name = self._maps.get(uri)
@@ -95,13 +96,19 @@ class DataSource(unohelper.Base):
             name = user.getName()
             self._users[name] = user
             self._maps[uri] = name
+        print("DataSource.getConnection () 2")
         user.initAddressbooks(self._database)
+        print("DataSource.getConnection () 3")
         connection = self._database.getConnection(name, user.getPassword())
+        print("DataSource.getConnection () 4")
         user.addSession(self._database.getSessionId(connection))
+        print("DataSource.getConnection () 5")
         # User and/or AddressBooks has been initialized and the connection to the database is done...
         # We can start the database replication in a background task.
         self._replicator.start()
+        print("DataSource.getConnection () 6")
         connection.addEventListener(self._listener)
+        print("DataSource.getConnection () 7")
         return connection
 
     def _hasSession(self):

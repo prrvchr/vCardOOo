@@ -49,8 +49,7 @@ from .configuration import g_url
 from .configuration import g_page
 from .configuration import g_member
 from .configuration import g_errorlog
-
-g_basename = 'Provider'
+from .configuration import g_basename
 
 import json
 
@@ -80,31 +79,60 @@ class Provider(unohelper.Base):
         print("Provider.isOffLine() %s" % offline)
         return offline
 
-    def getWellKnownUrl(self):
-        return self._scheme + self._server + self._url
+    def getNewUserId(self, request, server, name, pwd):
+        url = self._scheme + self._server + self._url
+        redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
+        print("Provider.getNewUserId() 1 %s" % url)
+        if redirect:
+            scheme, server = self._getUrlParts(url)
+            redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
+        path = self._getUserUrl(request, name, pwd, url)
+        if path is None:
+            #TODO: Raise SqlException with correct message!
+            raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
+        if not self._supportAddressbook(request, name, pwd, path):
+            #TODO: Raise SqlException with correct message!
+            raise self.getSqlException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
+        print("Provider.getNewUserId() 2 %s" % path)
+        userid = self._getAddressbooksUrl(request, name, pwd, path)
+        print("Provider.getNewUserId() 3 %s" % userid)
+        if userid is None:
+            #TODO: Raise SqlException with correct message!
+            raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
+        return userid
 
-    def getUrlParts(self, location):
+    def initAddressbooks(self, database, user, request):
+        if self.isOnLine():
+            addressbooks = self._getAllAddressbook(request, user.Name, user.Password, user.Path)
+            if not addressbooks:
+                #TODO: Raise SqlException with correct message!
+                print("User.initAddressbooks() 1 %s" % (addressbooks, ))
+                raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
+            if user.Addressbooks.initAddressbooks(database, user.Id, addressbooks):
+                database.initAddressbooks()
+
+    def _getUrlParts(self, location):
         url = getUrl(self._ctx, location)
         self._scheme = url.Protocol
         self._server = url.Server
         return self._scheme, self._server
 
-    def getDiscoveryUrl(self, request, user, password, url):
+    def _getDiscoveryUrl(self, request, user, password, url):
         parameter = self._getRequestParameter('getUrl', user, password, url)
         response = request.getResponse(parameter, None)
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s Response not Ok' % url)
+            raise self.getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s Response not Ok' % url)
         location = response.getHeader('Location')
         response.close()
         if not location:
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s url is None' % url)
+            raise self.getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s url is None' % url)
         redirect = location.endswith(self._url)
         return redirect, location
 
-    def getUserUrl(self, request, user, password, url):
+    def _getUserUrl(self, request, user, password, url):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
@@ -118,18 +146,18 @@ class Provider(unohelper.Base):
         response = request.getResponse(parameter, parser)
         if not response.Ok:
             response.close()
-            raise self._getSqlException(1006, 1107, 'getUserUrl()', user)
+            raise self.getSqlException(1006, 1107, 'getUserUrl()', user)
         url = response.Data
         response.close()
         return url
 
-    def supportAddressbook(self, request, user, password, url):
+    def _supportAddressbook(self, request, user, password, url):
         parameter = self._getRequestParameter('hasAddressbook', user, password, url)
         response = request.getResponse(parameter, None)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'supportAddressbook()', user)
+            raise self.getSqlException(1006, 1107, 'supportAddressbook()', user)
         headers = response.getHeader('DAV')
         response.close()
         for headers in self._headers:
@@ -137,7 +165,7 @@ class Provider(unohelper.Base):
                 return False
         return True
 
-    def getAddressbooksUrl(self, request, user, password, url):
+    def _getAddressbooksUrl(self, request, user, password, url):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
@@ -151,7 +179,7 @@ class Provider(unohelper.Base):
         response = request.getResponse(parameter, parser)
         if not response.Ok:
             response.close()
-            raise self._getSqlException(1006, 1107, 'getAddressbooksUrl()', user)
+            raise self.getSqlException(1006, 1107, 'getAddressbooksUrl()', user)
         url = response.Data
         response.close()
         return url
@@ -176,12 +204,12 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getDefaultAddressbook()', user)
+            raise self.getSqlException(1006, 1107, 'getDefaultAddressbook()', user)
         path, name, tag, token = response.Data
         response.close()
         return path, name, tag, token
 
-    def getAllAddressbook(self, request, user, password, url):
+    def _getAllAddressbook(self, request, user, password, url):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
@@ -201,7 +229,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getAllAddressbook()', user)
+            raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user)
         addressbooks = response.Data
         response.close()
         return addressbooks
@@ -227,7 +255,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getAddressbookUrl()', user)
+            raise self.getSqlException(1006, 1107, 'getAddressbookUrl()', user)
         path, name, tag, token = response.Data
         response.close()
         return path, name, tag, token
@@ -252,7 +280,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getAddressbook()', user)
+            raise self.getSqlException(1006, 1107, 'getAddressbook()', user)
         isopen = response.Data == url
         response.close()
         return isopen
@@ -273,7 +301,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getAddressbookCards()', user)
+            raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user)
         cards = response.Data
         response.close()
         return cards
@@ -295,7 +323,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getModifiedCardByToken()', user)
+            raise self.getSqlException(1006, 1107, 'getModifiedCardByToken()', user)
         data = response.Data
         response.close()
         return data
@@ -317,7 +345,7 @@ class Provider(unohelper.Base):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self._getSqlException(1006, 1107, 'getModifiedCard()', user)
+            raise self.getSqlException(1006, 1107, 'getModifiedCard()', user)
         cards = response.Data
         response.close()
         return cards
@@ -395,10 +423,11 @@ class Provider(unohelper.Base):
                 return False
         return True
 
-    def _getSqlException(self, state, code, method, *args):
+    def getSqlException(self, state, code, method, *args):
         logger = getLogger(self._ctx, g_errorlog, g_basename)
         state = logger.resolveString(state)
         msg = logger.resolveString(code, *args)
         logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error
+

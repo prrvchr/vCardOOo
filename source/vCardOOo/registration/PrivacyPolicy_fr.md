@@ -1,8 +1,8 @@
-# ![vCardOOo logo](https://prrvchr.github.io/vCardOOo/img/vCardOOo.png) vCardOOo - Politique de protection des données
+# ![vCardOOo logo][1] vCardOOo - Politique de protection des données
 
-**L'utilisation de ce logiciel vous soumet également à nos [Conditions d'utilisation](https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr).**
+**L'utilisation de ce logiciel vous soumet également à nos [Conditions d'utilisation][2].**
 
-Concernant l'installation, la configuration et l'utilisation, veuillez consulter la [documentation](https://prrvchr.github.io/vCardOOo/README_fr).
+Concernant l'installation, la configuration et l'utilisation, veuillez consulter la [documentation][3].
 
 ## Introduction:
 
@@ -54,3 +54,8 @@ Il est de la responsabilité de l'`Utilisateur` de désinstaller `vCardOOo` afin
 L'utilisation des services du `Fournisseur` via `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
 
 Le `Fournisseur` est seul responsable de l'expiration des données qu'il collecte comme décrit dans sa Politique de Protection des Données.
+
+[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.png>
+[2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
+[3]: <https://prrvchr.github.io/vCardOOo/README_fr>
+

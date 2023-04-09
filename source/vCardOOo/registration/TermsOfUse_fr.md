@@ -30,3 +30,4 @@ soit la version 3 de la Licence, soit (selon votre choix) toute version ultérie
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <http://mozilla.org/MPL/2.0/>
 [5]: <http://www.gnu.org/licenses/lgpl-3.0.html>
+

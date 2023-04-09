@@ -38,7 +38,7 @@ from .dbtool import getSqlException
 from .logger import getLogger
 
 from .configuration import g_errorlog
-g_basename = 'AddressBooks'
+from .configuration import g_basename
 
 from collections import OrderedDict
 import traceback

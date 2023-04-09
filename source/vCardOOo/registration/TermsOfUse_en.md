@@ -30,3 +30,4 @@ Foundation, either version 3 of the License, or (at your option) any later versi
 [3]: <https://prrvchr.github.io/vCardOOo/>
 [4]: <http://mozilla.org/MPL/2.0/>
 [5]: <http://www.gnu.org/licenses/lgpl-3.0.html>
+
