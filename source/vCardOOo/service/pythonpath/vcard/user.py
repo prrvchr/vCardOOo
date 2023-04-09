@@ -57,7 +57,7 @@ class User(unohelper.Base):
         if self._isNewUser():
             provider = Provider(ctx, scheme, server)
             self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
-            self._createUser(database, provider)
+            self._initNewUser(database, provider)
         else:
             provider = Provider(ctx, self.Scheme, self.Server)
         self._provider = provider
@@ -129,13 +129,6 @@ class User(unohelper.Base):
     def getAddressbooks(self):
         return self._addressbooks.getAddressbooks()
 
-    def _createUser(self, database, provider):
-        name = self.getName()
-        if not database.createUser(name, self.getPassword()):
-            raise provider.getSqlException(1005, 1106, '_createUser', name)
-        database.createUserSchema(self.getSchema(), name)
-        provider.createUser(database, name)
-
     def isOffLine(self):
         return self._provider.isOffLine()
 
@@ -164,4 +157,11 @@ class User(unohelper.Base):
             raise self._provider.getSqlException(1004, 1108, '_getNewUser', user)
         userid = provider.getNewUserId(self._request, server, user, pwd)
         return database.insertUser(scheme, server, userid, user)
+
+    def _initNewUser(self, database, provider):
+        name = self.getName()
+        if not database.createUser(name, self.getPassword()):
+            raise provider.getSqlException(1005, 1106, '_initNewUser', name)
+        database.createUserSchema(self.getSchema(), name)
+        provider.initNewUser(database, self)
 

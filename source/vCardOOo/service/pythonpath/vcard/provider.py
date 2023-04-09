@@ -69,7 +69,7 @@ class Provider(ProviderBase):
             raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
         return userid
 
-    def createUser(self, database, name):
+    def initNewUser(self, database, user):
         pass
 
     def initAddressbooks(self, database, user, request):
