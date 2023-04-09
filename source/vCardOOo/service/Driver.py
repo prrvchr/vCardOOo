@@ -106,20 +106,14 @@ class Driver(unohelper.Base,
             self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                e = self._getSqlException(112, 1101, 'connect()', url)
-                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
-                raise e
+                raise self._getSqlException(112, 1101, 'connect()', url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                e = self._getSqlException(112, 1101, 'connect()', url)
-                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
-                raise e
+                raise self._getSqlException(112, 1101, 'connect()', url)
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
-                e = self._getSqlException(113, 1102, 'connect()', user)
-                self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
-                raise e
+                raise self._getSqlException(113, 1102, 'connect()', user)
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
@@ -128,7 +122,7 @@ class Driver(unohelper.Base,
         except SQLException as e:
             raise e
         except Exception as e:
-            self._logger.logprb(SEVERE, 'Driver', 'connect()', 115, e, traceback.print_exc())
+            self._logger.logprb(SEVERE, 'Driver', 'connect()', 115, e, traceback.format_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -148,9 +142,7 @@ class Driver(unohelper.Base,
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            e = self._getSqlException(112, 1101, '_getUrlParts()', location)
-            self._logger.logp(SEVERE, 'Driver', 'connect()', e.Message)
-            raise e
+            raise self._getSqlException(112, 1101, '_getUrlParts()', location)
         scheme = url.Protocol
         server = url.Server
         if not location.startswith(scheme):
@@ -175,10 +167,6 @@ class Driver(unohelper.Base,
         self._logger.logp(SEVERE, g_basename, method, msg)
         error = getSqlException(state, code, msg, self)
         return error
-
-    def _getDataSourceClassPath(self):
-        path = '%s/%s' % (g_folder, g_jar)
-        return getResourceLocation(self.ctx, g_identifier, path)
 
 # XDropCatalog
     def dropCatalog(self, name, info):
