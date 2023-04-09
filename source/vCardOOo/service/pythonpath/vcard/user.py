@@ -150,13 +150,12 @@ class User(unohelper.Base):
     def _isNewUser(self):
         return self._metadata is None
 
-    def _getNewUser(self, database, provider, scheme, server, user, pwd):
+    def _getNewUser(self, database, provider, scheme, server, name, pwd):
         if self._request is None:
             raise self._provider.getSqlException(1003, 1105, '_getNewUser', g_oauth2)
         if provider.isOffLine():
-            raise self._provider.getSqlException(1004, 1108, '_getNewUser', user)
-        userid = provider.getNewUserId(database, self._request, server, user, pwd)
-        return database.insertUser(scheme, server, userid, user)
+            raise self._provider.getSqlException(1004, 1108, '_getNewUser', name)
+        return provider.insertUser(database, self._request, scheme, server, user, pwd)
 
     def _initNewUser(self, database, provider):
         name = self.getName()

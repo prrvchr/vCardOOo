@@ -47,7 +47,11 @@ class Provider(ProviderBase):
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
 
-    def getNewUserId(self, database, request, server, name, pwd):
+    def insertUser(self, database, request, scheme, server, name, pwd):
+        userid = self._getNewUserId(request, server, name, pwd)
+        return database.insertUser(scheme, server, userid, user)
+
+    def _getNewUserId(self, request, server, name, pwd):
         url = self._scheme + self._server + self._url
         redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
         print("Provider.getNewUserId() 1 %s" % url)

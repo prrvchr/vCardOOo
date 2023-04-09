@@ -496,11 +496,13 @@ CREATE PROCEDURE "SelectUser"(IN SERVER VARCHAR(128),
 CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
                               IN SERVER VARCHAR(128),
                               IN PATH VARCHAR(256),
-                              IN NAME VARCHAR(128))
+                              IN NAME VARCHAR(128),
+                              IN ADDRESSBOOK VARCHAR(128))
   SPECIFIC "InsertUser_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
+    DECLARE PK1 INTEGER DEFAULT NULL;
     DECLARE RSLT CURSOR WITH RETURN FOR
       SELECT U."User",U."Scheme",U."Server",U."Path",U."Name",
         ARRAY_AGG(A."Addressbook" ORDER BY A."Addressbook") AS "Addressbooks",
@@ -514,33 +516,9 @@ CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
       GROUP BY U."User",U."Scheme",U."Server",U."Path",U."Name"
     FOR READ ONLY;
     INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES (SCHEME,SERVER,PATH,NAME);
-    OPEN RSLT;
-  END"""
-
-    elif name == 'createInsertUser2':
-        query = """\
-CREATE PROCEDURE "InsertUser"(IN SCHEME VARCHAR(128),
-                              IN SERVER VARCHAR(128),
-                              IN PATH VARCHAR(256),
-                              IN UID VARCHAR(128),
-                              IN URL VARCHAR(256),
-                              IN NAME VARCHAR(128),
-                              IN TAG VARCHAR(128),
-                              IN TOKEN VARCHAR(128))
-  SPECIFIC "InsertUser_1"
-  MODIFIES SQL DATA
-  DYNAMIC RESULT SETS 1
-  BEGIN ATOMIC
-    DECLARE PK1,PK2 INTEGER DEFAULT NULL;
-    DECLARE RSLT CURSOR WITH RETURN FOR
-      SELECT "User","Default","Scheme","Server","Path","Name"
-      FROM "Users"
-      WHERE "Server"=SERVER AND "Name"=UID FOR READ ONLY;
-    INSERT INTO "Users" ("Scheme","Server","Path","Name") VALUES (SCHEME,SERVER,PATH,UID);
-    SET PK1=IDENTITY();
-    INSERT INTO "Addressbooks" ("User","Path","Name","Tag","Token") VALUES (PK1,URL,NAME,TAG,TOKEN);
-    SET PK2=IDENTITY();
-    UPDATE "Users" SET "Default"=PK2 WHERE "User"=PK1;
+    IF ADDRESSBOOK IS NOT NULL THEN
+      INSERT INTO "Addressbooks" ("User","Path","Name", "Tag") VALUES (IDENTITY(),'/',ADDRESSBOOK,'#');
+    END IF;
     OPEN RSLT;
   END"""
 
@@ -868,26 +846,6 @@ CREATE PROCEDURE "MergeCardGroup"(IN CID INTEGER,
     END WHILE;
   END"""
 
-    elif name == 'createInsertUser1':
-        query = """\
-CREATE PROCEDURE "InsertUser"(IN "ResourceName" VARCHAR(100),
-                              IN "UserName" VARCHAR(100),
-                              IN "GroupName" VARCHAR(100))
-  SPECIFIC "InsertUser_1"
-  MODIFIES SQL DATA
-  DYNAMIC RESULT SETS 1
-  BEGIN ATOMIC
-    DECLARE "Result" CURSOR WITH RETURN FOR
-      SELECT "People", "Group", "Resource", "Account", "PeopleSync", "GroupSync"
-      FROM "Peoples" JOIN "Groups" ON "Peoples"."People"="Groups"."People"
-      AND "Peoples"."Resource"="Groups"."Resource"
-      WHERE "Peoples"."Resource"="ResourceName" FOR READ ONLY;
-    INSERT INTO "Peoples" ("Resource","Account") VALUES ("ResourceName","UserName");
-    INSERT INTO "Groups" ("People","Resource","Name")
-      VALUES (IDENTITY(),"ResourceName","GroupName");
-    OPEN "Result";
-  END"""
-
     elif name == 'createGetPeopleIndex':
         query = """\
 CREATE FUNCTION "GetPeopleIndex"("Prefix" VARCHAR(50),"ResourceName" VARCHAR(100))
@@ -1056,7 +1014,7 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
     elif name == 'selectUser':
         query = 'CALL "SelectUser"(?,?)'
     elif name == 'insertUser':
-        query = 'CALL "InsertUser"(?,?,?,?)'
+        query = 'CALL "InsertUser"(?,?,?,?,?)'
     elif name == 'selectAddressbook':
         query = 'CALL "SelectAddressbook"(?,?,?)'
     elif name == 'insertAddressbook':

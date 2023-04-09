@@ -353,13 +353,14 @@ class DataBase(unohelper.Base):
         call.close()
         return addressbook
 
-    def insertUser(self, scheme, server, path, name):
+    def insertUser(self, scheme, server, path, name, addressbook=None):
         user = None
         call = self._getCall('insertUser')
         call.setString(1, scheme)
         call.setString(2, server)
         call.setString(3, path)
         call.setString(4, name)
+        call.setString(5, addressbook) if addressbook is not None else call.setNull(5, VARCHAR)
         result = call.executeQuery()
         if result.next():
             user = getKeyMapFromResult(result)
