@@ -28,33 +28,17 @@
 """
 
 import uno
-import unohelper
-
-from com.sun.star.logging.LogLevel import SEVERE
-
-from com.sun.star.ucb.ConnectionMode import OFFLINE
-from com.sun.star.ucb.ConnectionMode import ONLINE
 
 from .dataparser import DataParser
 
-from .unotool import getConnectionMode
 from .unotool import getUrl
 
-from .dbtool import getSqlException
+from .providerbase import ProviderBase
 
-from .logger import getLogger
-
-from .configuration import g_host
-from .configuration import g_url
-from .configuration import g_page
-from .configuration import g_member
-from .configuration import g_errorlog
-from .configuration import g_basename
-
-import json
+import traceback
 
 
-class Provider(unohelper.Base):
+class Provider(ProviderBase):
     def __init__(self, ctx, scheme, server):
         self._ctx = ctx
         self._scheme = scheme
@@ -62,22 +46,6 @@ class Provider(unohelper.Base):
         self._url = '/.well-known/carddav'
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
-        self._Error = ''
-        self.SessionMode = OFFLINE
-
-    @property
-    def Host(self):
-        return self._server
-    @property
-    def BaseUrl(self):
-        return self._scheme + self._server
-
-    def isOnLine(self):
-        return getConnectionMode(self._ctx, self.Host) != OFFLINE
-    def isOffLine(self):
-        offline = getConnectionMode(self._ctx, self.Host) != ONLINE
-        print("Provider.isOffLine() %s" % offline)
-        return offline
 
     def getNewUserId(self, request, server, name, pwd):
         url = self._scheme + self._server + self._url
@@ -100,6 +68,9 @@ class Provider(unohelper.Base):
             #TODO: Raise SqlException with correct message!
             raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
         return userid
+
+    def createUser(self, database, name):
+        pass
 
     def initAddressbooks(self, database, user, request):
         if self.isOnLine():
@@ -422,12 +393,4 @@ class Provider(unohelper.Base):
             if headers not in headers:
                 return False
         return True
-
-    def getSqlException(self, state, code, method, *args):
-        logger = getLogger(self._ctx, g_errorlog, g_basename)
-        state = logger.resolveString(state)
-        msg = logger.resolveString(code, *args)
-        logger.logp(SEVERE, g_basename, method, msg)
-        error = getSqlException(state, code, msg, self)
-        return error
 
