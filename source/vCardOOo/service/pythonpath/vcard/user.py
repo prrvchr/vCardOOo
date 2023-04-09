@@ -54,14 +54,15 @@ class User(unohelper.Base):
         self._request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
         self._sessions = []
-        if self._isNewUser():
+        new = self._metadata is None
+        if new:
             provider = Provider(ctx, scheme, server)
             self._metadata = self._getNewUser(database, provider, scheme, server, name, pwd)
             self._initNewUser(database, provider)
         else:
             provider = Provider(ctx, self.Scheme, self.Server)
         self._provider = provider
-        self._addressbooks = AddressBooks(ctx, self._metadata)
+        self._addressbooks = AddressBooks(ctx, self._metadata, new)
 
     @property
     def Id(self):

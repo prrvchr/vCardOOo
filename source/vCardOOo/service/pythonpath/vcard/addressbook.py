@@ -45,10 +45,10 @@ import traceback
 
 
 class AddressBooks(unohelper.Base):
-    def __init__(self, ctx, metadata):
+    def __init__(self, ctx, metadata, new):
         self._ctx = ctx
         print("AddressBooks.__init__() 1")
-        self._addressbooks = self._getAddressbooks(metadata)
+        self._addressbooks = self._getAddressbooks(metadata, new)
         print("AddressBooks.__init__() 2")
 
     def initAddressbooks(self, database, user, addressbooks):
@@ -80,7 +80,7 @@ class AddressBooks(unohelper.Base):
     def _getAddressbook(self, url):
         return self._addressbooks[url]
 
-    def _getAddressbooks(self, metadata):
+    def _getAddressbooks(self, metadata, new):
         addressbooks = OrderedDict()
         indexes = metadata.getValue('Addressbooks')
         names = metadata.getValue('Names')
@@ -88,7 +88,7 @@ class AddressBooks(unohelper.Base):
         tokens = metadata.getValue('Tokens')
         i = 0
         for url in metadata.getValue('Paths'):
-            addressbooks[url] = AddressBook(self._ctx, indexes[i], url, names[i], tags[i], tokens[i])
+            addressbooks[url] = AddressBook(self._ctx, indexes[i], url, names[i], tags[i], tokens[i], new)
             i += 1
         return addressbooks
 
