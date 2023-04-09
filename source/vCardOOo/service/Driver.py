@@ -55,6 +55,7 @@ g_basename = 'Driver'
 from vcard import g_identifier
 from vcard import g_scheme
 from vcard import g_host
+from vcard import g_path
 from vcard import g_defaultlog
 from vcard import g_errorlog
 
@@ -114,7 +115,7 @@ class Driver(unohelper.Base,
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
                 raise self._getSqlException(113, 1102, 'connect()', user)
-            connection = self.DataSource.getConnection(scheme, server, user, pwd)
+            connection = self.DataSource.getConnection(scheme, server, '', user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
             self._logger.logprb(INFO, 'Driver', 'connect()', 114, version, name)

@@ -41,6 +41,7 @@ from .dbtool import getSqlException
 
 from .logger import getLogger
 
+from .configuration import g_path
 from .configuration import g_errorlog
 from .configuration import g_basename
 
@@ -54,7 +55,7 @@ class ProviderBase(unohelper.Base):
         return self._server
     @property
     def BaseUrl(self):
-        return self._scheme + self._server
+        return self._scheme + self._server + g_path
 
     def isOnLine(self):
         return getConnectionMode(self._ctx, self.Host) != OFFLINE

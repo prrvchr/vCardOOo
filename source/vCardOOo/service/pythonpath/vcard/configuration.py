@@ -41,8 +41,8 @@ g_synclog = 'SyncLogger'
 
 g_scheme = 'https://'
 g_host = 'nextcloud'
-g_version = 'v1'
-g_url = 'https://%s/%s' % (g_host, g_version)
+g_path = ''
+
 g_page = 100
 g_member = 1000
 g_admin = False
