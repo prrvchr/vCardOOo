@@ -366,20 +366,14 @@ class DataBase(unohelper.Base):
         call.close()
         return user
 
-    def insertAddressbook(self, user, path, name, tag, token):
+    def insertAddressbook(self, user, path, name, tag=None, token=None):
         addressbook = None
         call = self._getCall('insertAddressbook')
         call.setInt(1, user)
         call.setString(2, path)
         call.setString(3, name)
-        if tag:
-            call.setString(4, tag)
-        else:
-            call.setNull(4, VARCHAR)
-        if token:
-            call.setString(5, token)
-        else:
-            call.setNull(5, VARCHAR)
+        call.setString(4, tag) if tag is not None else call.setNull(4, VARCHAR)
+        call.setString(5, token) if token is not None else call.setNull(5, VARCHAR)
         state = call.executeUpdate()
         addressbook = call.getInt(6)
         call.close()
