@@ -42,7 +42,6 @@ from .unotool import getDateTime
 from .unotool import getPropertyValueSet
 
 from .database import DataBase
-from .dataparser import DataParser
 from .addressbook import AddressBook
 
 from .configuration import g_identifier
@@ -118,7 +117,6 @@ class Replicator(unohelper.Base):
                         arguments = getPropertyValueSet({'Connection': self._database.Connection})
                         executeDispatch(self._ctx, url, arguments)
                         print("replicator.run()5 synchronize ended CardSync.jar")
-                        self._database.initGroups()
                     self._database.dispose()
                     logger.logprb(INFO, 'Replicator', '_replicate()', 101, total, mdfd, dltd)
                     print("replicator.run()6 synchronize ended query=%s modified=%s deleted=%s *******************************************" % (total, mdfd, dltd))
@@ -150,61 +148,33 @@ class Replicator(unohelper.Base):
 
     def _syncUser(self, logger, user, dltd, mdfd):
         for addressbook in user.getAddressbooks():
+            print("Replicator._syncUser() AddressBook Name: %s - Path: %s" % (addressbook.Name, addressbook.Path))
+        for addressbook in user.getAddressbooks():
             if self._canceled():
                 break
             if addressbook.isNew():
-                print("Replicator._syncUser() New")
-                cards = user.getAddressbookCards(addressbook.Path)
-                mdfd += self._mergeCard(addressbook, cards)
+                print("Replicator._syncUser() New AddressBook Path: %s" % addressbook.Path)
+                mdfd += user.firstCardPull(self._database, addressbook)
             elif not self._canceled():
                 dltd, mdfd = self._pullModifiedCard(user, addressbook, dltd, mdfd)
+        self._database.syncGroups(user)
         return dltd, mdfd
-
-    def _mergeCard(self, addressbook, cards):
-        mdfd = 0
-        self._setBatchModeOn()
-        for card in cards:
-            if self._canceled():
-                break
-            print("Replicator._mergeCard() %s" % (card, ))
-            mdfd += self._database.mergeCard(addressbook.Id, *card)
-        if not self._canceled():
-            self._database.executeBatchCall()
-            self._database.Connection.commit()
-        self._setBatchModeOff()
-        return mdfd
 
     def _pullModifiedCard(self, user, addressbook, dltd, mdfd):
         if addressbook.Token is not None:
-            dltd, mdfd = self._pullModifiedCardByToken(user, addressbook, dltd, mdfd)
+            dltd, mdfd = self._pullCardByToken(user, addressbook, dltd, mdfd)
         elif addressbook.Tag is not None:
-            dltd, mdfd = self._pullModifiedCardByTag(user, addressbook, dltd, mdfd)
+            dltd, mdfd = self._pullCardByTag(user, addressbook, dltd, mdfd)
         else:
             print("Replicator._pullModifiedCard() Error %s" % (addressbook.Name, ))
         return dltd, mdfd
 
-    def _pullModifiedCardByToken(self, user, addressbook, dltd, mdfd):
-        print("Replicator._pullModifiedCardByToken() %s" % (addressbook.Name, ))
-        token, modified, deleted = user.getModifiedCardByToken(addressbook.Path, addressbook.Token)
-        if addressbook.Token != token:
-            if deleted:
-                dltd += self._database.deleteCard(addressbook.Id, deleted)
-            if modified:
-                cards = user.getModifiedCard(addressbook.Path, modified)
-                mdfd += self._mergeCard(addressbook, cards)
-            self._database.updateAddressbookToken(addressbook.Id, token)
+    def _pullCardByToken(self, user, addressbook, dltd, mdfd):
+        dltd, mdfd = user.pullCardByToken(self._database, addressbook, dltd, mdfd)
+        print("Replicator._pullCardByToken() AddresBook: %s - Deleted: %s - Modified: %s" % (addressbook.Name, dltd, mdfd))
         return dltd, mdfd
 
-    def _pullModifiedCardByTag(self, user, addressbook, dltd, mdfd):
+    def _pullCardByTag(self, user, addressbook, dltd, mdfd):
         print("Replicator._pullModifiedCardByTag() %s" % (addressbook.Name, ))
         return dltd, mdfd
 
-    def _setBatchModeOn(self):
-        self._database.setLoggingChanges(False)
-        self._database.saveChanges()
-        self._database.Connection.setAutoCommit(False)
-
-    def _setBatchModeOff(self):
-        self._database.setLoggingChanges(True)
-        self._database.saveChanges()
-        self._database.Connection.setAutoCommit(True)

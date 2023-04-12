@@ -30,7 +30,7 @@
 import uno
 import unohelper
 
-from com.sun.star.auth import XRestDataParser
+from com.sun.star.rest import XDataParser
 
 from .unolib import KeyMap
 from .unotool import getNamedValue
@@ -40,19 +40,18 @@ import xml.etree.ElementTree as XmlTree
 
 
 class DataParser(unohelper.Base,
-                 XRestDataParser):
+                 XDataParser):
     def __init__(self, method, predicate=None):
         #self._provider = provider
         #self.map = database.getFieldsMap(method, True)
         #self.keys = self.map.getKeys()
-        self.DataType = 'Xml'
         self._method = method
         self._predicate = predicate
         self._path = None
         self._root = None
         self._keys = self._getKeys()
 
-    def parseResponse(self, response):
+    def parse(self, response):
         root = XmlTree.fromstring(response)
         print("DataParser.parseResponse() 1 %s" % root.tag)
         print("DataParser.parseResponse() 2\n%s" % response)
@@ -63,11 +62,11 @@ class DataParser(unohelper.Base,
             data = self._parseMultiResponse(root)
         return data
 
-    def _parseResponse(self, root, keys):
-        data = self._getData()
-        return self._parseItem(data, root, keys)
+    def _parseResponse(self, root, keys, first=True):
+        data = self._getData(first)
+        return self._parseItem(data, root, keys, first)
 
-    def _parseItem(self, data, root, keys):
+    def _parseItem(self, data, root, keys, first=True):
         print("DataParser._parseItem() 1")
         for key, method in keys.items():
             path, attribut = method
@@ -78,16 +77,16 @@ class DataParser(unohelper.Base,
             if item is not None:
                 value = item.text if attribut is None else item.get(attribut)
             print("DataParser._parseItem() 4 %s" % value)
-            data = self._setData(data, key, value)
+            data = self._setData(data, key, value, first)
         return data
 
     def _parseMultiResponse(self, root):
-        data = self._getData()
+        data = self._getData(True)
         print("DataParser._parseMultiResponse() 1 %s" % (data, ))
         for item in root.findall(self._path):
             if self._root is None:
-                value = self._parseResponse(item, self._keys)
-                data = self._setData(data, None, value)
+                value = self._parseResponse(item, self._keys, False)
+                data = self._setData(data, None, value, True)
             else:
                 data = self._parseItem(data, item, self._keys)
             print("DataParser._parseMultiResponse() 2 %s" % (data, ))
@@ -165,7 +164,7 @@ class DataParser(unohelper.Base,
             self._root = {'Token': ('./{DAV:}sync-token', None)}
         return keys
 
-    def _getData(self):
+    def _getData(self, first=True):
         if self._method == 'getUrl':
             data = KeyMap()
         elif self._method == 'getUser':
@@ -175,7 +174,7 @@ class DataParser(unohelper.Base,
         elif self._method == 'getDefaultAddressbook':
             data = []
         elif self._method == 'getAllAddressbook':
-            data = []
+            data = [] if first else KeyMap()
         elif self._method == 'getAddressbookUrl':
             data = []
         elif self._method == 'getAddressbook':
@@ -186,7 +185,7 @@ class DataParser(unohelper.Base,
             data = {'Token': None, 'Modified': [], 'Deleted': []}
         return data
 
-    def _setData(self, data, key, value):
+    def _setData(self, data, key, value, first=True):
         if self._method == 'getUrl':
             data.insertValue(key, value)
         elif self._method == 'getUser':
@@ -197,10 +196,11 @@ class DataParser(unohelper.Base,
             data.append(value)
         elif self._method == 'getAllAddressbook':
             # FIXME: We need to exclude Addressbook without first property: Name
-            if key is None and value[0] is None:
-                pass
-            else:
-                data.append(value)
+            if value is not None:
+                if not first:
+                    data.setValue(key, value)
+                elif value.getKeys() == self._keys:
+                    data.append(value)
         elif self._method == 'getAddressbookUrl':
             data.append(value)
         elif self._method == 'getAddressbook':
@@ -221,7 +221,7 @@ class DataParser(unohelper.Base,
 
 
 class DataIterator(unohelper.Base,
-                   XRestDataParser):
+                   XDataParser):
     def __init__(self, method, addressbook=None):
         #self._provider = provider
         #self.map = database.getFieldsMap(method, True)
@@ -234,7 +234,7 @@ class DataIterator(unohelper.Base,
         self._ns = {'': 'DAV:',
                     'card': 'urn:ietf:params:xml:ns:carddav'}
 
-    def parseResponse(self, response):
+    def parse(self, response):
         root = XmlTree.fromstring(response)
         print("DataParser.parseResponse() 1 %s" % root.tag)
         print("DataParser.parseResponse() 2\n%s" % response)

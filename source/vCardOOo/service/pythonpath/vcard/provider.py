@@ -31,16 +31,20 @@ import uno
 
 from .dataparser import DataParser
 
+from .unolib import KeyMap
+
 from .unotool import getUrl
 
 from .providerbase import ProviderBase
 
+import xml.etree.ElementTree as ET
 import traceback
 
 
 class Provider(ProviderBase):
     def __init__(self, ctx, scheme, server):
         self._ctx = ctx
+        self._length = 256
         self._scheme = scheme
         self._server = server
         self._url = '/.well-known/carddav'
@@ -52,36 +56,32 @@ class Provider(ProviderBase):
         return database.insertUser(scheme, server, userid, name)
 
     def _getNewUserId(self, request, server, name, pwd):
-        url = self._scheme + self._server + self._url
-        redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
-        print("Provider.getNewUserId() 1 %s" % url)
-        if redirect:
-            scheme, server = self._getUrlParts(url)
+        try:
+            url = self._scheme + self._server + self._url
             redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
-        path = self._getUserUrl(request, name, pwd, url)
-        if path is None:
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
-        if not self._supportAddressbook(request, name, pwd, path):
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
-        print("Provider.getNewUserId() 2 %s" % path)
-        userid = self._getAddressbooksUrl(request, name, pwd, path)
-        print("Provider.getNewUserId() 3 %s" % userid)
-        if userid is None:
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, pwd))
-        return userid
-
-    def initAddressbooks(self, database, user, request):
-        if self.isOnLine():
-            addressbooks = self._getAllAddressbook(request, user.Name, user.Password, user.Path)
-            if not addressbooks:
+            print("Provider.getNewUserId() 1 Redirect: %s - Url: %s" % (redirect, url))
+            if redirect:
+                scheme, server = self._getUrlParts(url)
+                redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
+                print("Provider.getNewUserId() 2 Redirect: %s - Url: %s" % (redirect, url))
+            path = self._getUserUrl(request, name, pwd, url)
+            print("Provider.getNewUserId() 3 Path: %s" % (path, ))
+            if path is None:
                 #TODO: Raise SqlException with correct message!
-                print("User.initAddressbooks() 1 %s" % (addressbooks, ))
-                raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
-            if user.Addressbooks.initAddressbooks(database, user.Id, addressbooks):
-                database.initAddressbooks()
+                raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
+            if not self._supportAddressbook(request, name, pwd, path):
+                #TODO: Raise SqlException with correct message!
+                raise self.getSqlException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
+            print("Provider.getNewUserId() 4 %s" % path)
+            userid = self._getAddressbooksUrl(request, name, pwd, path)
+            print("Provider.getNewUserId() 5 %s" % userid)
+            if userid is None:
+                #TODO: Raise SqlException with correct message!
+                raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
+            return userid
+        except Exception as e:
+            msg = "Provider.getNewUserId() Error: %s" % traceback.format_exc()
+            print(msg)
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location)
@@ -89,9 +89,9 @@ class Provider(ProviderBase):
         self._server = url.Server
         return self._scheme, self._server
 
-    def _getDiscoveryUrl(self, request, user, password, url):
-        parameter = self._getRequestParameter('getUrl', user, password, url)
-        response = request.getResponse(parameter, None)
+    def _getDiscoveryUrl(self, request, name, password, url):
+        parameter = self._getRequestParameter('getUrl', name, password, url)
+        response = request.executeRequest(parameter)
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -104,7 +104,7 @@ class Provider(ProviderBase):
         redirect = location.endswith(self._url)
         return redirect, location
 
-    def _getUserUrl(self, request, user, password, url):
+    def _getUserUrl(self, request, name, password, url):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
@@ -113,19 +113,37 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getUser', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
+        parameter = self._getRequestParameter('getUser', name, password, url, data)
+        response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
-            raise self.getSqlException(1006, 1107, 'getUserUrl()', user)
-        url = response.Data
+            raise self.getSqlException(1006, 1107, 'getUserUrl()', name)
+        url = self._parseUserUrl(response)
         response.close()
+        return url
+
+    def _parseUserUrl(self, response):
+        url = None
+        parser = ET.XMLPullParser(('end', ))
+        iterator = response.iterContent(self._length, False)
+        while iterator.hasMoreElements():
+            # FIXME: As Decode is False we obtain a sequence of bytes
+            parser.feed(iterator.nextElement().value)
+            for event, element in parser.read_events():
+                if element.tag != '{DAV:}current-user-principal':
+                    continue
+                for child in element:
+                    if child.tag == '{DAV:}href' and child.text:
+                        url = child.text
+                        break
+            # FIXME: We got what we wanted we can leave
+            if url is not None:
+                break
         return url
 
     def _supportAddressbook(self, request, user, password, url):
         parameter = self._getRequestParameter('hasAddressbook', user, password, url)
-        response = request.getResponse(parameter, None)
+        response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -137,127 +155,102 @@ class Provider(ProviderBase):
                 return False
         return True
 
-    def _getAddressbooksUrl(self, request, user, password, url):
+    def _getAddressbooksUrl(self, request, name, pwd, url):
         data = '''\
 <?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
+<d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
   <d:prop>
-    <card:addressbook-home-set xmlns:card="urn:ietf:params:xml:ns:carddav" />
+    <card:addressbook-home-set />
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAddressbooksUrl', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
+        parameter = self._getRequestParameter('getAddressbooksUrl', name, pwd, url, data)
+        response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
-            raise self.getSqlException(1006, 1107, 'getAddressbooksUrl()', user)
-        url = response.Data
+            raise self.getSqlException(1006, 1107, 'getAddressbooksUrl()', name)
+        url = self._parseAddressbookUrl(response)
         response.close()
         return url
 
-    def getDefaultAddressbook(self, request, user, password, url):
-        data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
-  <d:prop>
-    <d:displayname />
-    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
-    <d:sync-token />
-    <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
-    </d:resourcetype>
-  </d:prop>
-</d:propfind>
-'''
-        parameter = self._getRequestParameter('getDefaultAddressbook', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
-        if not response.Ok:
-            response.close()
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getDefaultAddressbook()', user)
-        path, name, tag, token = response.Data
-        response.close()
-        return path, name, tag, token
+    def _parseAddressbookUrl(self, response):
+        url = None
+        parser = ET.XMLPullParser(('end', ))
+        iterator = response.iterContent(self._length, False)
+        while iterator.hasMoreElements():
+            # FIXME: As Decode is False we obtain a sequence of bytes
+            parser.feed(iterator.nextElement().value)
+            for event, element in parser.read_events():
+                if element.tag != '{urn:ietf:params:xml:ns:carddav}addressbook-home-set':
+                    continue
+                for child in element:
+                    if child.tag == '{DAV:}href' and child.text:
+                        url = child.text
+                        break
+            # FIXME: We got what we wanted we can leave
+            if url is not None:
+                break
+        return url
 
-    def _getAllAddressbook(self, request, user, password, url):
+    def initAddressbooks(self, database, user):
+        if self.isOnLine():
+            addressbooks = self._getAllAddressbook(user)
+            if not addressbooks:
+                #TODO: Raise SqlException with correct message!
+                print("User.initAddressbooks() 1 %s" % (addressbooks, ))
+                raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
+            if user.Addressbooks.initAddressbooks(database, user.Id, addressbooks):
+                database.initAddressbooks(user)
+
+    def _getAllAddressbook(self, user):
         data = '''\
 <?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
+<d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav" xmlns:cs="http://calendarserver.org/ns/">
   <d:prop>
     <d:displayname />
-    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
+    <cs:getctag />
     <d:sync-token />
     <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
+        <card:addressbook />
     </d:resourcetype>
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAllAddressbook', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
+        parameter = self._getRequestParameter('getAllAddressbook', user.Name, user.Password, user.Path, data)
+        response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user)
-        addressbooks = response.Data
+            raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user.Name)
+        addressbooks = []
+        for addressbook in self._parseAllAddressbook(response):
+            addressbooks.append(addressbook)
         response.close()
         return addressbooks
-        #return path, name, tag, token
 
-    def getAddressbookUrl(self, request, addressbook, user, password, url):
-        data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
-  <d:prop>
-    <d:displayname />
-    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
-    <d:sync-token />
-    <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
-    </d:resourcetype>
-  </d:prop>
-</d:propfind>
-'''
-        parameter = self._getRequestParameter('getAddressbookUrl', user, password, url, data)
-        parser = DataParser(parameter.Name, addressbook)
-        response = request.getResponse(parameter, parser)
-        if not response.Ok:
-            response.close()
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAddressbookUrl()', user)
-        path, name, tag, token = response.Data
-        response.close()
-        return path, name, tag, token
+    def _parseAllAddressbook(self, response):
+        parser = ET.XMLPullParser(('end', ))
+        iterator = response.iterContent(self._length, False)
+        while iterator.hasMoreElements():
+            # FIXME: As Decode is False we obtain a sequence of bytes
+            parser.feed(iterator.nextElement().value)
+            for event, element in parser.read_events():
+                if element.tag != '{DAV:}response':
+                    continue
+                url = name = token = tag = None
+                for child in element.iter():
+                    if child.tag == '{DAV:}href' and child.text:
+                        url = child.text
+                    elif child.tag == '{DAV:}displayname' and child.text:
+                        name = child.text
+                    elif child.tag == '{DAV:}sync-token' and child.text:
+                        token = child.text
+                    elif child.tag == '{http://calendarserver.org/ns/}getctag' and child.text:
+                        tag = child.text
+                if all((url, name, token, tag)):
+                    yield KeyMap(**{'Url': url, 'Name': name, 'Token': token, 'Tag': tag})
 
-    def getAddressbook(self, request, addressbook, user, password, url):
-        data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
-  <d:prop>
-    <d:displayname />
-    <cs:getctag xmlns:cs="http://calendarserver.org/ns/" />
-    <d:sync-token />
-    <d:resourcetype>
-        <card:addressbook xmlns:card="urn:ietf:params:xml:ns:carddav" />
-    </d:resourcetype>
-  </d:prop>
-</d:propfind>
-'''
-        parameter = self._getRequestParameter('getAddressbook', user, password, url, data)
-        parser = DataParser(parameter.Name, addressbook)
-        response = request.getResponse(parameter, parser)
-        if not response.Ok:
-            response.close()
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAddressbook()', user)
-        isopen = response.Data == url
-        response.close()
-        return isopen
-
-    def getAddressbookCards(self, request, user, password, url):
+    def firstCardPull(self, database, user, addressbook):
         data = '''\
 <?xml version="1.0"?>
 <card:addressbook-query xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
@@ -267,18 +260,17 @@ class Provider(ProviderBase):
   </d:prop>
 </card:addressbook-query>
 '''
-        parameter = self._getRequestParameter('getAddressbookCards', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
+        parameter = self._getRequestParameter('getAddressbookCards', user.Name, user.Password, addressbook.Path, data)
+        response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user)
-        cards = response.Data
+        count = database.mergeCard(addressbook.Id, self._parseCards(response))
         response.close()
-        return cards
+        return count
 
-    def getModifiedCardByToken(self, request, user, password, url, token):
+    def getCardByToken(self, user, addressbook):
         data = '''\
 <?xml version="1.0"?>
 <d:sync-collection xmlns:d="DAV:">
@@ -288,19 +280,18 @@ class Provider(ProviderBase):
     <d:getetag />
   </d:prop>
 </d:sync-collection>
-''' % token
-        parameter = self._getRequestParameter('getModifiedCardByToken', user, password, url, data)
-        parser = DataParser(parameter.Name, self._status)
-        response = request.getResponse(parameter, parser)
+''' % addressbook.Token
+        parameter = self._getRequestParameter('getModifiedCardByToken', user.Name, user.Password, addressbook.Path, data)
+        response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getModifiedCardByToken()', user)
-        data = response.Data
+            raise self.getSqlException(1006, 1107, 'getModifiedCardByToken()', user.Name)
+        token, deleted, modified = self._getChangedCards(response)
         response.close()
-        return data
+        return token, deleted, modified
 
-    def getModifiedCard(self, request, user, password, url, urls):
+    def mergeCardByToken(self, database, user, addressbook, urls):
         data = '''\
 <?xml version="1.0"?>
 <card:addressbook-multiget xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
@@ -311,19 +302,61 @@ class Provider(ProviderBase):
   <d:href>%s</d:href>
 </card:addressbook-multiget>
 ''' % '</d:href><d:href>'.join(urls)
-        parameter = self._getRequestParameter('getAddressbookCards', user, password, url, data)
-        parser = DataParser(parameter.Name)
-        response = request.getResponse(parameter, parser)
+        parameter = self._getRequestParameter('getAddressbookCards', user.Name, user.Password, addressbook.Path, data)
+        response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getModifiedCard()', user)
-        cards = response.Data
+            raise self.getSqlException(1006, 1107, 'mergeCardByToken()', user)
+        count = database.mergeCard(addressbook.Id, self_parseCards(response))
         response.close()
-        return cards
+        return count
+
+    def _parseCards(self, response):
+        parser = ET.XMLPullParser(('end', ))
+        iterator = response.iterContent(self._length, False)
+        while iterator.hasMoreElements():
+            # FIXME: As Decode is False we obtain a sequence of bytes
+            parser.feed(iterator.nextElement().value)
+            for event, element in parser.read_events():
+                if element.tag != '{DAV:}response':
+                    continue
+                url = tag = data = None
+                for child in element.iter():
+                    if child.tag == '{DAV:}href' and child.text:
+                        url = child.text
+                    elif child.tag == '{DAV:}getetag' and child.text:
+                        tag = child.text
+                    elif child.tag == '{urn:ietf:params:xml:ns:carddav}address-data' and child.text:
+                        data = child.text
+                if all((url, tag, data)):
+                    yield url, tag, data
+
+    def _getChangedCards(self, response):
+        token = None
+        deleted = []
+        modified = []
+        parser = ET.XMLPullParser(('end', ))
+        iterator = response.iterContent(self._length, False)
+        while iterator.hasMoreElements():
+            # FIXME: As Decode is False we obtain a sequence of bytes
+            parser.feed(iterator.nextElement().value)
+            for event, element in parser.read_events():
+                if element.tag == '{DAV:}response':
+                    url = modified = None
+                    for child in element.iter():
+                        if child.tag == '{DAV:}href' and child.text:
+                            url = child.text
+                        elif child.tag == '{DAV:}status' and child.text:
+                            status = True if child.text != self._status else False
+                    if all((url, status is not None)):
+                        modified.append(url) if status else deleted.append(url)
+                elif element.tag == '{DAV:}sync-token':
+                    token = element.text
+        return token, deleted, modified
 
     def _getRequestParameter(self, method, user, password, url=None, data=None):
-        parameter = uno.createUnoStruct('com.sun.star.auth.RestRequestParameter')
+        parameter = uno.createUnoStruct('com.sun.star.rest.RequestParameter')
         parameter.Name = method
         if method == 'getUrl':
             parameter.Url = url
@@ -388,10 +421,4 @@ class Provider(ProviderBase):
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
         return parameter
-
-    def _checkAddressbookHeader(self, headers):
-        for headers in self._headers:
-            if headers not in headers:
-                return False
-        return True
 

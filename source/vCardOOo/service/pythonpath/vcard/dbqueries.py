@@ -608,33 +608,40 @@ CREATE PROCEDURE "GetLastAddressbookSync"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE)
 
     elif name == 'createSelectChangedAddressbooks':
         query = """\
-CREATE PROCEDURE "SelectChangedAddressbooks"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+CREATE PROCEDURE "SelectChangedAddressbooks"(IN UID INTEGER,
+                                             IN FIRST TIMESTAMP(6) WITH TIME ZONE,
                                              IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedAddressbooks_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A1."Addressbook",NULL AS "Name",A1."Name" AS "OldName",'Deleted' AS "Query",A1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              A1."Addressbook", NULL AS "Name", A1."Name" AS "OldName", 
+              'Deleted' AS "Query", A1."RowEnd" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
       JOIN "Users" AS U ON A1."User"=U."User"
       LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
         ON A1."Addressbook" = A2."Addressbook"
-      WHERE A1."Addressbook"!=0 AND A2."Addressbook" IS NULL)
+      WHERE A1."Addressbook"!=0 AND A2."Addressbook" IS NULL AND U."User"=UID)
       UNION
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A2."Addressbook",A2."Name",NULL AS "OldName",'Inserted' AS "Query",A2."RowStart" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              A2."Addressbook", A2."Name", NULL AS "OldName", 
+              'Inserted' AS "Query", A2."RowStart" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
       JOIN "Users" AS U ON A2."User"=U."User"
       LEFT JOIN "Addressbooks" FOR SYSTEM_TIME AS OF FIRST AS A1
         ON A2."Addressbook"=A1."Addressbook"
-      WHERE A2."Addressbook"!=0 AND  A1."Addressbook" IS NULL)
+      WHERE A2."Addressbook"!=0 AND  A1."Addressbook" IS NULL AND U."User"=UID)
       UNION
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",A2."Addressbook",A2."Name",A1."Name" AS "OldName",'Updated' AS "Query",A1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              A2."Addressbook", A2."Name", A1."Name" AS "OldName", 
+              'Updated' AS "Query", A1."RowEnd" AS "Order"
       FROM "Addressbooks" FOR SYSTEM_TIME AS OF LAST AS A2
       JOIN "Users" AS U ON A2."User"=U."User"
       INNER JOIN "Addressbooks" FOR SYSTEM_TIME FROM FIRST TO LAST AS A1
         ON A2."Addressbook"=A1."Addressbook" AND A2."RowStart"=A1."RowEnd"
-      WHERE A2."Addressbook"!=0)
+      WHERE A2."Addressbook"!=0 AND U."User"=UID)
       ORDER BY "Order"
       FOR READ ONLY;
     OPEN RSLT;
@@ -662,33 +669,40 @@ CREATE PROCEDURE "GetLastGroupSync"(OUT FIRST TIMESTAMP(6) WITH TIME ZONE)
 
     elif name == 'createSelectChangedGroups':
         query = """\
-CREATE PROCEDURE "SelectChangedGroups"(IN FIRST TIMESTAMP(6) WITH TIME ZONE,
+CREATE PROCEDURE "SelectChangedGroups"(IN UID INTEGER,
+                                       IN FIRST TIMESTAMP(6) WITH TIME ZONE,
                                        IN LAST TIMESTAMP(6) WITH TIME ZONE)
   SPECIFIC "SelectChangedGroups_1"
   MODIFIES SQL DATA
   DYNAMIC RESULT SETS 1
   BEGIN ATOMIC
     DECLARE RSLT CURSOR WITH RETURN FOR
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G1."Group",NULL AS "Name",G1."Name" AS "OldName",'Deleted' AS "Query",G1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              G1."Group", NULL AS "Name", G1."Name" AS "OldName", 
+              'Deleted' AS "Query", G1."RowEnd" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
       JOIN "Users" AS U ON G1."User"=U."User"
       LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
         ON G1."Group" = G2."Group"
-      WHERE G1."Group"!=0 AND G2."Group" IS NULL)
+      WHERE G1."Group"!=0 AND G2."Group" IS NULL AND U."User"=UID)
       UNION
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G2."Group",G2."Name",NULL AS "OldName",'Inserted' AS "Query",G2."RowStart" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              G2."Group", G2."Name", NULL AS "OldName", 
+              'Inserted' AS "Query", G2."RowStart" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
       JOIN "Users" AS U ON G2."User"=U."User"
       LEFT JOIN "Groups" FOR SYSTEM_TIME AS OF FIRST AS G1
         ON G2."Group"=G1."Group"
-      WHERE G2."Group"!=0 AND  G1."Group" IS NULL)
+      WHERE G2."Group"!=0 AND  G1."Group" IS NULL AND U."User"=UID)
       UNION
-      (SELECT CAST(U."User" AS VARCHAR(9)) AS "Schema",CAST(U."User" AS VARCHAR(9)) AS "User",G2."Group",G2."Name",G1."Name" AS "OldName",'Updated' AS "Query",G1."RowEnd" AS "Order"
+      (SELECT CAST(U."User" AS VARCHAR(9)) AS "User", 
+              G2."Group", G2."Name", G1."Name" AS "OldName", 
+              'Updated' AS "Query", G1."RowEnd" AS "Order"
       FROM "Groups" FOR SYSTEM_TIME AS OF LAST AS G2
       JOIN "Users" AS U ON G2."User"=U."User"
       INNER JOIN "Groups" FOR SYSTEM_TIME FROM FIRST TO LAST AS G1
         ON G2."Group"=G1."Group" AND G2."RowStart"=G1."RowEnd"
-      WHERE G2."Group"!=0)
+      WHERE G2."Group"!=0 AND U."User"=UID)
       ORDER BY "Order"
       FOR READ ONLY;
     OPEN RSLT;
@@ -1028,9 +1042,9 @@ CREATE PROCEDURE "MergeConnection"(IN "GroupPrefix" VARCHAR(50),
     elif name == 'getAddressbookColumns':
         query = 'CALL "SelectAddressbookColumns"()'
     elif name == 'selectChangedAddressbooks':
-        query = 'CALL "SelectChangedAddressbooks"(?,?)'
+        query = 'CALL "SelectChangedAddressbooks"(?,?,?)'
     elif name == 'selectChangedGroups':
-        query = 'CALL "SelectChangedGroups"(?,?)'
+        query = 'CALL "SelectChangedGroups"(?,?,?)'
     elif name == 'getLastAddressbookSync':
         query = 'CALL "GetLastAddressbookSync"(?)'
     elif name == 'getLastGroupSync':

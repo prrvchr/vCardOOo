@@ -233,25 +233,26 @@ class DataBase(unohelper.Base):
         call.close()
         return user
 
-    def initAddressbooks(self):
+    def initAddressbooks(self, user):
         start = self._getLastAddressbookSync()
         stop = currentDateTimeInTZ()
-        for data in self._selectChangedAddressbooks(start, stop):
-            self._initUserAddressbookView(data)
+        for data in self._selectChangedAddressbooks(user.Id, start, stop):
+            self._initUserAddressbookView(user, data)
         self._updateAddressbook(stop)
 
-    def initGroups(self):
+    def syncGroups(self, user):
         start = self._getLastGroupSync()
         stop = currentDateTimeInTZ()
-        for data in self._selectChangedGroups(start, stop):
-            self._initUserGroupView(data)
+        for data in self._selectChangedGroups(user.Id, start, stop):
+            self._initUserGroupView(user, data)
         self._updateGroup(stop)
 
-    def _selectChangedAddressbooks(self, start, stop):
+    def _selectChangedAddressbooks(self, userid, start, stop):
         addressbooks = []
         call = self._getCall('selectChangedAddressbooks')
-        call.setObject(1, start)
-        call.setObject(2, stop)
+        call.setInt(1, userid)
+        call.setObject(2, start)
+        call.setObject(3, stop)
         result = call.executeQuery()
         while result.next():
             addressbooks.append(getDataFromResult(result))
@@ -278,12 +279,13 @@ class DataBase(unohelper.Base):
         call.close()
         return start
 
-    def _selectChangedGroups(self, start, stop):
+    def _selectChangedGroups(self, userid, start, stop):
         print("DataBase._selectChangedGroups() 1")
         groups = []
         call = self._getCall('selectChangedGroups')
-        call.setObject(1, start)
-        call.setObject(2, stop)
+        call.setInt(1, userid)
+        call.setObject(2, start)
+        call.setObject(3, stop)
         result = call.executeQuery()
         while result.next():
             groups.append(getDataFromResult(result))
@@ -297,9 +299,10 @@ class DataBase(unohelper.Base):
         status = call.execute()
         call.close()
 
-    def _initUserAddressbookView(self, format):
+    def _initUserAddressbookView(self, user, format):
         statement = self.Connection.createStatement()
         query = format.get('Query')
+        format['Schema'] = user.getSchema()
         format['Public'] = 'PUBLIC'
         format['View'] = g_cardview
         format['Bookmark'] = g_bookmark
@@ -312,9 +315,10 @@ class DataBase(unohelper.Base):
             self._createUserView(statement, 'createAddressbookView', format)
         statement.close()
 
-    def _initUserGroupView(self, format):
+    def _initUserGroupView(self, user, format):
         statement = self.Connection.createStatement()
         query = format.get('Query')
+        format['Schema'] = user.getSchema()
         format['Public'] = 'PUBLIC'
         format['View'] = g_cardview
         format['Bookmark'] = g_bookmark
@@ -375,7 +379,7 @@ class DataBase(unohelper.Base):
         call.setString(3, name)
         call.setString(4, tag) if tag is not None else call.setNull(4, VARCHAR)
         call.setString(5, token) if token is not None else call.setNull(5, VARCHAR)
-        state = call.executeUpdate()
+        call.executeUpdate()
         addressbook = call.getInt(6)
         call.close()
         return addressbook
@@ -384,37 +388,73 @@ class DataBase(unohelper.Base):
         call = self._getCall('updateAddressbookName')
         call.setInt(1, addressbook)
         call.setString(2, name)
-        state = call.executeUpdate()
+        call.executeUpdate()
         call.close()
 
     def updateAddressbookToken(self, aid, token):
         call = self._getCall('updateAddressbookToken')
         call.setString(1, token)
         call.setInt(2, aid)
-        state = call.executeUpdate()
+        call.executeUpdate()
         call.close()
 
-# Procedures called by the User
-
-
 # Procedures called by the Replicator
-    def mergeCard(self, aid, path, etag, data):
+    def mergeCard(self, aid, iterator):
+        count = 0
+        self._setBatchModeOn()
         call = self._getBatchedCall('mergeCard')
         call.setInt(1, aid)
-        call.setString(2, path)
-        call.setString(3, etag)
-        call.setString(4, data)
-        call.addBatch()
-        return 1
+        for url, etag, data in iterator:
+            call.setString(2, url)
+            call.setString(3, etag)
+            call.setString(4, data)
+            call.addBatch()
+            count += 1
+        self._executeBatchCall()
+        self.Connection.commit()
+        self._setBatchModeOff()
+        return count
 
     def deleteCard(self, aid, urls):
-        array = Array('VARCHAR', urls)
         call = self._getCall('deleteCard')
         call.setInt(1, aid)
-        call.setArray(2, array)
+        call.setArray(2, Array('VARCHAR', urls))
         status = call.executeUpdate()
         call.close()
         return len(urls)
+
+    # Private methods
+    def _setBatchModeOn(self):
+        self._setLoggingChanges(False)
+        self._saveChanges()
+        self.Connection.setAutoCommit(False)
+
+    def _setBatchModeOff(self):
+        self._setLoggingChanges(True)
+        self._saveChanges()
+        self.Connection.setAutoCommit(True)
+
+    def _executeBatchCall(self):
+        for name in self._batchedCalls:
+            call = self._batchedCalls[name]
+            call.executeBatch()
+            call.close()
+        self._batchedCalls = OrderedDict()
+
+    def _setLoggingChanges(self, state):
+        statement = self.Connection.createStatement()
+        query = getSqlQuery(self._ctx, 'loggingChanges', state)
+        statement.execute(query)
+        statement.close()
+
+    def _saveChanges(self, compact=False):
+        statement = self.Connection.createStatement()
+        query = getSqlQuery(self._ctx, 'saveChanges', compact)
+        statement.execute(query)
+        statement.close()
+
+
+
 
 
 
@@ -426,18 +466,6 @@ class DataBase(unohelper.Base):
         default = getDictFromResult(result)
         call.close()
         return default
-
-    def setLoggingChanges(self, state):
-        statement = self.Connection.createStatement()
-        query = getSqlQuery(self._ctx, 'loggingChanges', state)
-        statement.execute(query)
-        statement.close()
-
-    def saveChanges(self, compact=False):
-        statement = self.Connection.createStatement()
-        query = getSqlQuery(self._ctx, 'saveChanges', compact)
-        statement.execute(query)
-        statement.close()
 
     def getUpdatedGroups(self, user, prefix):
         groups = None
@@ -507,13 +535,6 @@ class DataBase(unohelper.Base):
         call.addBatch()
         print("DataBase._mergeConnection() %s - %s" % (data.getValue('Resource'), len(members)))
         return len(members)
-
-    def executeBatchCall(self):
-        for name in self._batchedCalls:
-            call = self._batchedCalls[name]
-            call.executeBatch()
-            call.close()
-        self._batchedCalls = OrderedDict()
 
 # Procedures called internaly
     def _encodePassword(self, password):

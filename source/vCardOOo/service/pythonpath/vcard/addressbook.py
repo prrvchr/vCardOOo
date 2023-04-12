@@ -35,6 +35,8 @@ from com.sun.star.logging.LogLevel import SEVERE
 
 from .dbtool import getSqlException
 
+from .unotool import createService
+
 from .logger import getLogger
 
 from .configuration import g_errorlog
@@ -52,27 +54,34 @@ class AddressBooks(unohelper.Base):
         print("AddressBooks.__init__() 2")
 
     def initAddressbooks(self, database, user, addressbooks):
-        print("AddressBooks.initAddressbooks() 1")
+        #mri = createService(self._ctx, 'mytools.Mri')
+        #mri.inspect(addressbooks)
         changed = False
-        for name, url, tag, token in addressbooks:
-            if not self._hasAddressbook(url):
-                index = database.insertAddressbook(user, url, name, tag, token)
-                addressbook = AddressBook(self._ctx, index, url, name, tag, token, True)
-                self._addressbooks[url] = addressbook
-                changed = True
-                print("AddressBooks.initAddressbooks() 2 %s - %s - %s" % (index, name, url))
-            else:
+        for abook in addressbooks:
+            name, url, tag, token = self._getAddressbookData(abook)
+            print("AddressBooks.initAddressbooks() 1 Name: %s - Url: %s - Tag: %s - Token: %s" % (name, url, tag, token))
+            if self._hasAddressbook(url):
                 addressbook = self._getAddressbook(url)
                 if addressbook.hasNameChanged(name):
                     database.updateAddressbookName(addressbook.Id, name)
                     addressbook.setName(name)
                     changed = True
-                    print("AddressBooks.initAddressbooks() 3 %s" % (name, ))
+                    print("AddressBooks.initAddressbooks() 2 %s" % (name, ))
+            else:
+                index = database.insertAddressbook(user, url, name, tag, token)
+                addressbook = AddressBook(self._ctx, index, url, name, tag, token, True)
+                self._addressbooks[url] = addressbook
+                changed = True
+                print("AddressBooks.initAddressbooks() 3 %s - %s - %s" % (index, name, url))
         print("AddressBooks.initAddressbooks() 4")
         return changed
 
     def getAddressbooks(self):
         return self._addressbooks.values()
+
+    # Private methods
+    def _getAddressbookData(self, abook):
+        return abook.getValue('Name'), abook.getValue('Url'), abook.getValue('Tag'), abook.getValue('Token')
 
     def _hasAddressbook(self, url):
         return url in self._addressbooks
@@ -81,16 +90,20 @@ class AddressBooks(unohelper.Base):
         return self._addressbooks[url]
 
     def _getAddressbooks(self, metadata, new):
-        addressbooks = OrderedDict()
-        indexes = metadata.getValue('Addressbooks')
-        names = metadata.getValue('Names')
-        tags = metadata.getValue('Tags')
-        tokens = metadata.getValue('Tokens')
         i = 0
+        addressbooks = OrderedDict()
+        indexes, names, tags, tokens = self._getAddressbookMetaData(metadata)
         for url in metadata.getValue('Paths'):
+            # FIXME: If url is None we don't add this addressbook
+            if url is None:
+                continue
+            print("AddressBook._getAddressbooks() Url: %s - Name: %s - Index: %s - Tag: %s - Token: %s" % (url, names[i], indexes[i], tags[i], tokens[i]))
             addressbooks[url] = AddressBook(self._ctx, indexes[i], url, names[i], tags[i], tokens[i], new)
             i += 1
         return addressbooks
+
+    def _getAddressbookMetaData(self, data):
+        return data.getValue('Addressbooks'), data.getValue('Names'), data.getValue('Tags'), data.getValue('Tokens')
 
 
 class AddressBook(unohelper.Base):
@@ -129,11 +142,3 @@ class AddressBook(unohelper.Base):
 
     def setName(self, name):
         self.Name = name
-
-    def _getSqlException(self, state, code, method, *args):
-        logger = getLogger(self._ctx, g_errorlog, g_basename)
-        state = logger.resolveString(state)
-        msg = logger.resolveString(code, *args)
-        logger.logp(SEVERE, g_basename, method, msg)
-        error = getSqlException(state, code, msg, self)
-        return error

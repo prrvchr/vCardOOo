@@ -34,8 +34,8 @@ from .addressbook import AddressBooks
 
 from .provider import Provider
 
-from .oauth2lib import getRequest
-from .oauth2lib import g_oauth2
+from .oauth2 import getRequest
+from .oauth2 import g_oauth2
 
 from .dbconfig import g_user
 from .dbconfig import g_schema
@@ -51,7 +51,7 @@ class User(unohelper.Base):
     def __init__(self, ctx, database, scheme, server, name, pwd=''):
         self._ctx = ctx
         self._password = pwd
-        self._request = getRequest(ctx, server, name)
+        self.Request = getRequest(ctx, server, name)
         self._metadata = database.selectUser(server, name)
         self._sessions = []
         new = self._metadata is None
@@ -98,7 +98,7 @@ class User(unohelper.Base):
         return password
 
     def getSchema(self):
-        return g_schema % self.Id
+        return self.Name.replace('.','-')
 
     def hasSession(self):
         return len(self._sessions) > 0
@@ -111,10 +111,10 @@ class User(unohelper.Base):
             self._sessions.remove(session)
 
     def initAddressbooks(self, database):
-        self._provider.initAddressbooks(database, self, self._request)
+        self._provider.initAddressbooks(database, self)
 
     def unquoteUrl(self, url):
-        return self._request.unquoteUrl(url)
+        return self.Request.unquoteUrl(url)
 
     def addAddressbook(self, aid):
         pass
@@ -133,30 +133,31 @@ class User(unohelper.Base):
     def isOffLine(self):
         return self._provider.isOffLine()
 
-    def getAddressbookUrl(self, name):
-        return self._provider.getAddressbookUrl(self._request, name, self.Name, self.Password, self.Path)
+    def firstCardPull(self, database, addressbook):
+        return self._provider.firstCardPull(database, self, addressbook)
 
-    def getAddressbook(self, name, path):
-        return self._provider.getAddressbook(self._request, name, self.Name, self.Password, path)
-
-    def getAddressbookCards(self, path):
-        return self._provider.getAddressbookCards(self._request, self.Name, self.Password, path)
-
-    def getModifiedCardByToken(self, path, token):
-        return self._provider.getModifiedCardByToken(self._request, self.Name, self.Password, path, token)
+    def pullCardByToken(self, database, addressbook, dltd, mdfd):
+        token, deleted, modified = self._provider.getCardByToken(self, addressbook)
+        if addressbook.Token != token:
+            if deleted:
+                dltd += database.deleteCard(addressbook.Id, deleted)
+            if modified:
+                mdfd += self._provider.mergeCardByToken(database, self, addressbook)
+            database.updateAddressbookToken(addressbook.Id, token)
+        return dltd, mdfd
 
     def getModifiedCard(self, path, urls):
-        return self._provider.getModifiedCard(self._request, self.Name, self.Password, path, urls)
+        return self._provider.getModifiedCard(self.Request, self.Name, self.Password, path, urls)
 
     def _isNewUser(self):
         return self._metadata is None
 
     def _getNewUser(self, database, provider, scheme, server, name, pwd):
-        if self._request is None:
+        if self.Request is None:
             raise self._provider.getSqlException(1003, 1105, '_getNewUser', g_oauth2)
         if provider.isOffLine():
             raise self._provider.getSqlException(1004, 1108, '_getNewUser', name)
-        return provider.insertUser(database, self._request, scheme, server, name, pwd)
+        return provider.insertUser(database, self.Request, scheme, server, name, pwd)
 
     def _initNewUser(self, database, provider):
         name = self.getName()
