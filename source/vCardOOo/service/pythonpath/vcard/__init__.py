@@ -32,15 +32,10 @@ from .configuration import g_extension
 from .configuration import g_scheme
 from .configuration import g_host
 from .configuration import g_defaultlog
-from .configuration import g_errorlog
-
-from .dbconfig  import g_class
-from .dbconfig  import g_folder
-from .dbconfig  import g_jar
-
-from .logger import getLogger
 
 from .datasource import DataSource
+
+from .logger import getLogger
 
 from .options import OptionsManager
 

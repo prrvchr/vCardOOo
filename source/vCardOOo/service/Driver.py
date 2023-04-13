@@ -56,11 +56,6 @@ from vcard import g_identifier
 from vcard import g_scheme
 from vcard import g_host
 from vcard import g_defaultlog
-from vcard import g_errorlog
-
-from vcard import g_class
-from vcard import g_folder
-from vcard import g_jar
 
 import traceback
 

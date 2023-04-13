@@ -29,8 +29,6 @@
 
 import uno
 
-from .dataparser import DataParser
-
 from .unolib import KeyMap
 
 from .unotool import getUrl
