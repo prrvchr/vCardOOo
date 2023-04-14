@@ -29,49 +29,51 @@
 
 import uno
 
-from .unolib import KeyMap
-
+from .unotool import executeDispatch
+from .unotool import getPropertyValueSet
 from .unotool import getUrl
 
 from .providerbase import ProviderBase
+
+from .configuration import g_identifier
 
 import xml.etree.ElementTree as ET
 import traceback
 
 
 class Provider(ProviderBase):
-    def __init__(self, ctx, scheme, server):
+    def __init__(self, ctx):
         self._ctx = ctx
-        self._length = 256
-        self._scheme = scheme
-        self._server = server
+        self._chunk = 256
+        self._cardsync = '%s.CardSync' % g_identifier
         self._url = '/.well-known/carddav'
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
 
     def insertUser(self, database, request, scheme, server, name, pwd):
-        userid = self._getNewUserId(request, server, name, pwd)
-        return database.insertUser(scheme, server, userid, name)
+        userid = self._getNewUserId(request, scheme, server, name, pwd)
+        return database.insertUser(userid, scheme, server, '', name)
 
-    def _getNewUserId(self, request, server, name, pwd):
+    def _getNewUserId(self, request, scheme, server, name, pwd):
         try:
-            url = self._scheme + self._server + self._url
-            redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
+            url = scheme + server + self._url
+            redirect, url = self._getDiscoveryUrl(request, url, name, pwd)
             print("Provider.getNewUserId() 1 Redirect: %s - Url: %s" % (redirect, url))
             if redirect:
                 scheme, server = self._getUrlParts(url)
-                redirect, url = self._getDiscoveryUrl(request, name, pwd, url)
+                redirect, url = self._getDiscoveryUrl(request, url, name, pwd)
                 print("Provider.getNewUserId() 2 Redirect: %s - Url: %s" % (redirect, url))
-            path = self._getUserUrl(request, name, pwd, url)
+            path = self._getUserUrl(request, url, name, pwd)
             print("Provider.getNewUserId() 3 Path: %s" % (path, ))
             if path is None:
                 #TODO: Raise SqlException with correct message!
                 raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
-            if not self._supportAddressbook(request, name, pwd, path):
+            url = scheme + server + path
+            if not self._supportAddressbook(request, url, name, pwd):
                 #TODO: Raise SqlException with correct message!
                 raise self.getSqlException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
             print("Provider.getNewUserId() 4 %s" % path)
-            userid = self._getAddressbooksUrl(request, name, pwd, path)
+            userid = self._getAddressbooksUrl(request, url, name, pwd)
             print("Provider.getNewUserId() 5 %s" % userid)
             if userid is None:
                 #TODO: Raise SqlException with correct message!
@@ -83,12 +85,12 @@ class Provider(ProviderBase):
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location)
-        self._scheme = url.Protocol
-        self._server = url.Server
-        return self._scheme, self._server
+        scheme = url.Protocol
+        server = url.Server
+        return scheme, server
 
-    def _getDiscoveryUrl(self, request, name, password, url):
-        parameter = self._getRequestParameter('getUrl', name, password, url)
+    def _getDiscoveryUrl(self, request, url, name, password):
+        parameter = self._getRequestParameter('getUrl', url, name, password)
         response = request.executeRequest(parameter)
         if not response.Ok or not response.IsRedirect:
             response.close()
@@ -102,7 +104,7 @@ class Provider(ProviderBase):
         redirect = location.endswith(self._url)
         return redirect, location
 
-    def _getUserUrl(self, request, name, password, url):
+    def _getUserUrl(self, request, url, name, password):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:">
@@ -111,7 +113,7 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getUser', name, password, url, data)
+        parameter = self._getRequestParameter('getUser', url, name, password, data)
         response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
@@ -123,7 +125,7 @@ class Provider(ProviderBase):
     def _parseUserUrl(self, response):
         url = None
         parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._length, False)
+        iterator = response.iterContent(self._chunk, False)
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
@@ -139,13 +141,13 @@ class Provider(ProviderBase):
                 break
         return url
 
-    def _supportAddressbook(self, request, user, password, url):
-        parameter = self._getRequestParameter('hasAddressbook', user, password, url)
+    def _supportAddressbook(self, request, url, name, password):
+        parameter = self._getRequestParameter('hasAddressbook', url, name, password)
         response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'supportAddressbook()', user)
+            raise self.getSqlException(1006, 1107, 'supportAddressbook()', name)
         headers = response.getHeader('DAV')
         response.close()
         for headers in self._headers:
@@ -153,7 +155,7 @@ class Provider(ProviderBase):
                 return False
         return True
 
-    def _getAddressbooksUrl(self, request, name, pwd, url):
+    def _getAddressbooksUrl(self, request, url, name, pwd):
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
@@ -162,7 +164,7 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAddressbooksUrl', name, pwd, url, data)
+        parameter = self._getRequestParameter('getAddressbooksUrl', url, name, pwd, data)
         response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
@@ -174,7 +176,7 @@ class Provider(ProviderBase):
     def _parseAddressbookUrl(self, response):
         url = None
         parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._length, False)
+        iterator = response.iterContent(self._chunk, False)
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
@@ -191,16 +193,17 @@ class Provider(ProviderBase):
         return url
 
     def initAddressbooks(self, database, user):
-        if self.isOnLine():
-            addressbooks = self._getAllAddressbook(user)
-            if not addressbooks:
+        if user.isOnLine():
+            count, modified = self._updateAllAddressbook(database, user)
+            if not count:
                 #TODO: Raise SqlException with correct message!
                 print("User.initAddressbooks() 1 %s" % (addressbooks, ))
                 raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
-            if user.Addressbooks.initAddressbooks(database, user.Id, addressbooks):
+            if modified:
                 database.initAddressbooks(user)
 
-    def _getAllAddressbook(self, user):
+    def _updateAllAddressbook(self, database, user):
+        url = user.BaseUrl + user.Uri
         data = '''\
 <?xml version="1.0"?>
 <d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav" xmlns:cs="http://calendarserver.org/ns/">
@@ -214,41 +217,40 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAllAddressbook', user.Name, user.Password, user.Path, data)
+        parameter = self._getRequestParameter('getAllAddressbook', url, user.Name, user.Password, data)
         response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user.Name)
-        addressbooks = []
-        for addressbook in self._parseAllAddressbook(response):
-            addressbooks.append(addressbook)
+        count, modified = user.Addressbooks.initAddressbooks(database, user.Id, self._parseAllAddressbook(response))
         response.close()
-        return addressbooks
+        return count, modified
 
     def _parseAllAddressbook(self, response):
         parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._length, False)
+        iterator = response.iterContent(self._chunk, False)
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
             for event, element in parser.read_events():
                 if element.tag != '{DAV:}response':
                     continue
-                url = name = token = tag = None
+                url = name = tag = token = None
                 for child in element.iter():
                     if child.tag == '{DAV:}href' and child.text:
                         url = child.text
                     elif child.tag == '{DAV:}displayname' and child.text:
                         name = child.text
-                    elif child.tag == '{DAV:}sync-token' and child.text:
-                        token = child.text
                     elif child.tag == '{http://calendarserver.org/ns/}getctag' and child.text:
                         tag = child.text
-                if all((url, name, token, tag)):
-                    yield KeyMap(**{'Url': url, 'Name': name, 'Token': token, 'Tag': tag})
+                    elif child.tag == '{DAV:}sync-token' and child.text:
+                        token = child.text
+                if all((url, name, tag, token)):
+                    yield url, name, tag, token
 
-    def firstCardPull(self, database, user, addressbook):
+    def firstPullCard(self, database, user, addressbook):
+        url = user.BaseUrl + addressbook.Uri
         data = '''\
 <?xml version="1.0"?>
 <card:addressbook-query xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
@@ -258,17 +260,44 @@ class Provider(ProviderBase):
   </d:prop>
 </card:addressbook-query>
 '''
-        parameter = self._getRequestParameter('getAddressbookCards', user.Name, user.Password, addressbook.Path, data)
+        parameter = self._getRequestParameter('getAddressbookCards', url, user.Name, user.Password, data)
         response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user)
+            raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user.Name)
         count = database.mergeCard(addressbook.Id, self._parseCards(response))
         response.close()
         return count
 
-    def getCardByToken(self, user, addressbook):
+    def pullCard(self, database, user, addressbook, dltd, mdfd):
+        if addressbook.Token is not None:
+            dltd, mdfd = self._pullCardByToken(database, user, addressbook, dltd, mdfd)
+        elif addressbook.Tag is not None:
+            dltd, mdfd = self._pullCardByTag(database, user, addressbook, dltd, mdfd)
+        return dltd, mdfd
+
+    def parseCard(self, connection):
+        url = 'vnd.sun.star.job:service=%s' % self._cardsync
+        arguments = getPropertyValueSet({'Connection': connection})
+        executeDispatch(self._ctx, url, arguments)
+
+    def _pullCardByToken(self, database, user, addressbook, dltd, mdfd):
+        token, deleted, modified = self._getCardByToken(user, addressbook)
+        if addressbook.Token != token:
+            if deleted:
+                dltd += database.deleteCard(addressbook.Id, deleted)
+            if modified:
+                mdfd += self._mergeCardByToken(database, user, addressbook)
+            database.updateAddressbookToken(addressbook.Id, token)
+        return dltd, mdfd
+
+    def _pullCardByTag(self, database, user, addressbook, dltd, mdfd):
+        print("Provider._pullCardByTag() %s" % (addressbook.Name, ))
+        return dltd, mdfd
+
+    def _getCardByToken(self, user, addressbook):
+        url = user.BaseUrl + addressbook.Uri
         data = '''\
 <?xml version="1.0"?>
 <d:sync-collection xmlns:d="DAV:">
@@ -279,7 +308,7 @@ class Provider(ProviderBase):
   </d:prop>
 </d:sync-collection>
 ''' % addressbook.Token
-        parameter = self._getRequestParameter('getModifiedCardByToken', user.Name, user.Password, addressbook.Path, data)
+        parameter = self._getRequestParameter('getModifiedCardByToken', url, user.Name, user.Password, data)
         response = user.Request.executeRequest(parameter)
         if not response.Ok:
             response.close()
@@ -289,7 +318,8 @@ class Provider(ProviderBase):
         response.close()
         return token, deleted, modified
 
-    def mergeCardByToken(self, database, user, addressbook, urls):
+    def _mergeCardByToken(self, database, user, addressbook, urls):
+        url = user.BaseUrl + addressbook.Uri
         data = '''\
 <?xml version="1.0"?>
 <card:addressbook-multiget xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
@@ -300,19 +330,19 @@ class Provider(ProviderBase):
   <d:href>%s</d:href>
 </card:addressbook-multiget>
 ''' % '</d:href><d:href>'.join(urls)
-        parameter = self._getRequestParameter('getAddressbookCards', user.Name, user.Password, addressbook.Path, data)
+        parameter = self._getRequestParameter('getAddressbookCards', url, user.Name, user.Password, data)
         response = request.executeRequest(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'mergeCardByToken()', user)
+            raise self.getSqlException(1006, 1107, 'mergeCardByToken()', user.Name)
         count = database.mergeCard(addressbook.Id, self_parseCards(response))
         response.close()
         return count
 
     def _parseCards(self, response):
         parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._length, False)
+        iterator = response.iterContent(self._chunk, False)
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
@@ -335,7 +365,7 @@ class Provider(ProviderBase):
         deleted = []
         modified = []
         parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._length, False)
+        iterator = response.iterContent(self._chunk, False)
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
@@ -353,69 +383,47 @@ class Provider(ProviderBase):
                     token = element.text
         return token, deleted, modified
 
-    def _getRequestParameter(self, method, user, password, url=None, data=None):
+    def _getRequestParameter(self, method, url, name, password, data=None):
         parameter = uno.createUnoStruct('com.sun.star.rest.RequestParameter')
         parameter.Name = method
+        parameter.Url = url
         if method == 'getUrl':
-            parameter.Url = url
             parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
             parameter.NoRedirect = True
         elif method == 'getUser':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
         elif method == 'hasAddressbook':
-            parameter.Url = self.BaseUrl + url
+            parameter.Url = url
             parameter.Method = 'OPTIONS'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
         elif method == 'getAddressbooksUrl':
-            parameter.Url = self.BaseUrl + url
+            parameter.Url = url
             parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
-        elif method == 'getDefaultAddressbook':
-            parameter.Url = self.BaseUrl + url
-            parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
-            parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
-
         elif method == 'getAllAddressbook':
-            parameter.Url = self.BaseUrl + url
+            parameter.Url = url
             parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
-            parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
-
-
-
-        elif method == 'getAddressbookUrl':
-            parameter.Url = self.BaseUrl + url
-            parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
-            parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
-        elif method == 'getAddressbook':
-            parameter.Url = self.BaseUrl + url
-            parameter.Method = 'PROPFIND'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getAddressbookCards':
-            parameter.Url = self.BaseUrl + url
+            parameter.Url = url
             parameter.Method = 'REPORT'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getModifiedCardByToken':
-            parameter.Url = self.BaseUrl + url
+            parameter.Url = url
             parameter.Method = 'REPORT'
-            parameter.Auth = (user, password)
+            parameter.Auth = (name, password)
             parameter.Data = data
             parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
         return parameter

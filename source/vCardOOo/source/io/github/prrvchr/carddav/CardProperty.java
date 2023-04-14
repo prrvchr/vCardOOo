@@ -76,8 +76,7 @@ public final class CardProperty<T>
            SecurityException,
            SQLException
     {
-        for (T property: m_properties)
-        {
+        for (T property: m_properties) {
             for (String getter: columns.getGetters()) {
                 if (columns.isGroup()) {
                     group.parse(database, card, _getCardGroup(property, getter));

@@ -54,7 +54,6 @@ g_basename = 'Driver'
 
 from vcard import g_identifier
 from vcard import g_scheme
-from vcard import g_host
 from vcard import g_defaultlog
 
 import traceback
@@ -101,14 +100,14 @@ class Driver(unohelper.Base,
             self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                raise self._getSqlException(112, 1101, 'connect()', url)
+                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                raise self._getSqlException(112, 1101, 'connect()', url)
+                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
-                raise self._getSqlException(113, 1102, 'connect()', user)
+                raise getSqlException(self._ctx, self, 113, 1102, 'connect()', user)
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
@@ -137,7 +136,7 @@ class Driver(unohelper.Base,
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            raise self._getSqlException(112, 1101, '_getUrlParts()', location)
+            raise getSqlException(self._ctx, self, 112, 1101, '_getUrlParts()', location)
         scheme = url.Protocol
         server = url.Server
         if not location.startswith(scheme):
@@ -155,13 +154,6 @@ class Driver(unohelper.Base,
             if user and pwd:
                 break
         return user, pwd
-
-    def _getSqlException(self, state, code, method, *args):
-        state = self._logger.resolveString(state)
-        msg = self._logger.resolveString(code, *args)
-        self._logger.logp(SEVERE, g_basename, method, msg)
-        error = getSqlException(state, code, msg, self)
-        return error
 
 # XDropCatalog
     def dropCatalog(self, name, info):

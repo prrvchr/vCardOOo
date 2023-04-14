@@ -137,15 +137,16 @@ public final class DataBase
     throws SQLException
     {
         Integer id = null;
-        String query = "CALL \"InsertGroup\"(?,?,?)";
+        String query = "CALL \"InsertGroup\"(?,?,?,?)";
         System.out.println("DataBase.insertGroup() UserdId: " + user + " - Group: " + group);
         XPreparedStatement call = m_xConnection.prepareCall(query);
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
         parameters.setInt(1, user);
         parameters.setString(2, group);
+        parameters.setString(3, group);
         call.executeUpdate();
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
-        id = row.getInt(3);
+        id = row.getInt(4);
         _closeCall(call);
         return id;
     }
