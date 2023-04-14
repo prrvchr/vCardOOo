@@ -193,14 +193,13 @@ class Provider(ProviderBase):
         return url
 
     def initAddressbooks(self, database, user):
-        if user.isOnLine():
-            count, modified = self._updateAllAddressbook(database, user)
-            if not count:
-                #TODO: Raise SqlException with correct message!
-                print("User.initAddressbooks() 1 %s" % (addressbooks, ))
-                raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
-            if modified:
-                database.initAddressbooks(user)
+        count, modified = self._updateAllAddressbook(database, user)
+        if not count:
+            #TODO: Raise SqlException with correct message!
+            print("User.initAddressbooks() 1 %s" % (addressbooks, ))
+            raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
+        if modified:
+            database.initAddressbooks(user)
 
     def _updateAllAddressbook(self, database, user):
         url = user.BaseUrl + user.Uri
