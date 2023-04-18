@@ -90,8 +90,8 @@ class Provider(ProviderBase):
         return scheme, server
 
     def _getDiscoveryUrl(self, request, url, name, password):
-        parameter = self._getRequestParameter('getUrl', url, name, password)
-        response = request.executeRequest(parameter)
+        parameter = self._getRequestParameter(request, 'getUrl', url, name, password)
+        response = request.execute(parameter)
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -113,8 +113,8 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getUser', url, name, password, data)
-        response = request.executeRequest(parameter)
+        parameter = self._getRequestParameter(request, 'getUser', url, name, password, data)
+        response = request.execute(parameter)
         if not response.Ok:
             response.close()
             raise self.getSqlException(1006, 1107, 'getUserUrl()', name)
@@ -142,8 +142,8 @@ class Provider(ProviderBase):
         return url
 
     def _supportAddressbook(self, request, url, name, password):
-        parameter = self._getRequestParameter('hasAddressbook', url, name, password)
-        response = request.executeRequest(parameter)
+        parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, password)
+        response = request.execute(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -164,8 +164,8 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAddressbooksUrl', url, name, pwd, data)
-        response = request.executeRequest(parameter)
+        parameter = self._getRequestParameter(request, 'getAddressbooksUrl', url, name, pwd, data)
+        response = request.execute(parameter)
         if not response.Ok:
             response.close()
             raise self.getSqlException(1006, 1107, 'getAddressbooksUrl()', name)
@@ -216,8 +216,8 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter('getAllAddressbook', url, user.Name, user.Password, data)
-        response = user.Request.executeRequest(parameter)
+        parameter = self._getRequestParameter(user.Request, 'getAllAddressbook', url, user.Name, user.Password, data)
+        response = user.Request.execute(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -259,8 +259,8 @@ class Provider(ProviderBase):
   </d:prop>
 </card:addressbook-query>
 '''
-        parameter = self._getRequestParameter('getAddressbookCards', url, user.Name, user.Password, data)
-        response = user.Request.executeRequest(parameter)
+        parameter = self._getRequestParameter(user.Request, 'getAddressbookCards', url, user.Name, user.Password, data)
+        response = user.Request.execute(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -307,8 +307,8 @@ class Provider(ProviderBase):
   </d:prop>
 </d:sync-collection>
 ''' % addressbook.Token
-        parameter = self._getRequestParameter('getModifiedCardByToken', url, user.Name, user.Password, data)
-        response = user.Request.executeRequest(parameter)
+        parameter = self._getRequestParameter(user.Request, 'getModifiedCardByToken', url, user.Name, user.Password, data)
+        response = user.Request.execute(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -329,8 +329,8 @@ class Provider(ProviderBase):
   <d:href>%s</d:href>
 </card:addressbook-multiget>
 ''' % '</d:href><d:href>'.join(urls)
-        parameter = self._getRequestParameter('getAddressbookCards', url, user.Name, user.Password, data)
-        response = request.executeRequest(parameter)
+        parameter = self._getRequestParameter(request, 'getAddressbookCards', url, user.Name, user.Password, data)
+        response = request.execute(parameter)
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
@@ -382,21 +382,20 @@ class Provider(ProviderBase):
                     token = element.text
         return token, deleted, modified
 
-    def _getRequestParameter(self, method, url, name, password, data=None):
-        parameter = uno.createUnoStruct('com.sun.star.rest.RequestParameter')
-        parameter.Name = method
+    def _getRequestParameter(self, request, method, url, name, password, data=None):
+        parameter = request.getRequestParameter(method)
         parameter.Url = url
         if method == 'getUrl':
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
             parameter.NoRedirect = True
         elif method == 'getUser':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
             parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
         elif method == 'hasAddressbook':
             parameter.Url = url
             parameter.Method = 'OPTIONS'
@@ -406,24 +405,24 @@ class Provider(ProviderBase):
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
             parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
         elif method == 'getAllAddressbook':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
             parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getAddressbookCards':
             parameter.Url = url
             parameter.Method = 'REPORT'
             parameter.Auth = (name, password)
             parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
         elif method == 'getModifiedCardByToken':
             parameter.Url = url
             parameter.Method = 'REPORT'
             parameter.Auth = (name, password)
             parameter.Data = data
-            parameter.Header = '{"Content-Type": "application/xml; charset=utf-8"}'
+            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8"}'
         return parameter
 
