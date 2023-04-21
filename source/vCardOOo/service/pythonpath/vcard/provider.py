@@ -319,16 +319,23 @@ class Provider(ProviderBase):
 
     def _mergeCardByToken(self, database, user, addressbook, urls):
         url = user.BaseUrl + addressbook.Uri
-        data = '''\
+        body = '''\
 <?xml version="1.0"?>
 <card:addressbook-multiget xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
   <d:prop>
     <d:getetag />
     <card:address-data />
   </d:prop>
-  <d:href>%s</d:href>
+  <d:href>
+    %s
+  </d:href>
 </card:addressbook-multiget>
-''' % '</d:href><d:href>'.join(urls)
+'''
+        href = '''\
+  </d:href>
+  <d:href>
+'''
+        data = body % href.join(urls)
         parameter = self._getRequestParameter(request, 'getAddressbookCards', url, user.Name, user.Password, data)
         response = request.execute(parameter)
         if not response.Ok:
@@ -388,14 +395,16 @@ class Provider(ProviderBase):
         if method == 'getUrl':
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            parameter.setHeader('Depth', '0')
             parameter.NoRedirect = True
         elif method == 'getUser':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
-            parameter.Data = data
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.Text = data
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            parameter.setHeader('Depth', '0')
         elif method == 'hasAddressbook':
             parameter.Url = url
             parameter.Method = 'OPTIONS'
@@ -404,25 +413,28 @@ class Provider(ProviderBase):
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
-            parameter.Data = data
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "0"}'
+            parameter.Text = data
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            parameter.setHeader('Depth', '0')
         elif method == 'getAllAddressbook':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
-            parameter.Data = data
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+            parameter.Text = data
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            parameter.setHeader('Depth', '1')
         elif method == 'getAddressbookCards':
             parameter.Url = url
             parameter.Method = 'REPORT'
             parameter.Auth = (name, password)
-            parameter.Data = data
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8", "Depth": "1"}'
+            parameter.Text = data
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            parameter.setHeader('Depth', '1')
         elif method == 'getModifiedCardByToken':
             parameter.Url = url
             parameter.Method = 'REPORT'
             parameter.Auth = (name, password)
-            parameter.Data = data
-            parameter.Headers = '{"Content-Type": "application/xml; charset=utf-8"}'
+            parameter.Text = data
+            parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
         return parameter
 
