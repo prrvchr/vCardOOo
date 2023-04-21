@@ -392,6 +392,7 @@ class Provider(ProviderBase):
     def _getRequestParameter(self, request, method, url, name, password, data=None):
         parameter = request.getRequestParameter(method)
         parameter.Url = url
+        print("Provider._getRequestParameter() Name: %s - Password: %s" % (name, password))
         if method == 'getUrl':
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, password)
