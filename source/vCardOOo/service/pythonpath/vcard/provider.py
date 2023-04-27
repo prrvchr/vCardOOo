@@ -50,6 +50,11 @@ class Provider(ProviderBase):
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
 
+    # Method called from DataSource.getConnection()
+    def getUserUri(self, server, name):
+        return server + '/' + name
+
+    # Method called from User._getNewUser()
     def insertUser(self, database, request, scheme, server, name, pwd):
         userid = self._getNewUserId(request, scheme, server, name, pwd)
         return database.insertUser(userid, scheme, server, '', name)
@@ -248,7 +253,7 @@ class Provider(ProviderBase):
                 if all((url, name, tag, token)):
                     yield url, name, tag, token
 
-    def firstPullCard(self, database, user, addressbook):
+    def firstPullCard(self, database, user, addressbook, page, count):
         url = user.BaseUrl + addressbook.Uri
         data = '''\
 <?xml version="1.0"?>
@@ -265,35 +270,35 @@ class Provider(ProviderBase):
             response.close()
             #TODO: Raise SqlException with correct message!
             raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user.Name)
-        count = database.mergeCard(addressbook.Id, self._parseCards(response))
+        count += database.mergeCard(addressbook.Id, self._parseCards(response))
         response.close()
-        return count
+        return page + 1, count
 
-    def pullCard(self, database, user, addressbook, dltd, mdfd):
+    def pullCard(self, database, user, addressbook, page, count):
         if addressbook.Token is not None:
-            dltd, mdfd = self._pullCardByToken(database, user, addressbook, dltd, mdfd)
+            page, count = self._pullCardByToken(database, user, addressbook, page, count)
         elif addressbook.Tag is not None:
-            dltd, mdfd = self._pullCardByTag(database, user, addressbook, dltd, mdfd)
-        return dltd, mdfd
+            page, count = self._pullCardByTag(database, user, addressbook, page, count)
+        return page, count
 
-    def parseCard(self, connection):
+    def parseCard(self, database):
         url = 'vnd.sun.star.job:service=%s' % self._cardsync
-        arguments = getPropertyValueSet({'Connection': connection})
+        arguments = getPropertyValueSet({'Connection': database.Connection})
         executeDispatch(self._ctx, url, arguments)
 
-    def _pullCardByToken(self, database, user, addressbook, dltd, mdfd):
+    def _pullCardByToken(self, database, user, addressbook, page, count):
         token, deleted, modified = self._getCardByToken(user, addressbook)
         if addressbook.Token != token:
             if deleted:
-                dltd += database.deleteCard(addressbook.Id, deleted)
+                count += database.deleteCard(addressbook.Id, deleted)
             if modified:
-                mdfd += self._mergeCardByToken(database, user, addressbook)
+                count += self._mergeCardByToken(database, user, addressbook)
             database.updateAddressbookToken(addressbook.Id, token)
-        return dltd, mdfd
+        return page +1, count
 
-    def _pullCardByTag(self, database, user, addressbook, dltd, mdfd):
+    def _pullCardByTag(self, database, user, addressbook, page, count):
         print("Provider._pullCardByTag() %s" % (addressbook.Name, ))
-        return dltd, mdfd
+        return page, count
 
     def _getCardByToken(self, user, addressbook):
         url = user.BaseUrl + addressbook.Uri
@@ -364,7 +369,7 @@ class Provider(ProviderBase):
                     elif child.tag == '{urn:ietf:params:xml:ns:carddav}address-data' and child.text:
                         data = child.text
                 if all((url, tag, data)):
-                    yield url, tag, data
+                    yield url, tag, False, data
 
     def _getChangedCards(self, response):
         token = None
@@ -399,6 +404,7 @@ class Provider(ProviderBase):
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
             parameter.setHeader('Depth', '0')
             parameter.NoRedirect = True
+
         elif method == 'getUser':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
@@ -406,10 +412,12 @@ class Provider(ProviderBase):
             parameter.Text = data
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
             parameter.setHeader('Depth', '0')
+
         elif method == 'hasAddressbook':
             parameter.Url = url
             parameter.Method = 'OPTIONS'
             parameter.Auth = (name, password)
+
         elif method == 'getAddressbooksUrl':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
@@ -417,6 +425,7 @@ class Provider(ProviderBase):
             parameter.Text = data
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
             parameter.setHeader('Depth', '0')
+
         elif method == 'getAllAddressbook':
             parameter.Url = url
             parameter.Method = 'PROPFIND'
@@ -424,6 +433,7 @@ class Provider(ProviderBase):
             parameter.Text = data
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
             parameter.setHeader('Depth', '1')
+
         elif method == 'getAddressbookCards':
             parameter.Url = url
             parameter.Method = 'REPORT'
@@ -431,11 +441,13 @@ class Provider(ProviderBase):
             parameter.Text = data
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
             parameter.setHeader('Depth', '1')
+
         elif method == 'getModifiedCardByToken':
             parameter.Url = url
             parameter.Method = 'REPORT'
             parameter.Auth = (name, password)
             parameter.Text = data
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
+
         return parameter
 

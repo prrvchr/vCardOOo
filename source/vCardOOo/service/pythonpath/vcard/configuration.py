@@ -35,13 +35,12 @@ g_identifier = 'io.github.prrvchr.%s' % g_extension
 g_resource = 'resource'
 g_basename = 'Driver'
 
-g_defaultlog = 'vCardLogger'
+g_defaultlog = 'vCardLog'
 g_errorlog = 'vCardError'
-g_synclog = 'SyncLogger'
+g_synclog = 'vCardSync'
 
 g_scheme = 'https://'
 g_host = 'nextcloud'
-g_path = ''
 
 g_page = 100
 g_member = 1000
