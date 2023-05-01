@@ -25,22 +25,22 @@
 */
 package io.github.prrvchr.carddav;
 
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import com.sun.star.beans.NamedValue;
-import com.sun.star.sdbc.DataType;
 import com.sun.star.sdbc.SQLException;
+import com.sun.star.sdbc.XArray;
 import com.sun.star.sdbc.XCloseable;
 import com.sun.star.sdbc.XConnection;
 import com.sun.star.sdbc.XParameters;
 import com.sun.star.sdbc.XPreparedStatement;
+import com.sun.star.sdbc.XPreparedBatchExecution;
 import com.sun.star.sdbc.XResultSet;
-import com.sun.star.sdbc.XResultSetMetaDataSupplier;
 import com.sun.star.sdbc.XRow;
+import com.sun.star.sdbc.XStatement;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
@@ -53,6 +53,10 @@ import io.github.prrvchr.uno.helper.UnoHelper;
 public final class DataBase
 {
     private XConnection m_xConnection;
+    private XPreparedBatchExecution m_xCardCall;
+    private XPreparedBatchExecution m_xGroupCall;
+    private XParameters m_xCardSetting;
+    private XParameters m_xGroupSetting;
 
     public DataBase(NamedValue[] arguments)
     {
@@ -74,7 +78,6 @@ public final class DataBase
         return m_xConnection.getMetaData().getDriverVersion();
     }
 
-
     public DateTimeWithTimezone getLastUserSync()
         throws SQLException
     {
@@ -82,183 +85,202 @@ public final class DataBase
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
         call.execute();
         DateTimeWithTimezone timeout = (DateTimeWithTimezone) row.getObject(1, null);
-        _closeCall(call);
+        close(call);
         return timeout;
     }
 
-    public List<Map<String, Object>> getChangedCards(DateTimeWithTimezone start,
-                                                     DateTimeWithTimezone stop)
+    public XPreparedStatement getChangedCards(DateTimeWithTimezone start,
+                                              DateTimeWithTimezone stop)
         throws SQLException
     {
         XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectChangedCards\"(?,?)");
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
         parameters.setObject(1, start);
         parameters.setObject(2, stop);
+        return call;
+    }
+
+    public Map<String, CardProperty> getCardProperties()
+    throws SQLException
+    {
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectCardProperties\"()");
         XResultSet result = call.executeQuery();
-        List<Map<String, Object>> maps = _getChangedCards(result);
-        _closeCall(call);
-        System.out.println("DataBase.getChangedCards() Count: " + maps.size());
+        Map<String, CardProperty> maps = new HashMap<String, CardProperty>();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        while(result != null && result.next()) {
+            String name = row.getString(1);
+            String getter = row.getString(2);
+            boolean isgroup = row.getBoolean(3);
+            boolean istyped = row.getBoolean(4);
+            XResultSet result2 = row.getArray(5).getResultSet(null);
+            XRow row2 = (XRow) UnoRuntime.queryInterface(XRow.class, result2);
+            JSONObject methods = new JSONObject();
+            while(result2 != null && result2.next()) {
+                @SuppressWarnings("unused")
+                int i = row2.getInt(1);
+                String method = row2.getString(2);
+                methods = new JSONObject(methods, method);
+            }
+            close(result2);
+            maps.put(name, new CardProperty(name, getter, isgroup, istyped, methods));
+        }
+        close(result);
+        close(call);
         return maps;
     }
 
-    public void updateUser(DateTimeWithTimezone timestamp) throws SQLException
+    public boolean prepareBatchCall()
+    throws SQLException
+    {
+        System.out.println("DataBase.prepareBatchCall() 1");
+        XArray columns = _getColumnIds();
+        if (columns == null) {
+            return false;
+        }
+        _setBatchModeOn();
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"MergeCardData\"(?,?,?,?,?,?,?)");
+        m_xCardSetting = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
+        m_xCardSetting.setArray(1, columns);
+        m_xCardSetting.setTimestamp(2, UnoHelper.currentUnoDateTime());
+        m_xCardCall = (XPreparedBatchExecution) UnoRuntime.queryInterface(XPreparedBatchExecution.class, call);
+        XPreparedStatement call2 = m_xConnection.prepareCall("CALL \"MergeCardGroup\"(?,?)");
+        m_xGroupSetting = (XParameters) UnoRuntime.queryInterface(XParameters.class, call2);
+        m_xGroupCall = (XPreparedBatchExecution) UnoRuntime.queryInterface(XPreparedBatchExecution.class, call2);
+        System.out.println("DataBase.prepareBatchCall() 2");
+        return true;
+    }
+
+    public XArray _getColumnIds()
+    throws SQLException
+    {
+        System.out.println("DataBase._getColumnIds() 1");
+        XArray columns = null;
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectColumnIds\"()");
+        XResultSet result = call.executeQuery();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        if(result != null && result.next()) {
+            columns = row.getArray(1);
+        }
+        close(result);
+        close(call);
+        System.out.println("DataBase._getColumnIds() 2");
+        return columns;
+    }
+
+    public int mergeCardData(int cid,
+                             String prefix,
+                             String label,
+                             String[] suffixes,
+                             String value)
+    throws SQLException
+    {
+        System.out.println("DataBase.mergeCardProperty() CardId: " + cid + " - Prefix: " + prefix + " - Label: " + label);
+        m_xCardSetting.setInt(3, cid);
+        m_xCardSetting.setString(4, prefix);
+        m_xCardSetting.setString(5, label);
+        m_xCardSetting.setArray(6, new Array(suffixes, "VARCHAR"));
+        m_xCardSetting.setString(7, value);
+        m_xCardCall.addBatch();
+        return 1;
+    }
+
+    public int mergeGroup(int card,
+                          int group)
+    throws SQLException
+    {
+        m_xGroupSetting.setInt(1, card);
+        m_xGroupSetting.setInt(2, group);
+        return 1;
+    }
+
+    public void commitBatchCall(int cnum,
+                                int gnum,
+                                DateTimeWithTimezone timestamp)
+    throws SQLException
+    {
+        System.out.println("DataBase.commitBatchCall() 1");
+        if (cnum > 0) {
+            m_xCardCall.executeBatch();
+        }
+        if (gnum > 0) {
+            m_xGroupCall.executeBatch();
+        }
+        m_xConnection.commit();
+        _setBatchModeOff();
+        close(m_xCardCall);
+        close(m_xGroupCall);
+        m_xCardCall = null;
+        m_xCardSetting = null;
+        _updateUser(timestamp);
+        System.out.println("DataBase.commitBatchCall() 2 Count: " + cnum);
+    }
+
+    private void _setBatchModeOn()
+        throws SQLException
+    {
+        XStatement statement = m_xConnection.createStatement();
+        _setLoggingChanges(statement, false);
+        _saveChanges(statement, false);
+        close(statement);
+        m_xConnection.setAutoCommit(false);
+    }
+
+    private void _setBatchModeOff()
+        throws SQLException
+    {
+        XStatement statement = m_xConnection.createStatement();
+        _setLoggingChanges(statement, true);
+        _saveChanges(statement, false);
+        close(statement);
+        m_xConnection.setAutoCommit(true);
+    }
+
+    private void _updateUser(DateTimeWithTimezone timestamp) throws SQLException
     {
         XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"(?)");
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
         parameters.setObject(1, timestamp);
         call.executeUpdate();
-        _closeCall(call);
+        close(call);
     }
 
-    public Map<String, CardColumn> getAddressbookColumn()
-    throws SQLException
+    private void _setLoggingChanges(XStatement statement, boolean state)
+        throws SQLException
     {
-        XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectAddressbookColumns\"()");
-        XResultSet result = call.executeQuery();
-        Map<String, CardColumn> maps = _getAddressbookColumn(result, "PropertyName", "PropertyGetter", "Method");
-        _closeCall(call);
-        return maps;
+        statement.execute(state ? "SET FILES LOG TRUE" : "SET FILES LOG FALSE");
     }
 
-    public Map<Integer, CardGroup> getCardGroup()
+    private void _saveChanges(XStatement statement, boolean compact)
+        throws SQLException
+    {
+        statement.execute(compact ? "CHECKPOINT DEFRAG" : "CHECKPOINT");
+    }
+
+    public Map<Integer, JSONObject> getCardGroup()
     throws SQLException
     {
         System.out.println("DataBase.getCardGroup() 1");
+        Map<Integer, JSONObject> maps = new HashMap<Integer, JSONObject>();
         XPreparedStatement call = m_xConnection.prepareCall("CALL \"SelectCardGroup\"()");
         XResultSet result = call.executeQuery();
-        Map<Integer,  CardGroup> maps = _getCardGroup(result, "User", "Names", "Groups");
-        _closeCall(call);
-        System.out.println("DataBase.getCardGroup() 2");
-        return maps;
-    }
-
-    public Integer insertGroup(int user,
-                               String group)
-    throws SQLException
-    {
-        Integer id = null;
-        String query = "CALL \"InsertGroup\"(?,?,?,?)";
-        System.out.println("DataBase.insertGroup() UserdId: " + user + " - Group: " + group);
-        XPreparedStatement call = m_xConnection.prepareCall(query);
-        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-        parameters.setInt(1, user);
-        parameters.setString(2, group);
-        parameters.setString(3, group);
-        call.executeUpdate();
-        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
-        id = row.getInt(4);
-        _closeCall(call);
-        return id;
-    }
-
-
-    public void mergeGroup(int card,
-                           Object[] groups)
-    throws SQLException
-    {
-        String query = "CALL \"MergeCardGroup\"(?,?)";
-        System.out.println("DataBase.mergeGroup() CardId: " + card + " - Group: " + groups);
-        XPreparedStatement call = m_xConnection.prepareCall(query);
-        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-        parameters.setInt(1, card);
-        parameters.setArray(2, new Array(groups, "INTEGER"));
-        call.executeUpdate();
-        _closeCall(call);
-    }
-
-    public void parseCard(int card,
-                          int column,
-                          String value)
-    throws SQLException
-    {
-        String query = "CALL \"MergeCardValue\"(?,?,?)";
-        System.out.println("DataBase.parseCard() CardId: " + card + " - ColumnId: " + column + " - Value: " + value);
-        XPreparedStatement call = m_xConnection.prepareCall(query);
-        XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
-        parameters.setInt(1, card);
-        parameters.setInt(2, column);
-        if (value == null) {
-            parameters.setNull(3, DataType.VARCHAR);
-        }
-        else {
-            parameters.setString(3, value);
-        }
-        call.executeUpdate();
-        _closeCall(call);
-    }
-
-    private static List<Map<String, Object>> _getChangedCards(XResultSet result) throws SQLException
-    {
-        System.out.println("DataBase._getChangedCards() 1");
-        List<Map<String, Object>> maps = new ArrayList<Map<String, Object>>();
-        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-        int len = metadata.getMetaData().getColumnCount();
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
         while(result != null && result.next()) {
-            maps.add(_getRowMap(metadata, row, len));
-        }
-        System.out.println("DataBase._getChangedCards() 2 Card Count: " + maps.size());
-        return maps;
-    }
-
-    private static Map<Integer, CardGroup> _getCardGroup(XResultSet result,
-                                                         String key,
-                                                         String name,
-                                                         String group)
-    throws SQLException
-    {
-        Map<Integer, CardGroup> maps = new HashMap<Integer, CardGroup>();
-        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-        int len = metadata.getMetaData().getColumnCount();
-        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-        while(result != null && result.next()) {
-            CardGroup groups = new CardGroup(_getRowMap(metadata, row, len), key, name, group);
-            maps.put(groups.getUser(), groups);
-        }
-        return maps;
-    }
-
-    private static Map<String, CardColumn> _getAddressbookColumn(XResultSet result, String key, String getter, String method) 
-    throws SQLException
-    {
-        String mapkey = null;
-        CardColumn column = null;
-        Map<String, CardColumn> maps = new HashMap<String, CardColumn>();
-        XResultSetMetaDataSupplier metadata = (XResultSetMetaDataSupplier) UnoRuntime.queryInterface(XResultSetMetaDataSupplier.class, result);
-        int len = metadata.getMetaData().getColumnCount();
-        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
-        while(result != null && result.next()) {
-            Map<String, Object> map = _getRowMap(metadata, row, len);
-            if (mapkey == null || !mapkey.equals(map.get(key))) {
-                if (mapkey != null) maps.put(mapkey, new CardColumn(column));
-                mapkey = (String) map.get(key);
-                column = new CardColumn(mapkey, (String) map.get(getter), (Short) map.get(method));
+            Integer user = row.getInt(1);
+            JSONObject groups = new JSONObject();
+            for (String group: (String[]) row.getArray(2).getArray(null)) {
+                groups = new JSONObject(groups, group);
             }
-            column.add(map);
+            maps.put(user, groups);
         }
-        if (column != null) maps.put(mapkey, new CardColumn(column));
+        close(result);
+        close(call);
+        System.out.println("DataBase.getCardGroup() 2 Count: " + maps.size());
         return maps;
     }
 
-    private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int len) throws SQLException
+    public void close(Object object) throws SQLException
     {
-        return  _getRowMap(metadata, row, 1, len);
-    }
-    
-    private static Map<String, Object> _getRowMap(XResultSetMetaDataSupplier metadata, XRow row, int start, int len) throws SQLException
-    {
-        Map<String, Object> map = new HashMap<String, Object>();
-        for (int i = 1; i <= len; i++) {
-            String name = metadata.getMetaData().getColumnLabel(i);
-            int dbtype = metadata.getMetaData().getColumnType(i);
-            map.put(name, UnoHelper.getRowValue(row, dbtype, i));
-        }
-        return map;
-    }
-
-    private static void _closeCall(XPreparedStatement call) throws SQLException
-    {
-        XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(XCloseable.class, call);
+        XCloseable closeable = (XCloseable) UnoRuntime.queryInterface(XCloseable.class, object);
         closeable.close();
     }
 
@@ -279,6 +301,5 @@ public final class DataBase
         }
         return connection;
     }
-
 
 }

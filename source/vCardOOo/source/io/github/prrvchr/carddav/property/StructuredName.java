@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,39 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.property;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-from .datasource import DataSource
+public class StructuredName extends ezvcard.property.StructuredName
+{
+    public StructuredName() {
+        super();
+    }
+    public StructuredName(StructuredName original) {
+        super(original);
+    }
 
-from .options import OptionsManager
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
-from .logger import getLogger
+    public Map<String, String> getPropertiesValue() {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (getFamily() != null) values.put("family", getFamily());
+        if (getGiven() != null) values.put("given", getGiven());
+        if (!getAdditionalNames().isEmpty()) values.put("additional", getAdditionalNames().get(0));
+        if (!getPrefixes().isEmpty()) values.put("prefix", getPrefixes().get(0));
+        if (!getSuffixes().isEmpty()) values.put("suffix", getSuffixes().get(0));
+        return values;
+    }
 
-from .dbtool import getDriverPropertyInfos
+}
 
-from .providerbase import getException
-
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl

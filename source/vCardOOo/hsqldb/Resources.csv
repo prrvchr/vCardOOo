@@ -1,0 +1,10 @@
+Resource|Path|Name|View|Method
+0|getUid|UID|Uid|1
+1|getFormattedNames|FN|Owners|1
+2|getEmails|EMAIL|Emails|2
+3|getAddresses|ADR|Addresses|2
+4|getStructuredNames|N|Names|1
+5|getOrganizations|ORG|Organizations|1
+6|getTelephoneNumbers|TEL|Telephones|2
+7|getTitles|TITLE|Titles|1
+8|getCategoriesList|CATEGORIES||0

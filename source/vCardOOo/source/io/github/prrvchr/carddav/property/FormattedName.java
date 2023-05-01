@@ -23,65 +23,35 @@
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 */
-package io.github.prrvchr.carddav;
+package io.github.prrvchr.carddav.property;
 
-
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.sun.star.sdbc.SQLException;
-import com.sun.star.sdbc.XArray;
 
-
-public final class CardGroup
+public class FormattedName extends ezvcard.property.FormattedName
 {
-
-    private Integer m_user = null;
-    private Map<String, Integer> m_groups = null;
-
-    public CardGroup(Map<String, Object> map,
-                    String key,
-                    String name,
-                    String group)
-    throws SQLException
-    {
-        m_user = (Integer) map.get(key);
-        Map<String, Integer> maps = new HashMap<String, Integer>();
-        Object[] names = ((XArray) map.get(name)).getArray(null);
-        Object[] groups = ((XArray) map.get(group)).getArray(null);
-        for (int i=0; i<names.length; i++) {
-            maps.put((String) names[i], (Integer) groups[i]);
-        }
-        m_groups = maps;
+    public FormattedName(String value) {
+        super(value);
+    }
+    public FormattedName(FormattedName original) {
+        super(original);
     }
 
-    
-    public void parse(DataBase database,
-                      int card,
-                      String[] groups)
-    throws SQLException
-    {
-        for (int i=0; i<groups.length; i++) {
-            String group = groups[i];
-            if (!m_groups.containsKey(group)) {
-                m_groups.put(group, database.insertGroup(m_user, group));
-            }
-        }
-        database.mergeGroup(card, _getGroupIds(groups));
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
-    public Integer getUser()
-    {
-        return m_user;
+    public Map<String, String> getPropertiesValue() {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (getValue() != null) values.put("value", getValue());
+        return values;
     }
 
-    private Object[] _getGroupIds(String[] groups)
-    {
-        Object[] ids = new Object[groups.length];
-        for (int i=0; i<groups.length; i++) {
-            ids[i] = m_groups.get(groups[i]);
-            
-        }
-        return ids;
-    }
 }
+

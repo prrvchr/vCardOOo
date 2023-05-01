@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,23 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.scribe;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import ezvcard.io.scribe.ListPropertyScribe;
+import io.github.prrvchr.carddav.property.Categories;
 
-from .datasource import DataSource
 
-from .options import OptionsManager
+public final class CategoriesScribe extends ListPropertyScribe<Categories>
+{
+    public CategoriesScribe() {
+        super(Categories.class, "CATEGORIES");
+    }
 
-from .logger import getLogger
+    @Override
+    protected Categories _newInstance() {
+        return new Categories();
+    }
 
-from .dbtool import getDriverPropertyInfos
+}
 
-from .providerbase import getException
-
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl

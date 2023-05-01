@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,71 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.scribe;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
 
-from .datasource import DataSource
+import com.github.mangstadt.vinnie.io.VObjectPropertyValues;
 
-from .options import OptionsManager
+import ezvcard.VCardDataType;
+import ezvcard.VCardVersion;
+import ezvcard.io.ParseContext;
+import ezvcard.io.scribe.VCardPropertyScribe;
+import ezvcard.io.text.WriteContext;
+import ezvcard.parameter.VCardParameters;
+import ezvcard.util.TelUri;
+import io.github.prrvchr.carddav.property.Telephone;
 
-from .logger import getLogger
 
-from .dbtool import getDriverPropertyInfos
+public final class TelephoneScribe extends VCardPropertyScribe<Telephone>
+{
+    public TelephoneScribe() {
+        super(Telephone.class, "TEL");
+    }
 
-from .providerbase import getException
+    @Override
+    protected VCardDataType _defaultDataType(VCardVersion version) {
+        return VCardDataType.TEXT;
+    }
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl
+    @Override
+    protected Telephone _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+        value = VObjectPropertyValues.unescape(value);
+        return parse(value, dataType, context);
+    }
+
+    private Telephone parse(String value, VCardDataType dataType, ParseContext context) {
+        try {
+            return new Telephone(TelUri.parse(value));
+        } catch (IllegalArgumentException e) {
+            if (dataType == VCardDataType.URI) {
+                context.addWarning(18);
+            }
+        }
+
+        return new Telephone(value);
+    }
+
+    @Override
+    protected String _writeText(Telephone property, WriteContext context) {
+        String text = property.getText();
+        if (text != null) {
+            return escape(text, context);
+        }
+
+        TelUri uri = property.getUri();
+        if (uri != null) {
+            if (context.getVersion() == VCardVersion.V4_0) {
+                return uri.toString();
+            }
+
+            String ext = uri.getExtension();
+            String value = (ext == null) ? uri.getNumber() : uri.getNumber() + " x" + ext;
+            return escape(value, context);
+        }
+
+        return "";
+    }
+
+}
+

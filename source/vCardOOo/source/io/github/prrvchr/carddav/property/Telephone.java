@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,51 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.property;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-from .datasource import DataSource
+import ezvcard.parameter.TelephoneType;
+import ezvcard.util.TelUri;
 
-from .options import OptionsManager
+public class Telephone extends ezvcard.property.Telephone
+{
+    public Telephone(String value) {
+        super(value);
+    }
+    public Telephone(TelUri uri) {
+        super(uri);
+    }
+    public Telephone(Telephone original) {
+        super(original);
+    }
 
-from .logger import getLogger
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
-from .dbtool import getDriverPropertyInfos
+    public Map<String, String> getPropertiesValue() {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (getText() != null) values.put("text", getText());
+        return values;
+    }
 
-from .providerbase import getException
+    public String[] getPropertyTypes() {
+        List<String> types = new ArrayList<String>();
+        for (TelephoneType type : getTypes()) {
+            types.add(type.getValue());
+        }
+        return types.toArray(new String[0]);
+    }
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl
+}
+

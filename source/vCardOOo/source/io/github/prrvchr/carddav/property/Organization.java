@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,36 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.property;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-from .datasource import DataSource
 
-from .options import OptionsManager
+public class Organization extends ezvcard.property.Organization
+{
+    public Organization() {
+        //empty
+    }
+    public Organization(Organization original) {
+        super(original);
+    }
 
-from .logger import getLogger
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
-from .dbtool import getDriverPropertyInfos
+    public Map<String, String> getPropertiesValue() {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (!getValues().isEmpty()) values.put("values", getValues().get(0));
+        return values;
+    }
 
-from .providerbase import getException
+}
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl

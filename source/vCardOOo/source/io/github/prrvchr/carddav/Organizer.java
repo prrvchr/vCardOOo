@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,71 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import java.util.HashMap;
+import java.util.Map;
 
-from .datasource import DataSource
+import org.json.JSONObject;
 
-from .options import OptionsManager
+import com.sun.star.sdbc.SQLException;
 
-from .logger import getLogger
 
-from .dbtool import getDriverPropertyInfos
+public final class Organizer
+{
+    private Map<String, CardProperty> m_properties = new HashMap<String, CardProperty>();
+    private Map<Integer, JSONObject> m_groups = new HashMap<Integer, JSONObject>();
 
-from .providerbase import getException
+    public Organizer(DataBase database)
+        throws SQLException
+    {
+        m_properties = database.getCardProperties();
+        m_groups = database.getCardGroup();
+    }
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl
+    public boolean supportProperty(String name)
+    {
+        return m_properties.containsKey(name);
+    }
+
+    public boolean supportField(String name)
+    {
+        return true;
+    }
+
+    public CardProperty getProperty(String name)
+    {
+        return m_properties.get(name);
+    }
+
+    public boolean isGroupProperty(String name)
+    {
+        return m_properties.containsKey(name) & m_properties.get(name).isGroup();
+    }
+    
+
+    public boolean isTypedProperty(String name)
+    {
+        return m_properties.containsKey(name) & m_properties.get(name).isTyped();
+    }
+
+    public boolean hasGroup(Integer user,
+                            String name)
+    {
+        if (m_groups.containsKey(user)) {
+            return m_groups.get(user).has(name);
+        }
+        return false;
+    }
+
+    public Integer getGroupId(Integer user,
+                              String name)
+    {
+        if (m_groups.containsKey(user) & m_groups.get(user).has(name)){
+            return m_groups.get(user).getInt(name);
+        }
+        return -1;
+    }
+
+}

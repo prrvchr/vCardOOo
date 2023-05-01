@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,49 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.scribe;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
 
-from .datasource import DataSource
+import java.util.List;
 
-from .options import OptionsManager
+import com.github.mangstadt.vinnie.io.VObjectPropertyValues;
 
-from .logger import getLogger
+import ezvcard.VCardDataType;
+import ezvcard.VCardVersion;
+import ezvcard.io.ParseContext;
+import ezvcard.io.scribe.VCardPropertyScribe;
+import ezvcard.io.text.WriteContext;
+import ezvcard.parameter.VCardParameters;
+import io.github.prrvchr.carddav.property.Organization;
 
-from .dbtool import getDriverPropertyInfos
 
-from .providerbase import getException
+public final class OrganizationScribe extends VCardPropertyScribe<Organization>
+{
+    public OrganizationScribe() {
+        super(Organization.class, "ORG");
+    }
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl
+    @Override
+    protected VCardDataType _defaultDataType(VCardVersion version) {
+        return VCardDataType.TEXT;
+    }
+
+    @Override
+    protected String _writeText(Organization property, WriteContext context) {
+        boolean escapeCommas = (context.getVersion() != VCardVersion.V2_1);
+        return VObjectPropertyValues.writeSemiStructured(property.getValues(), escapeCommas, context.isIncludeTrailingSemicolons());
+    }
+
+    @Override
+    protected Organization _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+        Organization property = new Organization();
+
+        List<String> values = VObjectPropertyValues.parseSemiStructured(value);
+        property.getValues().addAll(values);
+
+        return property;
+    }
+
+}
+

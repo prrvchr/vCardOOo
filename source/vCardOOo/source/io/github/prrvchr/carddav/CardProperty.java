@@ -25,130 +25,65 @@
 */
 package io.github.prrvchr.carddav;
 
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
-import com.sun.star.sdbc.SQLException;
-
-import ezvcard.VCard;
-import ezvcard.parameter.VCardParameter;
+import org.json.JSONObject;
 
 
-public final class CardProperty<T>
+public final class CardProperty
 {
 
-    private List<T> m_properties = null;
+    private final String m_name;
+    private final String m_getter;
+    private final boolean m_isgroup;
+    private final boolean m_istyped;
+    private final JSONObject m_methods;
 
-    // FIXME: Suppress Warnings unchecked
-    @SuppressWarnings("unchecked")
-    public CardProperty(VCard card,
-                        CardColumn column)
-    throws NoSuchMethodException,
-           SecurityException,
-           IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException
+    public CardProperty(String name,
+                        String getter,
+                        boolean isgroup,
+                        boolean istyped,
+                        JSONObject methods)
     {
-        Object object = card.getClass().getDeclaredMethod(column.getMethod()).invoke(card);
-        if (object instanceof List) {
-            m_properties = (List<T>) object;
-        }
-        else {
-            m_properties = new ArrayList<T>(Arrays.asList((T) object));
-        }
+        m_name = name;
+        m_getter = getter;
+        m_isgroup = isgroup;
+        m_istyped = istyped;
+        m_methods = methods;
     }
 
-    // FIXME: Suppress Warnings unchecked
-    @SuppressWarnings("unchecked")
-    public void parse(DataBase database,
-                      CardGroup group,
-                      int card,
-                      CardColumn columns)
-    throws IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException,
-           NoSuchMethodException,
-           SecurityException,
-           SQLException
+    public String getName()
     {
-        for (T property: m_properties) {
-            for (String getter: columns.getGetters()) {
-                if (columns.isGroup()) {
-                    group.parse(database, card, _getCardGroup(property, getter));
-                }
-                else {
-                    List<VCardParameter> types = null;
-                    String value = _getCardValue(property, getter);
-                    if (columns.isTyped()) {
-                        types = (List<VCardParameter>) property.getClass().getMethod("getTypes").invoke(property);
-                    }
-                    Integer column = columns.getColumnId(types, getter);
-                    if (column != null) {
-                        database.parseCard(card, column, value);
-                    }
-                }
-            }
-        }
+        return m_name;
     }
 
-    private String[] _getCardGroup(T property,
-                                   String getter)
-    throws IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException,
-           NoSuchMethodException,
-           SecurityException
+    public String getGetter()
     {
-        Object object = property.getClass().getMethod(getter).invoke(property);
-        List<?> list = _convertObjectToList(object);
-        List<String> strings = new ArrayList<>(list.size());
-        for (Object o: list) {
-            strings.add(Objects.toString(o, null));
-        }
-        System.out.println("CardProperty._getCardGroup(): 1 List: " + strings);
-        return strings.toArray(new String[0]);
+        return m_getter;
     }
 
-    private String _getCardValue(T property,
-                                 String getter)
-    throws IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException,
-           NoSuchMethodException,
-           SecurityException
+    public Boolean isGroup()
     {
-        String value = null;
-        Object object = property.getClass().getMethod(getter).invoke(property);
-        if (object instanceof List) {
-            List<?> list = (List<?>) object;
-            if (list.size() > 0) {
-                value = (String) list.get(0);
-            }
+        if (m_isgroup) {
+            System.out.println("CardProperty.isGroup() IsGroup: " + m_isgroup);
         }
-        else {
-            value = (String) object;
-        }
-        System.out.println("CardProperty._getCardValue(): 1 Value: " + value);
-        return value;
+        return m_isgroup;
     }
 
-    private List<?> _convertObjectToList(Object object)
+    public Boolean isTyped()
     {
-        List<?> list = new ArrayList<>();
-        if (object.getClass().isArray()) {
-            list = Arrays.asList((Object[]) object);
-        }
-        else if (object instanceof Collection) {
-            list = new ArrayList<>((Collection<?>) object);
-        }
-        System.out.println("CardProperty._convertObjectToList(): 1 List: " + list);
-        return list;
+        return m_istyped;
     }
 
+    public String[] getMethods()
+    {
+        return (String[]) m_methods.keySet().toArray();
+    }
+
+    public String getLabel(String name)
+    {
+        if (m_methods.has(name)) {
+            return m_methods.getString(name);
+        }
+        return null;
+    }
 
 }

@@ -25,29 +25,40 @@
 */
 package io.github.prrvchr.carddav;
 
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import com.sun.star.lang.XServiceInfo;
-import java.util.Map;
-
-import ezvcard.Ezvcard;
-import ezvcard.VCard;
-import ezvcard.io.scribe.ScribeIndex;
-import ezvcard.property.VCardProperty;
-import io.github.prrvchr.uno.helper.UnoHelper;
-import io.github.prrvchr.uno.lang.ServiceInfo;
-import io.github.prrvchr.css.util.DateTimeWithTimezone;
 
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
+import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+
 import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
+import com.sun.star.sdbc.XPreparedStatement;
+import com.sun.star.sdbc.XResultSet;
+import com.sun.star.sdbc.XRow;
 import com.sun.star.task.XJob;
 
+import io.github.prrvchr.uno.helper.UnoHelper;
+import io.github.prrvchr.uno.lang.ServiceInfo;
+import io.github.prrvchr.carddav.scribe.FormattedNameScribe;
+import io.github.prrvchr.carddav.scribe.OrganizationScribe;
+import io.github.prrvchr.carddav.scribe.StructuredNameScribe;
+import io.github.prrvchr.carddav.scribe.TelephoneScribe;
+import io.github.prrvchr.carddav.scribe.TitleScribe;
+import io.github.prrvchr.carddav.scribe.UidScribe;
+import io.github.prrvchr.carddav.scribe.AddressScribe;
+import io.github.prrvchr.carddav.scribe.CategoriesScribe;
+import io.github.prrvchr.carddav.scribe.EmailScribe;
+import io.github.prrvchr.css.util.DateTimeWithTimezone;
+
 import com.sun.star.lib.uno.helper.ComponentBase;
+
+import ezvcard.VCard;
+import ezvcard.io.scribe.ScribeIndex;
+import ezvcard.io.text.VCardReader;
+import ezvcard.property.VCardProperty;
 
 
 public final class CardSync
@@ -55,11 +66,11 @@ public final class CardSync
     implements XServiceInfo,
                XJob
 {
-    @SuppressWarnings("unused")
-    private final XComponentContext m_xContext;
     private static final String m_name = CardSync.class.getName();
     private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
                                                 "com.sun.star.task.Job"};
+    @SuppressWarnings("unused")
+    private XComponentContext m_xContext;
     @SuppressWarnings("unused")
     private static final String m_identifier = "io.github.prrvchr.vCardOOo";
 
@@ -108,97 +119,83 @@ public final class CardSync
 
     // com.sun.star.task.XJob:
     public Object execute(NamedValue[] arguments)
-    throws SQLException
+        throws SQLException
     {
         System.out.println("CardSync.execute() 1");
+        int cnum = 0;
+        int gnum = 0;
         DataBase database = new DataBase(arguments);
-        System.out.println("CardSync.execute() 2");
+        if (!database.prepareBatchCall()) {
+            // TODO: Log correct message...
+            return null;
+        }
+        Organizer organizer = new Organizer(database);
+        DateTimeWithTimezone start = database.getLastUserSync();
+        DateTimeWithTimezone stop = UnoHelper.currentDateTimeInTZ();
+        XPreparedStatement call = database.getChangedCards(start, stop);
+        XResultSet result = call.executeQuery();
+        XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, result);
+        ScribeIndex index = new ScribeIndex();
+        index.register(new UidScribe());
+        index.register(new FormattedNameScribe());
+        index.register(new EmailScribe());
+        index.register(new AddressScribe());
+        index.register(new StructuredNameScribe());
+        index.register(new OrganizationScribe());
+        index.register(new TelephoneScribe());
+        index.register(new TitleScribe());
+        index.register(new CategoriesScribe());
         try {
-            Map<Integer, CardGroup> groups = database.getCardGroup();
-            boolean status = true;
-            String name = database.getUserName();
-            String version = database.getDriverVersion();
-            System.out.println("CardSync.execute() 3 Name: " + name + " - Version: " + version);
-            Map<String, CardColumn> columns = database.getAddressbookColumn();
-            //for (String key: columns.keySet())
-            //{
-            //    CardColumn column = columns.get(key);
-            //    for (Map<String, Object> object: column.getColumns())
-            //    {
-            //        System.out.println("CardSync.execute() 2 Key: " + key + " - Map: " + object);
-            //    }
-            //}
-            DateTimeWithTimezone start = database.getLastUserSync();
-            DateTimeWithTimezone stop = UnoHelper.currentDateTimeInTZ();
-            for (Map<String, Object> result: database.getChangedCards(start, stop)) {
-                System.out.println("CardSync.execute() 4");
-                String query = (String) result.get("Query");
-                if (!query.equals("Deleted")) {
-                    System.out.println("CardSync.execute() 5");
-                    int user = (int) result.get("User");
-                    int card = (int) result.get("Card");
-                    String data = (String) result.get("Data");
-                    status = _parseCard(database, groups.get(user), card, data, columns);
+            while(result != null && result.next()) {
+                int uid = row.getInt(1);
+                int cid = row.getInt(2);
+                if (!row.getString(3).equals("Deleted")) {
+                    VCardReader reader = new VCardReader(row.getString(4));
+                    reader.setScribeIndex(index);
+                    VCard vcard = reader.readNext();
+                    reader.close();
+                    for (VCardProperty property : vcard.getProperties()){
+                        String prefix = index.getPropertyScribe(property).getPropertyName();
+                        if (! organizer.supportProperty(prefix)) {
+                            continue;
+                        }
+                        if (organizer.isGroupProperty(prefix)) {
+                            for (String group : property.getPropertyCategories()) {
+                                if (organizer.hasGroup(uid, group)) {
+                                    gnum += database.mergeGroup(cid, organizer.getGroupId(uid, group));
+                                }
+                            }
+                        }
+                        else {
+                            for (var entry : property.getPropertiesValue().entrySet()) {
+                                String field = entry.getKey();
+                                String data = entry.getValue();
+                                // FIXME: We must parse only the property that we have previously configured in the database
+                                if (organizer.supportField(field)) {
+                                    // FIXME: If the property is typed, then we need to get its type so we can find the column, 
+                                    // FIXME: from the database table, into which the value will be inserted
+                                    String[] suffixes = new String[0];
+                                    if (organizer.isTypedProperty(prefix)) {
+                                        suffixes = property.getPropertyTypes();
+                                    }
+                                    cnum += database.mergeCardData(cid, prefix, field, suffixes, data);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            if (status) database.updateUser(stop);
-            System.out.println("CardSync.execute() 6");
+            database.commitBatchCall(cnum, gnum, stop);
+            database.close(result);
+            database.close(call);
+            System.out.println("CardSync.execute() 10 Count: " + cnum);
         }
         catch (Exception e) {
             System.out.println("Error happened: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("CardSync.execute() 7");
+        System.out.println("CardSync.execute() 2 End");
         return null;
     }
-
-    private boolean _parseCard(DataBase database,
-                               CardGroup group,
-                               int id,
-                               String data,
-                               Map<String, CardColumn> columns)
-    throws IOException,
-           NoSuchMethodException,
-           IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException,
-           SecurityException,
-           SQLException,
-           InstantiationException
-    {
-        VCard card = Ezvcard.parse(data).first();
-        ScribeIndex index = new ScribeIndex();
-        int i = 0;
-        for (VCardProperty property: card) {
-            String name = index.getPropertyScribe(property).getPropertyName();
-            // XXX: We do not parse Properties that do not have a Column
-            if (!columns.containsKey(name)) {
-                continue;
-            }
-            System.out.println("CardSync.parseCard(): 1 Property" + name + " - Num: " + i);
-            CardColumn column = columns.get(name);
-            _parseCardProperty(database, group, id, card, column);
-            i ++;
-        }
-        return true;
-    }
-
-    private <T> void _parseCardProperty(DataBase database,
-                                        CardGroup group,
-                                        int id,
-                                        VCard card,
-                                        CardColumn column)
-    throws NoSuchMethodException,
-           IllegalAccessException,
-           IllegalArgumentException,
-           InvocationTargetException,
-           SecurityException,
-           SQLException,
-           InstantiationException
-    {
-        CardProperty<T> property = new CardProperty<T>(card, column);
-        property.parse(database, group, id, column);
-    }
-
 
 }

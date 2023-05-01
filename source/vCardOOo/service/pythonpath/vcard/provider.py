@@ -42,7 +42,7 @@ import traceback
 
 
 class Provider(ProviderBase):
-    def __init__(self, ctx):
+    def __init__(self, ctx, database):
         self._ctx = ctx
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
@@ -72,17 +72,17 @@ class Provider(ProviderBase):
             print("Provider.getNewUserId() 3 Path: %s" % (path, ))
             if path is None:
                 #TODO: Raise SqlException with correct message!
-                raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
+                raise self.getException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
             url = scheme + server + path
             if not self._supportAddressbook(request, url, name, pwd):
                 #TODO: Raise SqlException with correct message!
-                raise self.getSqlException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
+                raise self.getException(1004, 1108, 'getNewUserId', '%s has no support of CardDAV!' % server)
             print("Provider.getNewUserId() 4 %s" % path)
             userid = self._getAddressbooksUrl(request, url, name, pwd)
             print("Provider.getNewUserId() 5 %s" % userid)
             if userid is None:
                 #TODO: Raise SqlException with correct message!
-                raise self.getSqlException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
+                raise self.getException(1004, 1108, 'getNewUserId', 'Server: %s Bad password: %s!' % (server, '*'*pwd))
             return userid
         except Exception as e:
             msg = "Provider.getNewUserId() Error: %s" % traceback.format_exc()
@@ -100,12 +100,12 @@ class Provider(ProviderBase):
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s Response not Ok' % url)
+            raise self.getException(1006, 1107, 'getDiscoveryUrl()', '%s Response not Ok' % url)
         location = response.getHeader('Location')
         response.close()
         if not location:
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getDiscoveryUrl()', '%s url is None' % url)
+            raise self.getException(1006, 1107, 'getDiscoveryUrl()', '%s url is None' % url)
         redirect = location.endswith(self._url)
         return redirect, location
 
@@ -122,7 +122,7 @@ class Provider(ProviderBase):
         response = request.execute(parameter)
         if not response.Ok:
             response.close()
-            raise self.getSqlException(1006, 1107, 'getUserUrl()', name)
+            raise self.getException(1006, 1107, 'getUserUrl()', name)
         url = self._parseUserUrl(response)
         response.close()
         return url
@@ -152,7 +152,7 @@ class Provider(ProviderBase):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'supportAddressbook()', name)
+            raise self.getException(1006, 1107, 'supportAddressbook()', name)
         headers = response.getHeader('DAV')
         response.close()
         for headers in self._headers:
@@ -173,7 +173,7 @@ class Provider(ProviderBase):
         response = request.execute(parameter)
         if not response.Ok:
             response.close()
-            raise self.getSqlException(1006, 1107, 'getAddressbooksUrl()', name)
+            raise self.getException(1006, 1107, 'getAddressbooksUrl()', name)
         url = self._parseAddressbookUrl(response)
         response.close()
         return url
@@ -202,7 +202,7 @@ class Provider(ProviderBase):
         if not count:
             #TODO: Raise SqlException with correct message!
             print("User.initAddressbooks() 1 %s" % (addressbooks, ))
-            raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
+            raise self.getException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
         if modified:
             database.initAddressbooks(user)
 
@@ -226,7 +226,7 @@ class Provider(ProviderBase):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user.Name)
+            raise self.getException(1006, 1107, 'getAllAddressbook()', user.Name)
         count, modified = user.Addressbooks.initAddressbooks(database, user.Id, self._parseAllAddressbook(response))
         response.close()
         return count, modified
@@ -269,7 +269,7 @@ class Provider(ProviderBase):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAddressbookCards()', user.Name)
+            raise self.getException(1006, 1107, 'getAddressbookCards()', user.Name)
         count += database.mergeCard(addressbook.Id, self._parseCards(response))
         response.close()
         return page + 1, count
@@ -317,7 +317,7 @@ class Provider(ProviderBase):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getModifiedCardByToken()', user.Name)
+            raise self.getException(1006, 1107, 'getModifiedCardByToken()', user.Name)
         token, deleted, modified = self._getChangedCards(response)
         response.close()
         return token, deleted, modified
@@ -346,7 +346,7 @@ class Provider(ProviderBase):
         if not response.Ok:
             response.close()
             #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'mergeCardByToken()', user.Name)
+            raise self.getException(1006, 1107, 'mergeCardByToken()', user.Name)
         count = database.mergeCard(addressbook.Id, self_parseCards(response))
         response.close()
         return count

@@ -1,7 +1,4 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+/*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
@@ -25,30 +22,48 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
+*/
+package io.github.prrvchr.carddav.property;
 
-from .configuration import g_identifier
-from .configuration import g_extension
-from .configuration import g_scheme
-from .configuration import g_host
-from .configuration import g_defaultlog
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-from .datasource import DataSource
+import ezvcard.parameter.EmailType;
 
-from .options import OptionsManager
 
-from .logger import getLogger
+public class Email extends ezvcard.property.Email
+{
+    public Email(String value) {
+        super(value);
+    }
+    public Email(Email original) {
+        super(original);
+    }
 
-from .dbtool import getDriverPropertyInfos
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
-from .providerbase import getException
+    public Map<String, String> getPropertiesValue() {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (getValue() != null) values.put("value", getValue());
+        return values;
+    }
 
-from .unotool import createMessageBox
-from .unotool import createService
-from .unotool import getDesktop
-from .unotool import getDialog
-from .unotool import getFileSequence
-from .unotool import getResourceLocation
-from .unotool import getSimpleFile
-from .unotool import getStringResource
-from .unotool import getUrl
+    public String[] getPropertyTypes() {
+        List<String> types = new ArrayList<String>();
+        for (EmailType type : getTypes()) {
+            types.add(type.getValue());
+        }
+        return types.toArray(new String[0]);
+    }
+
+}
+

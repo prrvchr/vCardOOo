@@ -46,7 +46,7 @@ from vcard import DataSource
 
 from vcard import getDriverPropertyInfos
 from vcard import getResourceLocation
-from vcard import getSqlException
+from vcard import getException
 from vcard import getUrl
 
 from vcard import getLogger
@@ -100,14 +100,14 @@ class Driver(unohelper.Base,
             self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
+                raise getException(self._ctx, self, 112, 1101, 'connect()', url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
+                raise getException(self._ctx, self, 112, 1101, 'connect()', url)
             user, pwd = self._getUserCredential(infos)
             if not user or not pwd:
-                raise getSqlException(self._ctx, self, 113, 1102, 'connect()', user)
+                raise getException(self._ctx, self, 113, 1102, 'connect()', user)
             connection = self.DataSource.getConnection(scheme, server, user, pwd)
             version = connection.getMetaData().getDriverVersion()
             name = connection.getMetaData().getUserName()
@@ -136,7 +136,7 @@ class Driver(unohelper.Base,
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            raise getSqlException(self._ctx, self, 112, 1101, '_getUrlParts()', location)
+            raise getException(self._ctx, self, 112, 1101, '_getUrlParts()', location)
         scheme = url.Protocol
         server = url.Server
         if not location.startswith(scheme):
