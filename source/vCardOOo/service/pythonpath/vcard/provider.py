@@ -290,7 +290,7 @@ class Provider(ProviderBase):
         token, deleted, modified = self._getCardByToken(user, addressbook)
         if addressbook.Token != token:
             if deleted:
-                count += database.deleteCard(addressbook.Id, deleted)
+                count += database.deleteCard(deleted)
             if modified:
                 count += self._mergeCardByToken(database, user, addressbook)
             database.updateAddressbookToken(addressbook.Id, token)
