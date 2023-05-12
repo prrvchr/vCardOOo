@@ -198,15 +198,14 @@ class Provider(ProviderBase):
         return url
 
     def initAddressbooks(self, database, user):
-        count, modified = self._updateAllAddressbook(database, user)
-        if not count:
-            #TODO: Raise SqlException with correct message!
-            print("User.initAddressbooks() 1 %s" % (addressbooks, ))
-            raise self.getSqlException(1004, 1108, 'initAddressbooks', '%s has no support of CardDAV!' % user.Server)
-        if modified:
-            database.initAddressbooks(user)
+        parameter = self._getAllBookParameter(user)
+        iterator = self._parseAllBook(user.Request.execute(parameter))
+        self.initUserBooks(database, user, iterator)
 
-    def _updateAllAddressbook(self, database, user):
+    def initUserGroups(self, database, user, book):
+        pass
+
+    def _getAllBookParameter(self, user):
         url = user.BaseUrl + user.Uri
         data = '''\
 <?xml version="1.0"?>
@@ -221,37 +220,31 @@ class Provider(ProviderBase):
   </d:prop>
 </d:propfind>
 '''
-        parameter = self._getRequestParameter(user.Request, 'getAllAddressbook', url, user.Name, user.Password, data)
-        response = user.Request.execute(parameter)
-        if not response.Ok:
-            response.close()
-            #TODO: Raise SqlException with correct message!
-            raise self.getSqlException(1006, 1107, 'getAllAddressbook()', user.Name)
-        count, modified = user.Addressbooks.initAddressbooks(database, user.Id, self._parseAllAddressbook(response))
-        response.close()
-        return count, modified
+        return self._getRequestParameter(user.Request, 'getAllAddressbook', url, user.Name, user.Password, data)
 
-    def _parseAllAddressbook(self, response):
-        parser = ET.XMLPullParser(('end', ))
-        iterator = response.iterContent(self._chunk, False)
-        while iterator.hasMoreElements():
-            # FIXME: As Decode is False we obtain a sequence of bytes
-            parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
-                if element.tag != '{DAV:}response':
-                    continue
-                url = name = tag = token = None
-                for child in element.iter():
-                    if child.tag == '{DAV:}href' and child.text:
-                        url = child.text
-                    elif child.tag == '{DAV:}displayname' and child.text:
-                        name = child.text
-                    elif child.tag == '{http://calendarserver.org/ns/}getctag' and child.text:
-                        tag = child.text
-                    elif child.tag == '{DAV:}sync-token' and child.text:
-                        token = child.text
-                if all((url, name, tag, token)):
-                    yield url, name, tag, token
+    def _parseAllBook(self, response):
+        if response.Ok:
+            parser = ET.XMLPullParser(('end', ))
+            iterator = response.iterContent(self._chunk, False)
+            while iterator.hasMoreElements():
+                # FIXME: As Decode is False we obtain a sequence of bytes
+                parser.feed(iterator.nextElement().value)
+                for event, element in parser.read_events():
+                    if element.tag != '{DAV:}response':
+                        continue
+                    url = name = tag = token = None
+                    for child in element.iter():
+                        if child.tag == '{DAV:}href' and child.text:
+                            url = child.text
+                        elif child.tag == '{DAV:}displayname' and child.text:
+                            name = child.text
+                        elif child.tag == '{http://calendarserver.org/ns/}getctag' and child.text:
+                            tag = child.text
+                        elif child.tag == '{DAV:}sync-token' and child.text:
+                            token = child.text
+                    if all((url, name, tag, token)):
+                        yield url, name, tag, token
+        response.close()
 
     def firstPullCard(self, database, user, addressbook, page, count):
         url = user.BaseUrl + addressbook.Uri
