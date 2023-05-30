@@ -56,7 +56,7 @@ class OptionsHandler(unohelper.Base,
             handled = False
             if method == 'external_event':
                 if event == 'initialize':
-                    self._manager = OptionsManager(self._ctx, window)
+                    self._manager = OptionsManager(self._ctx, window, False)
                     handled = True
                 elif event == 'ok':
                     self._manager.saveSetting()
