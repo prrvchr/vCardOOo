@@ -50,6 +50,9 @@ class Provider(ProviderBase):
         self._headers = ('1', 'access-control', 'addressbook')
         self._status = 'HTTP/1.1 404 Not Found'
 
+    def supportAddressBook(self):
+        return True
+
     # Method called from DataSource.getConnection()
     def getUserUri(self, server, name):
         return server + '/' + name
@@ -87,6 +90,7 @@ class Provider(ProviderBase):
         except Exception as e:
             msg = "Provider.getNewUserId() Error: %s" % traceback.format_exc()
             print(msg)
+            raise e
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location)
