@@ -1,8 +1,8 @@
-# ![vCardOOo logo][1] vCardOOo
+# Documentation
 
 **This [document][2] in English.**
 
-**L'utilisation de ce logiciel vous soumet à nos** [**Conditions d'utilisation**][3] **et à notre** [**Politique de protection des données**][4]
+**L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][3] et à notre [Politique de protection des données][4]**.
 
 # version [1.0.0][5]
 
@@ -113,9 +113,9 @@ Maintenant à vous d'en profiter...
 
 * **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][11]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
 
-Je vous encourage en cas de problème :-(  
+Je vous encourage en cas de problème :confused:  
 de créer un [dysfonctionnement][10]  
-J'essaierai de le résoudre ;-)
+J'essaierai de le résoudre :smile:
 
 ## Historique:
 
