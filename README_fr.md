@@ -8,8 +8,8 @@
 
 ## Introduction:
 
-**vCardOOo** fait partie d'une [Suite][6] d'extensions [LibreOffice][7] et/ou [OpenOffice][8] permettant de vous offrir des services inovants dans ces suites bureautique.  
-Cette extension vous donne l'acces à vos contacts téléphonique dans LibreOffice / OpenOffice (les contacts de votre téléphone Android).
+**vCardOOo** fait partie d'une [Suite][6] d'extensions [LibreOffice][7] ~~et/ou [OpenOffice][8]~~ permettant de vous offrir des services inovants dans ces suites bureautique.  
+Cette extension vous donne l'accès, dans LibreOffice, à vos contacts présent sur un serveur CardDAV (ou vCard Extensions to WebDAV).
 
 Etant un logiciel libre je vous encourage:
 - A dupliquer son [code source][9].
