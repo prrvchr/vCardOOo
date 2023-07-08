@@ -19,6 +19,7 @@ Etant un logiciel libre je vous encourage:
 Bref, à participer au developpement de cette extension.  
 Car c'est ensemble que nous pouvons rendre le Logiciel Libre plus intelligent.
 
+___
 ## Prérequis:
 
 Afin de profiter des dernières versions des bibliothèques Python utilisées dans vCardOOo, la version 2 de Python a été abandonnée au profit de **Python 3.8 minimum**.  
@@ -35,6 +36,7 @@ Si vous utilisez **LibreOffice sous Linux**, vous êtes sujet au [dysfonctionnem
 
 Si vous souhaitez quand même utiliser la fonctionnalité HsqlDB intégré fournie par LibreOffice, alors installez l'extension [HsqlDBembeddedOOo][16].  
 
+___
 ## Installation:
 
 Il semble important que le fichier n'ait pas été renommé lors de son téléchargement.  
@@ -52,6 +54,7 @@ Vous devez installer cette extension, si elle n'est pas déjà installée.
 
 Redémarrez LibreOffice / OpenOffice après l'installation.
 
+___
 ## Utilisation:
 
 Dans LibreOffice / OpenOffice aller à: Fichier -> Assistants -> Source de données des adresses...:
@@ -103,6 +106,7 @@ Puis:
 
 Maintenant à vous d'en profiter...
 
+___
 ## A été testé avec:
 
 * LibreOffice 7.3.7.2 - Lubuntu 22.04 - Python version 3.10.12 - OpenJDK-11-JRE (amd64)
@@ -117,6 +121,7 @@ Je vous encourage en cas de problème :confused:
 de créer un [dysfonctionnement][10]  
 J'essaierai de le résoudre :smile:
 
+___
 ## Historique:
 
 ### Introduction:

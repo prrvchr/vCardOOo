@@ -17,12 +17,14 @@ For simplicity, in the rest of this document, will be named:
 - `User`: the user of the vCardOOo software.
 - `Supplier`: the internet service provider delivering internet services to `vCardOOo`.
 
+___
 ## Contact:
 
 In any case, it is possible to contact the person responsible for data processing at:
 
 prrvchr@gmail.com
 
+___
 ## Use of your personal data:
 
 To work `vCardOOo` need to keep data locally.
@@ -37,6 +39,7 @@ Use of the `Supplier` services through `vCardOOo`, may submit you to the Data Pr
 
 `Supplier` is solely responsible for the use of the data it collects as described in its Policy.
 
+___
 ## Security of your personal information:
 
 Since the data collected by `vCardOOo` is located on the user's computer, only the `User` is responsible for the security of the data collected.
@@ -45,6 +48,7 @@ Use of the `Supplier` services via `vCardOOo` may subject you to the Data Protec
 
 `Supplier` is solely responsible for the security of the data it collects as described in its Policy.
 
+___
 ## Expiration of collected data:
 
 Updating the data collected locally is done each time `vCardOOo` is used.

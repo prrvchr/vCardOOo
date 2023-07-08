@@ -11,12 +11,14 @@ please consult the **[documentation][4]**.
 
 The vCardOOo library is a part of a personnal project.
 
+___
 ## Responsibilities:
 
 vCardOOo is distributed in the hope that it will be useful,
 but **WITHOUT ANY WARRANTY**; without even the implied warranty of
 **MERCHANTABILITY** or **FITNESS FOR A PARTICULAR PURPOSE**.
 
+___
 ## License:
 
 vCardOOo is free software; you can redistribute it and/or
