@@ -29,7 +29,7 @@ le modifier selon les termes (à votre choix):
 - La GNU [Lesser General Public License][6] publiée par La Free Software Foundation,
 soit la version 3 de la Licence, soit (selon votre choix) toute version ultérieure.
 
-[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.png>
+[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/README_fr>

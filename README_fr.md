@@ -155,7 +155,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 
 - Tout ce qui est bienvenu...
 
-[1]: <img/vCardOOo.png>
+[1]: <img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>

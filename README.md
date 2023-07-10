@@ -155,7 +155,7 @@ It will give you access to an information system that only larges companies are 
 
 - Anything welcome...
 
-[1]: <img/vCardOOo.png>
+[1]: <img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>

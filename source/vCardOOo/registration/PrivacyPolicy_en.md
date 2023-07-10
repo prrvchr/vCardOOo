@@ -61,7 +61,7 @@ Use of the `Supplier` services via `vCardOOo` may subject you to the Data Protec
 
 `Supplier` is solely responsible for the expiration of the data it collects as described in its Policy.
 
-[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.png>
+[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [4]: <https://prrvchr.github.io/vCardOOo/>

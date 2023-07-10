@@ -61,7 +61,7 @@ L'utilisation des services du `Fournisseur` via `vCardOOo` peut vous soumettre �
 
 Le `Fournisseur` est seul responsable de l'expiration des données qu'il collecte comme décrit dans sa Politique de Protection des Données.
 
-[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.png>
+[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/README_fr>
