@@ -55,8 +55,8 @@
         <name lang="en-US">vCardOOo</name>
     </display-name>
     <icon>
-        <default xlink:href="vCardOOo/vCardOOo.png"/>
-        <high-contrast xlink:href="vCardOOo/vCardOOo.png"/>
+        <default xlink:href="vCardOOo/vCardOOo.svg"/>
+        <high-contrast xlink:href="vCardOOo/vCardOOo.svg"/>
     </icon>
     <extension-description>
         <src xlink:href="description/desc_en.txt" lang="en-US"/>

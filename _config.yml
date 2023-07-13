@@ -5,8 +5,10 @@ plugins:
   - jekyll-seo-tag
   - jemoji
 favicon: true
-logo: /img/vCardOOo.svg
+logo: /img/contact.svg
+email: prrvchr@gmail.com
 title: vCardOOo
+blank_title: true
 description: Your contacts from your Android phone as an HsqlDB database in LibreOffice
 sidebar:
   - name: Download

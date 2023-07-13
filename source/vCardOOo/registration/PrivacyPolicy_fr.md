@@ -1,10 +1,10 @@
 # Politique de protection des données
 
-**This [document][2] in English.**
+**This [document][1] in English.**
 
-**L'utilisation de ce logiciel vous soumet également à nos [Conditions d'utilisation][3].**
+**L'utilisation de ce logiciel vous soumet également à nos [Conditions d'utilisation][2].**
 
-Concernant l'installation, la configuration et l'utilisation, veuillez consulter la **[documentation][4]**.
+Concernant l'installation, la configuration et l'utilisation, veuillez consulter la **[documentation][3]**.
 
 ## Introduction:
 
@@ -61,7 +61,6 @@ L'utilisation des services du `Fournisseur` via `vCardOOo` peut vous soumettre �
 
 Le `Fournisseur` est seul responsable de l'expiration des données qu'il collecte comme décrit dans sa Politique de Protection des Données.
 
-[1]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.svg>
-[2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
-[4]: <https://prrvchr.github.io/vCardOOo/README_fr>
+[1]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
+[2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
+[3]: <https://prrvchr.github.io/vCardOOo/README_fr>
