@@ -43,20 +43,33 @@ from com.sun.star.sdbcx import XDataDefinitionSupplier
 from com.sun.star.sdbcx import XDropCatalog
 
 from vcard import DataBase
-from vcard import DataSource
-from vcard import Provider
 
+from vcard import DataSource
+
+from vcard import checkVersion
+from vcard import getConnectionUrl
 from vcard import getDriverPropertyInfos
-from vcard import getResourceLocation
+from vcard import getExtensionVersion
+from vcard import getLogger
+from vcard import getOAuth2Version
 from vcard import getSqlException
 from vcard import getUrl
 
-from vcard import getLogger
-g_basename = 'Driver'
+from vcard import g_oauth2ext
+from vcard import g_oauth2ver
 
+from vcard import g_jdbcext
+from vcard import g_jdbcid
+from vcard import g_jdbcver
+
+from vcard import g_extension
 from vcard import g_identifier
+from vcard import g_protocol
 from vcard import g_scheme
+from vcard import g_host
+from vcard import g_folder
 from vcard import g_defaultlog
+from vcard import g_version
 
 import traceback
 
@@ -73,18 +86,17 @@ class Driver(unohelper.Base,
              XServiceInfo):
     def __init__(self, ctx):
         self._ctx = ctx
-        self._supportedProtocol = 'sdbc:address:vcard'
-        self._logger = getLogger(ctx, g_defaultlog, g_basename)
+        self._supportedProtocol = g_protocol
+        self._logger = getLogger(ctx, g_defaultlog)
         self._logger.logprb(INFO, 'Driver', '__init__()', 101)
 
-    _datasource = None
+    __datasource = None
 
     @property
     def DataSource(self):
-        if Driver._datasource is None:
-            database = DataBase(self._ctx)
-            Driver._datasource = DataSource(self._ctx, database, Provider(self._ctx, database))
-        return Driver._datasource
+        if Driver.__datasource is None:
+            Driver.__datasource = self._getDataSource()
+        return Driver.__datasource
 
 # XCreateCatalog
     def createCatalog(self, info):
@@ -103,16 +115,19 @@ class Driver(unohelper.Base,
             self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
+                self._logSqlException(1101, url)
+                raise self._getSqlException(112, 1101, url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                raise getSqlException(self._ctx, self, 112, 1101, 'connect()', url)
-            user, pwd = self._getUserCredential(infos)
-            if not user or not pwd:
-                raise getSqlException(self._ctx, self, 113, 1102, 'connect()', user)
-            connection = self.DataSource.getConnection(scheme, server, user, pwd)
-            version = connection.getMetaData().getDriverVersion()
+                self._logSqlException(1101, url)
+                raise self._getSqlException(112, 1101, url)
+            username, password = self._getUserCredential(infos)
+            if not username or not password:
+                self._logSqlException(1102, username)
+                raise self._getSqlException(113, 1102, username)
+            connection = self.DataSource.getConnection(scheme, server, username, password)
+            version = self.DataSource.DataBase.Version
             name = connection.getMetaData().getUserName()
             self._logger.logprb(INFO, 'Driver', 'connect()', 114, version, name)
             return connection
@@ -136,6 +151,58 @@ class Driver(unohelper.Base,
     def getMinorVersion(self):
         return 0
 
+# XDropCatalog
+    def dropCatalog(self, name, info):
+        pass
+
+# XServiceInfo
+    def supportsService(self, service):
+        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
+    def getImplementationName(self):
+        return g_ImplementationName
+    def getSupportedServiceNames(self):
+        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
+
+# Private getter methods
+    def _getDataSource(self):
+        oauth2 = getOAuth2Version(self._ctx)
+        driver = getExtensionVersion(self._ctx, g_jdbcid)
+        if oauth2 is None:
+            self._logSqlException(501, g_oauth2ext, ' ', g_extension)
+            raise self._getSqlException(1003, 501, g_oauth2ext, '\n', g_extension)
+        elif not checkVersion(oauth2, g_oauth2ver):
+            self._logSqlException(502, oauth2, g_oauth2ext, ' ', g_oauth2ver)
+            raise self._getSqlException(1003, 502, oauth2, g_oauth2ext, '\n', g_oauth2ver)
+        elif driver is None:
+            self._logSqlException(501, g_jdbcext, ' ', g_extension)
+            raise self._getSqlException(1003, 501, g_jdbcext, '\n', g_extension)
+        elif not checkVersion(driver, g_jdbcver):
+            self._logSqlException(502, driver, g_jdbcext, ' ', g_jdbcver)
+            raise self._getSqlException(1003, 502, driver, g_jdbcext, '\n', g_jdbcver)
+        else:
+            path = g_folder + '/' + g_host
+            url = getConnectionUrl(self._ctx, path)
+            try:
+                database = DataBase(self._ctx, url)
+            except SQLException as e:
+                self._logSqlException(503, url, ' ', e.Message)
+                raise self._getSqlException(1005, 503, url, '\n', e.Message)
+            else:
+                if not database.isUptoDate():
+                    self._logSqlException(504, database.Version, ' ', g_version)
+                    raise self._getSqlException(1005, 504, database.Version, '\n', g_version)
+                else:
+                    return DataSource(self._ctx, database)
+        return None
+
+    def _logSqlException(self, code, *args):
+        self._logger.logprb(SEVERE, 'Driver', 'connect()', code, *args)
+
+    def _getSqlException(self, state, code, *args):
+        state = self._logger.resolveString(state)
+        msg = self._logger.resolveString(code, *args)
+        return getSqlException(state, code, msg, self)
+
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
@@ -157,18 +224,6 @@ class Driver(unohelper.Base,
             if user and pwd:
                 break
         return user, pwd
-
-# XDropCatalog
-    def dropCatalog(self, name, info):
-        pass
-
-# XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-    def getImplementationName(self):
-        return g_ImplementationName
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
 
 
 g_ImplementationHelper.addImplementation(Driver,

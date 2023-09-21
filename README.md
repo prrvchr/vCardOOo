@@ -4,7 +4,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][3] and [Data Protection Policy][4].**
 
-# version [1.0.0][5]
+# version [1.0.1][5]
 
 ## Introduction:
 
@@ -30,7 +30,7 @@ vCardOOo uses a local [HsqlDB][12] database version 2.7.2.
 HsqlDB being a database written in Java, its use requires the [installation and configuration][13] in LibreOffice / OpenOffice of a **JRE version 11 or later**.  
 I recommend [Adoptium][14] as your Java installation source.
 
-If you are using **LibreOffice on Linux**, you are subject to [bug 139538][15]. To work around the problem, please **uninstall the packages** with commands:
+If you are using **LibreOffice Community on Linux**, you are subject to [bug 139538][15]. To work around the problem, please **uninstall the packages** with commands:
 - `sudo apt remove libreoffice-sdbc-hsqldb` (to uninstall the libreoffice-sdbc-hsqldb package)
 - `sudo apt remove libhsqldb1.8.0-java` (to uninstall the libhsqldb1.8.0-java package)
 
@@ -42,15 +42,15 @@ ___
 It seems important that the file was not renamed when it was downloaded.
 If necessary, rename it before installing it.
 
-- Install ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** extension version 1.1.0.
+- Install ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** extension version 1.1.1.
 
 You must install this extension, if it is not already installed.
 
-- Install ![jdbcDriverOOo logo][19] **[jdbcDriverOOo.oxt][20]** extension version 1.0.3.
+- Install ![jdbcDriverOOo logo][19] **[jdbcDriverOOo.oxt][20]** extension version 1.0.5.
 
 You must install this extension, if it is not already installed.
 
-- Install ![vCardOOo logo][1] **[vCardOOo.oxt][21]** extension version 1.0.0.
+- Install ![vCardOOo logo][1] **[vCardOOo.oxt][21]** extension version 1.0.1.
 
 Restart LibreOffice / OpenOffice after installation.
 
@@ -128,7 +128,7 @@ ___
 
 This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your address book) stored in your Android phone.
 
-With the [smtpMailerOOo][33] extension, it can be the data source for [mail merge][34] by email, to your correspondents contained in your phone.
+With the [eMailerOOo][33] extension, it can be the data source for [mail merge][34] by email, to your correspondents contained in your phone.
 
 It will give you access to an information system that only larges companies are able, today, to implement.
 
@@ -147,7 +147,13 @@ It will give you access to an information system that only larges companies are 
 
 -  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][39] written in Java and using the [ez-vcard][40] library.
 
-### What remains to be done for version 0.0.1:
+### What has been done for version 1.0.1:
+
+- The absence or obsolescence of the **OAuth2OOo** and/or **jdbcDriverOOo** extensions necessary for the proper functioning of **vCardOOo** now displays an error message.
+
+- Many other things...
+
+### What remains to be done for version 1.0.1:
 
 - Make the address book locally editable with replication of changes.
 
@@ -187,7 +193,7 @@ It will give you access to an information system that only larges companies are 
 [30]: <img/vCardOOo-9.png>
 [31]: <img/vCardOOo-10.png>
 [32]: <img/vCardOOo-11.png>
-[33]: <https://github.com/prrvchr/smtpMailerOOo/blob/master/source/smtpMailerOOo/dist/smtpMailerOOo.oxt>
+[33]: <https://prrvchr.github.io/eMailerOOo/>
 [34]: <https://en.wikipedia.org/wiki/Mail_merge>
 [35]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
 [36]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>

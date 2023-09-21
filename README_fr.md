@@ -4,7 +4,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][3] et à notre [Politique de protection des données][4]**.
 
-# version [1.0.0][5]
+# version [1.0.1][5]
 
 ## Introduction:
 
@@ -30,7 +30,7 @@ vCardOOo utilise une base de données locale [HsqlDB][12] version 2.7.2.
 HsqlDB étant une base de données écrite en Java, son utilisation nécessite [l'installation et la configuration][13] dans LibreOffice / OpenOffice d'un **JRE version 11 ou ultérieure**.  
 Je vous recommande [Adoptium][14] comme source d'installation de Java.
 
-Si vous utilisez **LibreOffice sous Linux**, vous êtes sujet au [dysfonctionnement 139538][15]. Pour contourner le problème, veuillez **désinstaller les paquets** avec les commandes:
+Si vous utilisez **LibreOffice Community sous Linux**, vous êtes sujet au [dysfonctionnement 139538][15]. Pour contourner le problème, veuillez **désinstaller les paquets** avec les commandes:
 - `sudo apt remove libreoffice-sdbc-hsqldb` (pour désinstaller le paquet libreoffice-sdbc-hsqldb)
 - `sudo apt remove libhsqldb1.8.0-java` (pour désinstaller le paquet libhsqldb1.8.0-java)
 
@@ -42,15 +42,15 @@ ___
 Il semble important que le fichier n'ait pas été renommé lors de son téléchargement.  
 Si nécessaire, renommez-le avant de l'installer.
 
-- Installer l'extension ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** version 1.1.0.
+- Installer l'extension ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** version 1.1.1.
 
 Vous devez installer cette extension, si elle n'est pas déjà installée.
 
-- Installer l'extension ![jdbcDriverOOo logo][19] **[jdbcDriverOOo.oxt][20]** version 1.0.3.
+- Installer l'extension ![jdbcDriverOOo logo][19] **[jdbcDriverOOo.oxt][20]** version 1.0.5.
 
 Vous devez installer cette extension, si elle n'est pas déjà installée.
 
-- Installer l'extension ![vCardOOo logo][1] **[vCardOOo.oxt][21]** version 1.0.0.
+- Installer l'extension ![vCardOOo logo][1] **[vCardOOo.oxt][21]** version 1.0.1.
 
 Redémarrez LibreOffice / OpenOffice après l'installation.
 
@@ -128,7 +128,7 @@ ___
 
 Cette extension a été écrite afin de rendre utilisables dans un logiciel libre (LibreOffice ou OpenOffice) vos données personnelles (votre carnet d'adresses) stockées dans votre téléphone Android.
 
-Avec l'extension [smtpMailerOOo][33], elle peut être la source de données pour des [publipostages][34] par courriel (email), à vos correspondants contenus dans votre téléphone.
+Avec l'extension [eMailerOOo][33], elle peut être la source de données pour des [publipostages][34] par courriel (email), à vos correspondants contenus dans votre téléphone.
 
 Elle vous donnera accès à un système d'information que seules les grandes entreprises sont capables, aujourd'hui, de mettre en œuvre.
 
@@ -147,7 +147,13 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 
 - Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync][39] écrit en Java et utilisant la bibliothèque [ez-vcard][40].
 
-### Que reste-t-il à faire pour la version 0.0.1:
+### Ce qui a été fait pour la version 1.0.1:
+
+- L'absence ou l'obsolescence des extensions **OAuth2OOo** et/ou **jdbcDriverOOo** nécessaires au bon fonctionnement de **vCardOOo** affiche désormais un message d'erreur.
+
+- Encore plein d'autres choses...
+
+### Que reste-t-il à faire pour la version 1.0.1:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -187,7 +193,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [30]: <img/vCardOOo-9_fr.png>
 [31]: <img/vCardOOo-10_fr.png>
 [32]: <img/vCardOOo-11_fr.png>
-[33]: <https://github.com/prrvchr/smtpMailerOOo/blob/master/source/smtpMailerOOo/dist/smtpMailerOOo.oxt>
+[33]: <https://prrvchr.github.io/eMailerOOo/README_fr>
 [34]: <https://en.wikipedia.org/wiki/Mail_merge>
 [35]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
 [36]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
