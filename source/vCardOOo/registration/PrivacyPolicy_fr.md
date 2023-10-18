@@ -13,9 +13,13 @@ La confidentialité des utilisateurs du logiciel vCardOOo est très importante p
 Cette politique explique ce que nous faisons avec vos informations personnelles.
 
 Pour plus de simplicité, dans la suite de ce document, on nommera:
-- `vCardOOo`:  le logiciel vCardOOo dans son intégralité.
-- `Utilisateur`: l'utilisateur du logiciel vCardOOo.
-- `Fournisseur`: fournisseur de services Internet fournissant des services Internet à `vCardOOo`.
+- `OAuth2OOo`: le logiciel [OAuth2OOo][4] dans son intégralité.
+- `vCardOOo`: le logiciel [vCardOOo][5] dans son intégralité.
+- `Utilisateur`: l'utilisateur des logiciels `OAuth2OOo` et/ou `vCardOOo`.
+- `Ordinateur` : l'ordinateur personnel de l'`Utilisateur` sur lequel est installé `OAuth2OOo` et/ou `vCardOOo`.
+- `Fournisseur`: fournisseur de services Internet fournissant des jetons OAuth2 à `OAuth2OOo` et des services Internet à `vCardOOo`.
+
+`vCardOOo` utilisant des services logiciels fourni par `OAuth2OOo`, **son utilisation vous soumet également à la [Politique de protection des données][6]** de `OAuth2OOo`.
 
 ___
 ## Contact:
@@ -27,40 +31,48 @@ prrvchr@gmail.com
 ___
 ## Utilisation de vos données personnelles:
 
-Pour fonctionner, `vCardOOo` doit conserver des données localement.
+Pour fonctionner, `OAuth2OOo` et/ou `vCardOOo` doit conserver des données localement sur l'`Ordinateur`.
 
-L'emplacement de ces données est le répertoire d'installation de l'application `vCardOOo`.
+L'emplacement de ces données est le répertoire d'installation de l'application `OAuth2OOo` et/ou `vCardOOo`, respectivement.
 
-`vCardOOo` **ne collecte aucune donnée sur des serveurs externes, d'aucune manières.**
+`OAuth2OOo` et/ou `vCardOOo` **ne collecte aucune donnée sur des serveurs externes, d'aucune manières.**
 
-La suppression des données collectées par `vCardOOo` est garantie par la désinstallation de l'application `vCardOOo`.
+La suppression des données collectées par `OAuth2OOo` et/ou `vCardOOo` est garantie par la désinstallation de l'application `OAuth2OOo` et/ou `vCardOOo`, respectivement.
 
-L'utilisation des services du `Fournisseur` au travers de `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
+L'utilisation des services du `Fournisseur` au travers de `OAuth2OOo` et/ou `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
 
 Le `Fournisseur` est seul responsable de l'utilisation des données qu'il collecte, comme décrit dans sa Politique de Protection des Données.
 
 ___
 ## Sécurité de vos informations personnelles:
 
-Étant donné que les données collectées par `vCardOOo` sont situées sur l'ordinateur de l'utilisateur, seul l'`Utilisateur` est responsable de la sécurité des données collectées.
+Étant donné que les données collectées par `OAuth2OOo` et/ou `vCardOOo` sont situées sur l'`Ordinateur`, **seul l'**`Utilisateur` **est responsable de la sécurité des données collectées**.
 
-L'utilisation des services du `Fournisseur` via `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
+L'utilisation des services du `Fournisseur` au travers de `OAuth2OOo` et/ou `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
 
 Le `Fournisseur` est seul responsable de la sécurité des données qu'il collecte, comme décrit dans sa Politique de Protection des Données.
 
 ___
+## Nature et étendue des droits sur les données collectées:
+
+`vCardOOo` vous permet d'obtenir une copie de vos Contacts Nextcloud sur votre `Ordinateur`. En conséquence, `vCardOOo` revendique au travers de `OAuth2OOo` le droit de **consulter, modifier et supprimer vos Contacts Nextcloud**.
+
+___
 ## Expiration des données collectées:
 
-La mise à jour des données collectées localement est effectuée chaque fois que `vCardOOo` est utilisé.
+La mise à jour des données collectées localement est effectuée chaque fois que `OAuth2OOo` et/ou `vCardOOo` sont utilisés.
 
-**La suppression des données collectées localement est possible en désinstallant** `vCardOOo`.
+**La suppression des données collectées localement est possible en désinstallant** `OAuth2OOo` et/ou `vCardOOo`, **respectivement**.
 
-Il est de la responsabilité de l'`Utilisateur` de désinstaller `vCardOOo` afin de supprimer les données collectées.
+Il est de la responsabilité de l'`Utilisateur` de désinstaller `OAuth2OOo` et/ou `vCardOOo` afin de supprimer les données collectées.
 
-L'utilisation des services du `Fournisseur` via `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
+L'utilisation des services du `Fournisseur` au travers de `OAuth2OOo` et/ou `vCardOOo` peut vous soumettre à la politique de protection des données du `Fournisseur`. Il incombe à l'`Utilisateur` de consulter ces règles sur le site Web du `Fournisseur`.
 
 Le `Fournisseur` est seul responsable de l'expiration des données qu'il collecte comme décrit dans sa Politique de Protection des Données.
 
 [1]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
+[4]: <https://github.com/prrvchr/OAuth2OOo/raw/master/OAuth2OOo.oxt>
+[5]: <https://github.com/prrvchr/vCardOOo/raw/master/vCardOOo.oxt>
+[6]: <https://prrvchr.github.io/OAuth2OOo/source/OAuth2OOo/registration/PrivacyPolicy_fr>
