@@ -75,4 +75,4 @@ Use of the `Supplier` services through `OAuth2OOo` and/or `vCardOOo` may subject
 [3]: <https://prrvchr.github.io/vCardOOo/>
 [4]: <https://github.com/prrvchr/OAuth2OOo/raw/master/OAuth2OOo.oxt>
 [5]: <https://github.com/prrvchr/vCardOOo/raw/master/vCardOOo.oxt>
-[6]: <https://prrvchr.github.io/OAuth2OOo/source/OAuth2OOo/registration/PrivacyPolicy_fr>
+[6]: <https://prrvchr.github.io/OAuth2OOo/source/OAuth2OOo/registration/PrivacyPolicy_en>
