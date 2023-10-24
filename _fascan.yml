@@ -1,0 +1,14 @@
+namespace: vCardOOo
+output:
+  file_path: ./Fluid-Attacks-Results.csv
+  format: CSV
+working_dir: .
+sast:
+  include:
+    - source/vCardOOo/source/io/github/prrvchr/
+    - source/vCardOOo/service/pythonpath/vcard/
+    - glob(source/vCardOOo/service/*.py)
+sca:
+  include:
+    - .
+language: EN
