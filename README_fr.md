@@ -4,7 +4,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][3] et à notre [Politique de protection des données][4]**.
 
-# version [1.0.2][5]
+# version [1.0.3][5]
 
 ## Introduction:
 
@@ -42,7 +42,7 @@ ___
 Il semble important que le fichier n'ait pas été renommé lors de son téléchargement.  
 Si nécessaire, renommez-le avant de l'installer.
 
-- Installer l'extension ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** version 1.2.0.
+- Installer l'extension ![OAuth2OOo logo][17] **[OAuth2OOo.oxt][18]** version 1.2.1.
 
 Vous devez installer cette extension, si elle n'est pas déjà installée.
 
@@ -50,7 +50,7 @@ Vous devez installer cette extension, si elle n'est pas déjà installée.
 
 Vous devez installer cette extension, si elle n'est pas déjà installée.
 
-- Installer l'extension ![vCardOOo logo][1] **[vCardOOo.oxt][21]** version 1.0.2.
+- Installer l'extension ![vCardOOo logo][1] **[vCardOOo.oxt][21]** version [![Version][0]][21]
 
 Redémarrez LibreOffice / OpenOffice après l'installation.
 
@@ -157,7 +157,11 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 
 - Prise en charge de la version 1.2.0 de l'extension **OAuth2OOo**. Les versions précédentes ne fonctionneront pas avec l'extension **OAuth2OOo** 1.2.0 ou ultérieure.
 
-### Que reste-t-il à faire pour la version 1.0.2:
+### Ce qui a été fait pour la version 1.0.3:
+
+- Prise en charge de la version 1.2.1 de l'extension **OAuth2OOo**. Les versions précédentes ne fonctionneront pas avec l'extension **OAuth2OOo** 1.2.1 ou ultérieure.
+
+### Que reste-t-il à faire pour la version 1.0.3:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -165,6 +169,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 
 - Tout ce qui est bienvenu...
 
+[0]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.0.3>
 [1]: <img/vCardOOo.svg>
 [2]: <https://prrvchr.github.io/vCardOOo>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
@@ -182,10 +187,10 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [15]: <https://bugs.documentfoundation.org/show_bug.cgi?id=139538>
 [16]: <https://prrvchr.github.io/HyperSQLOOo/README_fr>
 [17]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg>
-[18]: <https://github.com/prrvchr/OAuth2OOo/raw/master/OAuth2OOo.oxt>
+[18]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
 [19]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg>
-[20]: <https://github.com/prrvchr/jdbcDriverOOo/raw/master/source/jdbcDriverOOo/dist/jdbcDriverOOo.oxt>
-[21]: <https://github.com/prrvchr/vCardOOo/raw/main/source/vCardOOo/dist/vCardOOo.oxt>
+[20]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
+[21]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
 [22]: <img/vCardOOo-1_fr.png>
 [23]: <img/vCardOOo-2_fr.png>
 [24]: <img/vCardOOo-3_fr.png>

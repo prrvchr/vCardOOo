@@ -201,10 +201,10 @@ class Provider(ProviderBase):
                 break
         return url
 
-    def initAddressbooks(self, database, user):
+    def initAddressbooks(self, source, database, user):
         parameter = self._getAllBookParameter(user)
         iterator = self._parseAllBook(user.Request.execute(parameter))
-        self.initUserBooks(database, user, iterator)
+        self.initUserBooks(source, database, user, iterator)
 
     def initUserGroups(self, database, user, book):
         pass
