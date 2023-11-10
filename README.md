@@ -46,11 +46,11 @@ If necessary, rename it before installing it.
 
 - Install ![OAuth2OOo logo][15] **[OAuth2OOo.oxt][16]** extension [![Version][17]][16]
 
-You must install this extension, if it is not already installed.
+    You must install this extension, if it is not already installed.
 
 - Install ![jdbcDriverOOo logo][18] **[jdbcDriverOOo.oxt][19]** extension [![Version][20]][19]
 
-You must install this extension, if it is not already installed.
+    You must install this extension, if it is not already installed.
 
 - Install ![vCardOOo logo][21] **[vCardOOo.oxt][22]** extension [![Version][23]][22]
 
