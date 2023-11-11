@@ -44,15 +44,15 @@ ___
 Il semble important que le fichier n'ait pas été renommé lors de son téléchargement.  
 Si nécessaire, renommez-le avant de l'installer.
 
-- Installer l'extension ![OAuth2OOo logo][15] **[OAuth2OOo.oxt][16]** [![Version][17]][16]
+- [![OAuth2OOo logo][15]][16] Installer l'extension **[OAuth2OOo.oxt][17]** [![Version][18]][17]
 
     Vous devez installer cette extension, si elle n'est pas déjà installée.
 
-- Installer l'extension ![jdbcDriverOOo logo][18] **[jdbcDriverOOo.oxt][19]** [![Version][20]][19]
+- [![jdbcDriverOOo logo][19]][20] Installer l'extension **[jdbcDriverOOo.oxt][21]** [![Version][22]][21]
 
     Vous devez installer cette extension, si elle n'est pas déjà installée.
 
-- Installer l'extension ![vCardOOo logo][21] **[vCardOOo.oxt][22]** [![Version][23]][22]
+- ![vCardOOo logo][23] Installer l'extension **[vCardOOo.oxt][24]** [![Version][25]][24]
 
 Redémarrez LibreOffice / OpenOffice après l'installation.
 
@@ -62,24 +62,24 @@ ___
 
 Dans LibreOffice / OpenOffice aller à: Fichier -> Assistants -> Source de données des adresses...:
 
-![vCardOOo screenshot 1][24]
+![vCardOOo screenshot 1][26]
 
 À l'étape: 1. Type de carnet d'adresses:
 - sélectionner: Autre source de données externes
 - cliquez sur: Suivant (bouton)
 
-![vCardOOo screenshot 2][25]
+![vCardOOo screenshot 2][27]
 
 À l'étape: 2. Paramètres de Connexion:
 - cliquez sur: Paramètres (bouton)
 
-![vCardOOo screenshot 3][26]
+![vCardOOo screenshot 3][28]
 
 Dans Type de base de données:
 - sélectionner: Contacts vCard
 - cliquez sur: Suivant (bouton)
 
-![vCardOOo screenshot 4][27]
+![vCardOOo screenshot 4][29]
 
 Dans Général: URL de la source de données:
 - mettre l'url de votre instance Nextcloud (ie: nuage.distrilab.fr).
@@ -93,19 +93,19 @@ Dans Général: Mot de passe:
 Puis:
 - cliquez sur: Tester la connexion (bouton)
 
-![vCardOOo screenshot 5][28]
+![vCardOOo screenshot 5][30]
 
-![vCardOOo screenshot 6][29]
+![vCardOOo screenshot 6][31]
 
-![vCardOOo screenshot 7][30]
+![vCardOOo screenshot 7][32]
 
-![vCardOOo screenshot 8][31]
+![vCardOOo screenshot 8][33]
 
-![vCardOOo screenshot 9][32]
+![vCardOOo screenshot 9][34]
 
-![vCardOOo screenshot 10][33]
+![vCardOOo screenshot 10][35]
 
-![vCardOOo screenshot 11][34]
+![vCardOOo screenshot 11][36]
 
 Maintenant à vous d'en profiter...
 
@@ -119,7 +119,7 @@ ___
 
 * LibreOffice 7.4.3.2(x64) - Windows 10(x64) - Python version 3.8.15  - Adoptium JDK Hotspot 11.0.17 (x64) (under Lubuntu 22.04 / VirtualBox 6.1.38)
 
-* **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][35]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
+* **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][37]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
 
 Je vous encourage en cas de problème :confused:  
 de créer un [dysfonctionnement][9]  
@@ -133,24 +133,24 @@ ___
 
 Cette extension a été écrite afin de rendre utilisables dans un logiciel libre (LibreOffice ou OpenOffice) vos données personnelles (votre carnet d'adresses) stockées dans votre téléphone Android.
 
-Avec l'extension [eMailerOOo][36], elle peut être la source de données pour des [publipostages][37] par courriel (email), à vos correspondants contenus dans votre téléphone.
+Avec l'extension [eMailerOOo][38], elle peut être la source de données pour des [publipostages][39] par courriel (email), à vos correspondants contenus dans votre téléphone.
 
 Elle vous donnera accès à un système d'information que seules les grandes entreprises sont capables, aujourd'hui, de mettre en œuvre.
 
 ### Ce qui a été fait pour la version 0.0.1:
 
-- Ecriture du service UNO [com.sun.star.sdbc.Driver][38] repondant à l'appel de l'url `sdbc:address:vcard:*`  
-  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource][39] pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
+- Ecriture du service UNO [com.sun.star.sdbc.Driver][40] repondant à l'appel de l'url `sdbc:address:vcard:*`  
+  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource][41] pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
 
 - Ce singleton DataSource est responsable de:
 
-  - Lors de sa création, créer un thread [Replicator][40] pour suivre les modifications distantes sur les serveurs Nextcloud.
-  - Créer et de mettre en cache une interface [User][41] nécessaire pour:
+  - Lors de sa création, créer un thread [Replicator][42] pour suivre les modifications distantes sur les serveurs Nextcloud.
+  - Créer et de mettre en cache une interface [User][43] nécessaire pour:
     - La création de la connexion à la base de données sous-jacente.
     - La connexion du Replicator au serveurs Nextcloud.
   - Démarrer le Replicator à chaque connexion à la base de données.
 
-- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync][42] écrit en Java et utilisant la bibliothèque [ez-vcard][43].
+- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync][44] écrit en Java et utilisant la bibliothèque [ez-vcard][45].
 
 ### Ce qui a été fait pour la version 1.0.1:
 
@@ -189,31 +189,33 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [13]: <https://bugs.documentfoundation.org/show_bug.cgi?id=139538>
 [14]: <https://prrvchr.github.io/HyperSQLOOo/README_fr>
 [15]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
-[16]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
-[17]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
-[18]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
-[19]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
-[20]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
-[21]: <img/vCardOOo.svg#middle>
-[22]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[23]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.0.3#right>
-[24]: <img/vCardOOo-1_fr.png>
-[25]: <img/vCardOOo-2_fr.png>
-[26]: <img/vCardOOo-3_fr.png>
-[27]: <img/vCardOOo-4_fr.png>
-[28]: <img/vCardOOo-5_fr.png>
-[29]: <img/vCardOOo-6_fr.png>
-[30]: <img/vCardOOo-7_fr.png>
-[31]: <img/vCardOOo-8_fr.png>
-[32]: <img/vCardOOo-9_fr.png>
-[33]: <img/vCardOOo-10_fr.png>
-[34]: <img/vCardOOo-11_fr.png>
-[35]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
-[36]: <https://prrvchr.github.io/eMailerOOo/README_fr>
-[37]: <https://en.wikipedia.org/wiki/Mail_merge>
-[38]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
-[39]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
-[40]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
-[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
-[42]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
-[43]: <https://github.com/mangstadt/ez-vcard>
+[16]: <https://prrvchr.github.io/OAuth2OOo/README_fr>
+[17]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
+[18]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
+[19]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
+[20]: <https://prrvchr.github.io/OAuth2OOo/README_fr>
+[21]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
+[22]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
+[23]: <img/vCardOOo.svg#middle>
+[24]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
+[25]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.0.3#right>
+[26]: <img/vCardOOo-1_fr.png>
+[27]: <img/vCardOOo-2_fr.png>
+[28]: <img/vCardOOo-3_fr.png>
+[29]: <img/vCardOOo-4_fr.png>
+[30]: <img/vCardOOo-5_fr.png>
+[31]: <img/vCardOOo-6_fr.png>
+[32]: <img/vCardOOo-7_fr.png>
+[33]: <img/vCardOOo-8_fr.png>
+[34]: <img/vCardOOo-9_fr.png>
+[35]: <img/vCardOOo-10_fr.png>
+[36]: <img/vCardOOo-11_fr.png>
+[37]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
+[38]: <https://prrvchr.github.io/eMailerOOo/README_fr>
+[39]: <https://en.wikipedia.org/wiki/Mail_merge>
+[40]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
+[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
+[42]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
+[43]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
+[44]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
+[45]: <https://github.com/mangstadt/ez-vcard>
