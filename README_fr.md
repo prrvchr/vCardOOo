@@ -85,52 +85,79 @@ ___
 
 ## Utilisation:
 
-Dans LibreOffice / OpenOffice aller à: Fichier -> Assistants -> Source de données des adresses...:
+Dans LibreOffice / OpenOffice aller à: **Fichier -> Assistants -> Source de données des adresses...**
 
 ![vCardOOo screenshot 1][26]
 
-À l'étape: 1. Type de carnet d'adresses:
-- sélectionner: Autre source de données externes
-- cliquez sur: Suivant (bouton)
+L'**Assistant source de données du carnet d'adresses** s'ouvre.
+
+À l'étape: **1.Type de carnet d'adresses**:
+- Sélectionner: **Autre source de données externes**.
+- Cliquez sur le bouton: **Suivant**.
 
 ![vCardOOo screenshot 2][27]
 
-À l'étape: 2. Paramètres de Connexion:
-- cliquez sur: Paramètres (bouton)
+À l'étape: **2.Paramètres de Connexion**:
+- Cliquez sur le bouton: **Paramètres**.
 
 ![vCardOOo screenshot 3][28]
 
+Un nouvel assistant s'ouvre. **Propriétés de la source de données**.
+
+A l'étape: **1.Propriétés avancées**.  
 Dans Type de base de données:
-- sélectionner: Contacts vCard
-- cliquez sur: Suivant (bouton)
+- Sélectionner: **Contacts vCard**.
+- Cliquez sur le bouton: **Suivant**.
 
 ![vCardOOo screenshot 4][29]
 
-Dans Général: URL de la source de données:
-- mettre l'url de votre instance Nextcloud (ie: nuage.distrilab.fr).
+A l'étape: **2.Paramètres de connexion**.  
+Dans Général: Entrer ici la chaîne de connexion spécifique au SGDB / pilote.
+- Mettre l'url de votre instance Nextcloud (ie: nuage.distrilab.fr).
 
-Dans Général: Utilisateur:
-- mettre votre nom d'utilisateur.
-
-Dans Général: Mot de passe:
-- mettre votre mot de passe.
+Dans Authentification de l'utilisateur: Nom d'utilisateur:
+- Mettre votre nom d'utilisateur.
+- Cochez la case: Mot de passe requis
 
 Puis:
-- cliquez sur: Tester la connexion (bouton)
+- Cliquez sur le bouton: **Tester la connexion**.
 
 ![vCardOOo screenshot 5][30]
 
+Dans Authentification requise: Mot de passe:
+- Mettre votre mot de passe.
+
 ![vCardOOo screenshot 6][31]
+
+Normalement vous devez voir s'afficher: Test de connexion: Connexion établie.
 
 ![vCardOOo screenshot 7][32]
 
+Si la connexion a été etablie, vous pouvez terminer cet assistant avec le bouton **Terminer**.
+
 ![vCardOOo screenshot 8][33]
+
+A l'étape: **3.Sélection de table**.  
+Si votre source de données comporte plusieurs tables, il vous sera demandé de sélectionner la table principale.  
+Dans ce cas sélectionnez la table: **Tous mes contacts**. Si nécessaire et avant toute connexion il est possible de renommer le nom de la table principale dans: **Outils -> Options -> Internet -> vCardOOo -> Nom de la table principale**.
+
+A l'étape: **4.Assignation de champ**.  
+Si nécessaire il est possible de renommer les noms des colonnes de la source de données à l'aide du bouton: **Assignation de champ**.  
+Veuillez poursuivre cet assistant par le bouton: **Suivant**.
 
 ![vCardOOo screenshot 9][34]
 
-![vCardOOo screenshot 10][35]
+A l'étape: **5.Titre de la source de données**.
 
-![vCardOOo screenshot 11][36]
+Il faut créer un fichier odb. Pour cela vous devez:
+- **Décocher la case**: Intégrer cette définition du carnet d'adresses dans le document actuel.
+- Nommer le fichier odb dans le champ: **Emplacement**.
+
+Il faut également rendre accessible ce fichier odb. Pour cela vous devez:
+- **Cocher la case**: Rendre ce carnet d'adresses accessible à tous les modules de LibreOffice
+- Nommer le carnet d'adresses dans le champ: **Nom du carnet d'adresses**.
+
+![vCardOOo screenshot 10][35]
 
 Maintenant à vous d'en profiter...
 
@@ -144,7 +171,7 @@ ___
 
 * LibreOffice 7.4.3.2(x64) - Windows 10(x64) - Python version 3.8.15  - Adoptium JDK Hotspot 11.0.17 (x64) (under Lubuntu 22.04 / VirtualBox 6.1.38)
 
-* **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][37]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
+* **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][36]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
 
 Je vous encourage en cas de problème :confused:  
 de créer un [dysfonctionnement][9]  
@@ -158,24 +185,24 @@ ___
 
 Cette extension a été écrite afin de rendre utilisables dans un logiciel libre (LibreOffice ou OpenOffice) vos données personnelles (votre carnet d'adresses) stockées dans votre téléphone Android.
 
-Avec l'extension [eMailerOOo][38], elle peut être la source de données pour des [publipostages][39] par courriel (email), à vos correspondants contenus dans votre téléphone.
+Avec l'extension [eMailerOOo][37], elle peut être la source de données pour des [publipostages][38] par courriel (email), à vos correspondants contenus dans votre téléphone.
 
 Elle vous donnera accès à un système d'information que seules les grandes entreprises sont capables, aujourd'hui, de mettre en œuvre.
 
 ### Ce qui a été fait pour la version 0.0.1:
 
-- Ecriture du service UNO [com.sun.star.sdbc.Driver][40] repondant à l'appel de l'url `sdbc:address:vcard:*`  
-  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource][41] pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
+- Ecriture du service UNO [com.sun.star.sdbc.Driver][39] repondant à l'appel de l'url `sdbc:address:vcard:*`  
+  La méthode `connect(url, info)` de ce pilote utilise le singleton [DataSource][40] pour renvoyer le service UNO `com.sun.star.sdbc.Connection`.
 
 - Ce singleton DataSource est responsable de:
 
-  - Lors de sa création, créer un thread [Replicator][42] pour suivre les modifications distantes sur les serveurs Nextcloud.
-  - Créer et de mettre en cache une interface [User][43] nécessaire pour:
+  - Lors de sa création, créer un thread [Replicator][41] pour suivre les modifications distantes sur les serveurs Nextcloud.
+  - Créer et de mettre en cache une interface [User][42] nécessaire pour:
     - La création de la connexion à la base de données sous-jacente.
     - La connexion du Replicator au serveurs Nextcloud.
   - Démarrer le Replicator à chaque connexion à la base de données.
 
-- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync][44] écrit en Java et utilisant la bibliothèque [ez-vcard][45].
+- Après avoir récupéré les modifications distantes, le Replicator utilise pour analyser le contenu des vCards un service UNO `com.sun.star.task.Job` [CardSync][43] écrit en Java et utilisant la bibliothèque [ez-vcard][44].
 
 ### Ce qui a été fait pour la version 1.0.1:
 
@@ -198,6 +225,8 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Ajouter de nouvelles langues pour l'internationalisation...
 
 - Tout ce qui est bienvenu...
+
+
 
 [1]: <https://prrvchr.github.io/vCardOOo>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
@@ -234,13 +263,12 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [33]: <img/vCardOOo-8_fr.png>
 [34]: <img/vCardOOo-9_fr.png>
 [35]: <img/vCardOOo-10_fr.png>
-[36]: <img/vCardOOo-11_fr.png>
-[37]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
-[38]: <https://prrvchr.github.io/eMailerOOo/README_fr>
-[39]: <https://en.wikipedia.org/wiki/Mail_merge>
-[40]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
-[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
-[42]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
-[43]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
-[44]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
-[45]: <https://github.com/mangstadt/ez-vcard>
+[36]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
+[37]: <https://prrvchr.github.io/eMailerOOo/README_fr>
+[38]: <https://en.wikipedia.org/wiki/Mail_merge>
+[39]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
+[40]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
+[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
+[42]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
+[43]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
+[44]: <https://github.com/mangstadt/ez-vcard>

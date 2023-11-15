@@ -85,52 +85,79 @@ ___
 
 ## Use:
 
-In LibreOffice / OpenOffice go to File -> Wizards -> Address Data Source...:
+In LibreOffice / OpenOffice go to: **File -> Wizards -> Address Data Source...**
 
 ![vCardOOo screenshot 1][26]
 
-In step: 1. Address Book Type:
-- select: Other external data source
-- click on: Next(Button)
+The **Address Book Datasource Wizard** open.
+
+In step: **1.Address Book Type**:
+- Select: **Other external data source**.
+- Click button: **Next**.
 
 ![vCardOOo screenshot 2][27]
 
-In step: 2. Connection Settings:
-- click on: Settings(Button)
+In step: **2.Connection Settings**:
+- Click button: **Settings**.
 
 ![vCardOOo screenshot 3][28]
 
+A new wizard opens. **Data source properties**.
+
+In step: **1.Advanced Properties**.  
 In Database type list:
-- select: vCard Contacts
-- click on: Next(Button)
+- Select: **vCard Contacts**.
+- click button: **Next**.
 
 ![vCardOOo screenshot 4][29]
 
-In General: Datasource Url:
-- put the url of your Nextcloud instance (ie: nuage.distrilab.fr).
+In step: **2.Connection Settings**.  
+In General: Enter the DBMS/driver-specific connection string here.
+- Put the url of your Nextcloud instance (ie: nuage.distrilab.fr).
 
-In General: User:
-- put your username.
-
-In General: Password:
-- put your password.
+In User Authentication: User name:
+- Put your username.
+- Check the box: Password required
 
 Then:
-- click on: Test connection (button)
+- Click button: **Test connection**.
 
 ![vCardOOo screenshot 5][30]
 
+In Authentication required: Password:
+- Put your password.
+
 ![vCardOOo screenshot 6][31]
+
+Normally you should see: Connection Test: The connection was established successfully.
 
 ![vCardOOo screenshot 7][32]
 
+If the connection has been established, you can complete this wizard with the **Finish** button.
+
 ![vCardOOo screenshot 8][33]
+
+In step: **3.Table Selection**.  
+If your data source has multiple tables, you will be asked to select the primary table.  
+In this case select the table: **All my contacts**. If necessary and before any connection it is possible to rename the main table name in: **Tools -> Options -> Internet -> vCardOOo -> Main table name**.
+
+In step: **4.Field Assignment**.  
+If necessary it is possible to rename the names of the columns of the data source using the button: **Field Assignment**.  
+Please continue this wizard with the button: **Next**.
 
 ![vCardOOo screenshot 9][34]
 
-![vCardOOo screenshot 10][35]
+In step: **5.Data Source Title**.
 
-![vCardOOo screenshot 11][36]
+You must create an odb file. To do this you must:
+- **Uncheck the box**: Embed this address book definition in the current document.
+- Named the odb file in the field: **Location**.
+
+This odb file must also be made accessible. To do this you must:
+- **Check the box**: Make this address book available to all modules in LibreOffice
+- Named the address book in the field: **Address book name**.
+
+![vCardOOo screenshot 10][35]
 
 Have fun...
 
@@ -144,7 +171,7 @@ ___
 
 * LibreOffice 7.4.3.2(x64) - Windows 10(x64) - Python version 3.8.15  - Adoptium JDK Hotspot 11.0.17 (x64) (under Lubuntu 22.04 / VirtualBox 6.1.38)
 
-* **Does not work with OpenOffice on Windows** see [bug 128569][37]. Having no solution, I encourage you to install **LibreOffice**.
+* **Does not work with OpenOffice on Windows** see [bug 128569][36]. Having no solution, I encourage you to install **LibreOffice**.
 
 I encourage you in case of problem :confused:  
 to create an [issue][9]  
@@ -158,24 +185,24 @@ ___
 
 This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your address book) stored in your Android phone.
 
-With the [eMailerOOo][38] extension, it can be the data source for [mail merge][39] by email, to your correspondents contained in your phone.
+With the [eMailerOOo][37] extension, it can be the data source for [mail merge][38] by email, to your correspondents contained in your phone.
 
 It will give you access to an information system that only larges companies are able, today, to implement.
 
 ### What has been done for version 0.0.1:
 
-- Writing of the UNO service [com.sun.star.sdbc.Driver][40] responding to the call from the url `sdbc:address:vcard:*`  
-  The `connect(url, info)` method of this Driver use the [DataSource][41] singleton to return the UNO service `com.sun.star.sdbc.Connection`.
+- Writing of the UNO service [com.sun.star.sdbc.Driver][39] responding to the call from the url `sdbc:address:vcard:*`  
+  The `connect(url, info)` method of this Driver use the [DataSource][40] singleton to return the UNO service `com.sun.star.sdbc.Connection`.
 
 - This DataSource singleton is responsible for:
 
-  - When created, create a [Replicator][42] thread to track remote changes on Nextcloud servers.
-  - Create and cache a [User][43] Interface needed for:
+  - When created, create a [Replicator][41] thread to track remote changes on Nextcloud servers.
+  - Create and cache a [User][42] Interface needed for:
     - Creating the connection to the underlying database.
     - Connect the Replicator to Nextcloud servers.
   - Start the Replicator each time you connect to the database.
 
--  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][44] written in Java and using the [ez-vcard][45] library.
+-  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][43] written in Java and using the [ez-vcard][44] library.
 
 ### What has been done for version 1.0.1:
 
@@ -236,13 +263,12 @@ It will give you access to an information system that only larges companies are 
 [33]: <img/vCardOOo-8.png>
 [34]: <img/vCardOOo-9.png>
 [35]: <img/vCardOOo-10.png>
-[36]: <img/vCardOOo-11.png>
-[37]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
-[38]: <https://prrvchr.github.io/eMailerOOo/>
-[39]: <https://en.wikipedia.org/wiki/Mail_merge>
-[40]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
-[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
-[42]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
-[43]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
-[44]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
-[45]: <https://github.com/mangstadt/ez-vcard>
+[36]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
+[37]: <https://prrvchr.github.io/eMailerOOo/>
+[38]: <https://en.wikipedia.org/wiki/Mail_merge>
+[39]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
+[40]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
+[41]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
+[42]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
+[43]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
+[44]: <https://github.com/mangstadt/ez-vcard>
