@@ -231,7 +231,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [1]: <https://prrvchr.github.io/vCardOOo>
 [2]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [3]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[4]: <https://prrvchr.github.io/vCardOOo#historical>
+[4]: <https://prrvchr.github.io/vCardOOo/README_fr#historique>
 [5]: <https://prrvchr.github.io/README_fr>
 [6]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [7]: <https://www.openoffice.org/fr/Telecharger/>
