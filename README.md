@@ -183,9 +183,9 @@ ___
 
 ### Introduction:
 
-This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your address book) stored in your Android phone.
+This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your vCard) stored on a Nextcloud server.
 
-With the [eMailerOOo][37] extension, it can be the data source for [mail merge][38] by email, to your correspondents contained in your phone.
+With the [eMailerOOo][37] extension, it can be the data source for [mail merge][38] by email, to your correspondents (your vCard) coming from the Nextcloud server.
 
 It will give you access to an information system that only larges companies are able, today, to implement.
 

@@ -183,9 +183,9 @@ ___
 
 ### Introduction:
 
-Cette extension a été écrite afin de rendre utilisables dans un logiciel libre (LibreOffice ou OpenOffice) vos données personnelles (votre carnet d'adresses) stockées dans votre téléphone Android.
+Cette extension a été écrite afin de rendre utilisables dans un logiciel libre (LibreOffice ou OpenOffice) vos données personnelles (vos vCard) stockées sur un serveur Nextcloud.
 
-Avec l'extension [eMailerOOo][37], elle peut être la source de données pour des [publipostages][38] par courriel (email), à vos correspondants contenus dans votre téléphone.
+Avec l'extension [eMailerOOo][37], elle peut être la source de données pour des [publipostages][38] par courriel (email), à vos correspondants (vos vCard) provenant du serveur Nextcloud.
 
 Elle vous donnera accès à un système d'information que seules les grandes entreprises sont capables, aujourd'hui, de mettre en œuvre.
 
