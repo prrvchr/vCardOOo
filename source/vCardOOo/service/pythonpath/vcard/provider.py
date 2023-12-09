@@ -35,6 +35,8 @@ from .unotool import getUrl
 
 from .card import Provider as ProviderBase
 
+from .oauth2 import getRequest
+
 from .configuration import g_identifier
 
 import xml.etree.ElementTree as ET
@@ -42,8 +44,8 @@ import traceback
 
 
 class Provider(ProviderBase):
-    def __init__(self, ctx, database):
-        self._ctx = ctx
+    def __init__(self, ctx):
+        ProviderBase.__init__(self, ctx)
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
         self._url = '/.well-known/carddav'
@@ -58,6 +60,9 @@ class Provider(ProviderBase):
         return server + '/' + name
 
     # Method called from User._getNewUser()
+    def getRequest(self, url, user):
+        return getRequest(self._ctx)
+
     def insertUser(self, database, request, scheme, server, name, pwd):
         userid = self._getNewUserId(request, scheme, server, name, pwd)
         return database.insertUser(userid, scheme, server, '', name)
@@ -101,6 +106,7 @@ class Provider(ProviderBase):
     def _getDiscoveryUrl(self, request, url, name, password):
         parameter = self._getRequestParameter(request, 'getUrl', url, name, password)
         response = request.execute(parameter)
+        print("_getDiscoveryUrl() *********** %s" % response.Text)
         if not response.Ok or not response.IsRedirect:
             response.close()
             #TODO: Raise SqlException with correct message!
