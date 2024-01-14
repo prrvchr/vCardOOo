@@ -1,1 +1,1 @@
-Your phone contacts finally available in LibreOffice.
+Your CardDAV contacts (Nextcloud) finally available in LibreOffice.

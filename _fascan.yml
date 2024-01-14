@@ -5,9 +5,9 @@ output:
 working_dir: .
 sast:
   include:
-    - source/vCardOOo/source/io/github/prrvchr/
-    - source/vCardOOo/service/pythonpath/vcard/
     - glob(source/vCardOOo/service/*.py)
+    - glob(source/vCardOOo/service/pythonpath/vcard/*)
+    - glob(source/vCardOOo/source/*)
 sca:
   include:
     - .

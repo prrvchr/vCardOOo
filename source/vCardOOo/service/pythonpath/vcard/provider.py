@@ -44,7 +44,7 @@ import traceback
 
 
 class Provider(ProviderBase):
-    def __init__(self, ctx):
+    def __init__(self, ctx, database):
         ProviderBase.__init__(self, ctx)
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
