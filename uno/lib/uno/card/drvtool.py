@@ -27,69 +27,58 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import unohelper
+from com.sun.star.sdbc import SQLException
 
-from com.sun.star.logging.LogLevel import SEVERE
+from .database import DataBase
 
-from com.sun.star.lang import XServiceInfo
-from com.sun.star.awt import XContainerWindowEventHandler
+from .datasource import DataSource
 
-from vcard import OptionsManager
+from .cardtool import getLogException
 
-from vcard import getLogger
+from .dbtool import getConnectionUrl
 
-from vcard import g_identifier
-from vcard import g_defaultlog
+from .unotool import checkVersion
+from .unotool import getExtensionVersion
+
+from .oauth2 import getOAuth2Version
+from .oauth2 import g_extension as g_oauth2ext
+from .oauth2 import g_version as g_oauth2ver
+
+from .jdbcdriver import g_extension as g_jdbcext
+from .jdbcdriver import g_identifier as g_jdbcid
+from .jdbcdriver import g_version as g_jdbcver
+
+from .configuration import g_extension
+from .configuration import g_host
+
+from .dbconfig import g_folder
+from .dbconfig import g_version
 
 import traceback
 
-# pythonloader looks for a static g_ImplementationHelper variable
-g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationName = f'{g_identifier}.OptionsHandler'
 
-
-class OptionsHandler(unohelper.Base,
-                     XServiceInfo,
-                     XContainerWindowEventHandler):
-    def __init__(self, ctx):
-        self._ctx = ctx
-        self._manager = None
-        self._logger = getLogger(ctx, g_defaultlog)
-
-    # XContainerWindowEventHandler
-    def callHandlerMethod(self, window, event, method):
+def getDataSource(ctx, logger, source, cls, mtd):
+    oauth2 = getOAuth2Version(ctx)
+    driver = getExtensionVersion(ctx, g_jdbcid)
+    if oauth2 is None:
+        raise getLogException(logger, source, 1000, 1121, cls, mtd, g_oauth2ext, g_extension)
+    elif not checkVersion(oauth2, g_oauth2ver):
+        raise getLogException(logger, source, 1000, 1122, cls, mtd, g_oauth2ext, g_oauth2ver)
+    elif driver is None:
+        raise getLogException(logger, source, 1000, 1121, cls, mtd, g_jdbcext, g_extension)
+    elif not checkVersion(driver, g_jdbcver):
+        raise getLogException(logger, source, 1000, 1122, cls, mtd, g_jdbcext, g_jdbcver)
+    else:
+        path = g_folder + '/' + g_host
+        url = getConnectionUrl(ctx, path)
         try:
-            handled = False
-            if method == 'external_event':
-                if event == 'initialize':
-                    self._manager = OptionsManager(self._ctx, window, self._logger)
-                    handled = True
-                elif event == 'ok':
-                    self._manager.saveSetting()
-                    handled = True
-                elif event == 'back':
-                    self._manager.loadSetting()
-                    handled = True
-            elif method == 'ViewData':
-                self._manager.viewData()
-                handled = True
-            return handled
-        except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 101, e, traceback.format_exc())
+            database = DataBase(ctx, url)
+        except SQLException as e:
+            raise getLogException(logger, source, 1005, 1123, cls, mtd, url, e.Message)
+        else:
+            if not database.isUptoDate():
+                raise getLogException(logger, source, 1005, 1124, cls, mtd, database.Version, g_version)
+            else:
+                return DataSource(ctx, database)
+    return None
 
-    def getSupportedMethodNames(self):
-        return ('external_event',
-                'ViewData')
-
-    # XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-    def getImplementationName(self):
-        return g_ImplementationName
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
-
-g_ImplementationHelper.addImplementation(OptionsHandler,                             # UNO object class
-                                         g_ImplementationName,                      # Implementation name
-                                        (g_ImplementationName,))                    # List of implemented services

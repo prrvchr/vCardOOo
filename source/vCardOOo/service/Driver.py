@@ -42,34 +42,16 @@ from com.sun.star.sdbcx import XCreateCatalog
 from com.sun.star.sdbcx import XDataDefinitionSupplier
 from com.sun.star.sdbcx import XDropCatalog
 
-from vcard import DataBase
-
-from vcard import DataSource
-
-from vcard import checkVersion
-from vcard import getConnectionUrl
+from vcard import getDataSource
 from vcard import getDriverPropertyInfos
-from vcard import getExtensionVersion
 from vcard import getLogger
-from vcard import getOAuth2Version
 from vcard import getLogException
 from vcard import getUrl
 
-from vcard import g_oauth2ext
-from vcard import g_oauth2ver
-
-from vcard import g_jdbcext
-from vcard import g_jdbcid
-from vcard import g_jdbcver
-
-from vcard import g_extension
 from vcard import g_identifier
 from vcard import g_protocol
 from vcard import g_scheme
-from vcard import g_host
-from vcard import g_folder
 from vcard import g_defaultlog
-from vcard import g_version
 
 import traceback
 
@@ -107,7 +89,7 @@ class Driver(unohelper.Base,
         return connection
     def getDataDefinitionByURL(self, url, infos):
         connection = self.connect(url, infos)
-        return self.getDataDefinitionByConnection(connection)
+        return connection
 
 # XDriver
     def connect(self, url, infos):
@@ -127,12 +109,12 @@ class Driver(unohelper.Base,
             connection = self.DataSource.getConnection(self, scheme, server, username, password)
             version = self.DataSource.DataBase.Version
             name = connection.getMetaData().getUserName()
-            self._logger.logprb(INFO, cls, mtd, 1114, version, name)
+            self._logger.logprb(INFO, cls, mtd, 1115, version, name)
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            self._logger.logprb(SEVERE, cls, mtd, 1115, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, cls, mtd, 1116, e, traceback.format_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -164,29 +146,7 @@ class Driver(unohelper.Base,
 # Private getter methods
     def _getDataSource(self):
         cls, mtd = 'Driver', '_getDataSource()'
-        oauth2 = getOAuth2Version(self._ctx)
-        driver = getExtensionVersion(self._ctx, g_jdbcid)
-        if oauth2 is None:
-            raise getLogException(self._logger, self, 1000, 1121, cls, mtd, g_oauth2ext, g_extension)
-        elif not checkVersion(oauth2, g_oauth2ver):
-            raise getLogException(self._logger, self, 1000, 1122, cls, mtd, g_oauth2ext, g_oauth2ver)
-        elif driver is None:
-            raise getLogException(self._logger, self, 1000, 1121, cls, mtd, g_jdbcext, g_extension)
-        elif not checkVersion(driver, g_jdbcver):
-            raise getLogException(self._logger, self, 1000, 1122, cls, mtd, g_jdbcext, g_jdbcver)
-        else:
-            path = g_folder + '/' + g_host
-            url = getConnectionUrl(self._ctx, path)
-            try:
-                database = DataBase(self._ctx, url)
-            except SQLException as e:
-                raise getLogException(self._logger, self, 1005, 1123, cls, mtd, url, e.Message)
-            else:
-                if not database.isUptoDate():
-                    raise getLogException(self._logger, self, 1005, 1124, cls, mtd, database.Version, g_version)
-                else:
-                    return DataSource(self._ctx, database)
-        return None
+        return getDataSource(self._ctx, self._logger, self, cls, mtd)
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)

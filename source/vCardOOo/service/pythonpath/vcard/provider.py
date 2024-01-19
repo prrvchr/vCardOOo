@@ -51,7 +51,7 @@ class Provider(ProviderBase):
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
         self._url = '/.well-known/carddav'
-        self._headers = ('1', 'access-control', 'addressbook')
+        self._header = 'addressbook'
         self._status = 'HTTP/1.1 404 Not Found'
 
     def supportAddressBook(self):
@@ -160,6 +160,7 @@ class Provider(ProviderBase):
         return url
 
     def _supportAddressbook(self, source, request, url, name, pwd):
+        support = False
         cls, mtd = 'Provider', '_supportAddressbook'
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
@@ -168,13 +169,13 @@ class Provider(ProviderBase):
             msg = response.Text
             response.close()
             raise getSqlException(self._ctx, source, 1006, 1651, cls, mtd, parameter.Name, code, name, url, msg)
-        headers = response.getHeader('DAV')
-        print("Provider._supportAddressbook() headers: %s - self._headers: %s" % (headers, self._headers))
+        if response.hasHeader('DAV'):
+            headers = [header.strip() for header in response.getHeader('DAV').split(',')]
+            print("Provider._supportAddressbook() 1 headers: %s - self._headers: %s" % (headers, self._header))
+            support = self._header in headers
         response.close()
-        for header in self._headers:
-            if header in headers:
-                return True
-        return False
+        print("Provider._supportAddressbook() 2 Support: %s" % support)
+        return support
 
     def _getAddressbooksUrl(self, source, request, url, name, pwd):
         cls, mtd = 'Provider', '_getAddressbooksUrl'
