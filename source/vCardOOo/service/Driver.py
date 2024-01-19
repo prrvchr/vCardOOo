@@ -52,7 +52,7 @@ from vcard import getDriverPropertyInfos
 from vcard import getExtensionVersion
 from vcard import getLogger
 from vcard import getOAuth2Version
-from vcard import getSqlException
+from vcard import getLogException
 from vcard import getUrl
 
 from vcard import g_oauth2ext
@@ -88,7 +88,7 @@ class Driver(unohelper.Base,
         self._ctx = ctx
         self._supportedProtocol = g_protocol
         self._logger = getLogger(ctx, g_defaultlog)
-        self._logger.logprb(INFO, 'Driver', '__init__()', 101)
+        self._logger.logprb(INFO, 'Driver', '__init__()', 1101)
 
     __datasource = None
 
@@ -111,30 +111,28 @@ class Driver(unohelper.Base,
 
 # XDriver
     def connect(self, url, infos):
+        cls, mtd = 'Driver', 'connect()'
         try:
-            self._logger.logprb(INFO, 'Driver', 'connect()', 111, url)
+            self._logger.logprb(INFO, cls, mtd, 1111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                self._logSqlException(1101, url)
-                raise self._getSqlException(112, 1101, url)
+                raise getLogException(self._logger, self, 1000, 1112, cls, mtd, url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                self._logSqlException(1101, url)
-                raise self._getSqlException(112, 1101, url)
+                raise getLogException(self._logger, self, 1000, 1112, cls, mtd, url)
             username, password = self._getUserCredential(infos)
             if not username or not password:
-                self._logSqlException(1102, username)
-                raise self._getSqlException(113, 1102, username)
+                raise getLogException(self._logger, self, 1001, 1113, cls, mtd)
             connection = self.DataSource.getConnection(self, scheme, server, username, password)
             version = self.DataSource.DataBase.Version
             name = connection.getMetaData().getUserName()
-            self._logger.logprb(INFO, 'Driver', 'connect()', 114, version, name)
+            self._logger.logprb(INFO, cls, mtd, 1114, version, name)
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            self._logger.logprb(SEVERE, 'Driver', 'connect()', 115, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, cls, mtd, 1115, e, traceback.format_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -165,48 +163,36 @@ class Driver(unohelper.Base,
 
 # Private getter methods
     def _getDataSource(self):
+        cls, mtd = 'Driver', '_getDataSource()'
         oauth2 = getOAuth2Version(self._ctx)
         driver = getExtensionVersion(self._ctx, g_jdbcid)
         if oauth2 is None:
-            self._logSqlException(501, g_oauth2ext, ' ', g_extension)
-            raise self._getSqlException(1003, 501, g_oauth2ext, '\n', g_extension)
+            raise getLogException(self._logger, self, 1000, 1121, cls, mtd, g_oauth2ext, g_extension)
         elif not checkVersion(oauth2, g_oauth2ver):
-            self._logSqlException(502, oauth2, g_oauth2ext, ' ', g_oauth2ver)
-            raise self._getSqlException(1003, 502, oauth2, g_oauth2ext, '\n', g_oauth2ver)
+            raise getLogException(self._logger, self, 1000, 1122, cls, mtd, g_oauth2ext, g_oauth2ver)
         elif driver is None:
-            self._logSqlException(501, g_jdbcext, ' ', g_extension)
-            raise self._getSqlException(1003, 501, g_jdbcext, '\n', g_extension)
+            raise getLogException(self._logger, self, 1000, 1121, cls, mtd, g_jdbcext, g_extension)
         elif not checkVersion(driver, g_jdbcver):
-            self._logSqlException(502, driver, g_jdbcext, ' ', g_jdbcver)
-            raise self._getSqlException(1003, 502, driver, g_jdbcext, '\n', g_jdbcver)
+            raise getLogException(self._logger, self, 1000, 1122, cls, mtd, g_jdbcext, g_jdbcver)
         else:
             path = g_folder + '/' + g_host
             url = getConnectionUrl(self._ctx, path)
             try:
                 database = DataBase(self._ctx, url)
             except SQLException as e:
-                self._logSqlException(503, url, ' ', e.Message)
-                raise self._getSqlException(1005, 503, url, '\n', e.Message)
+                raise getLogException(self._logger, self, 1005, 1123, cls, mtd, url, e.Message)
             else:
                 if not database.isUptoDate():
-                    self._logSqlException(504, database.Version, ' ', g_version)
-                    raise self._getSqlException(1005, 504, database.Version, '\n', g_version)
+                    raise getLogException(self._logger, self, 1005, 1124, cls, mtd, database.Version, g_version)
                 else:
                     return DataSource(self._ctx, database)
         return None
 
-    def _logSqlException(self, code, *args):
-        self._logger.logprb(SEVERE, 'Driver', 'connect()', code, *args)
-
-    def _getSqlException(self, state, code, *args):
-        state = self._logger.resolveString(state)
-        msg = self._logger.resolveString(code, *args)
-        return getSqlException(state, code, msg, self)
-
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            raise getSqlException(self._ctx, self, 112, 1101, '_getUrlParts()', location)
+            cls, mtd = 'Driver', '_getUrlParts()'
+            raise getLogException(self._logger, self, 1000, 1131, cls, mtd, location)
         scheme = url.Protocol
         server = url.Server
         if not location.startswith(scheme):
