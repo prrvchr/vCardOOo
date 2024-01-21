@@ -57,6 +57,9 @@ class Provider(ProviderBase):
     def supportAddressBook(self):
         return True
 
+    def supportGroup(self):
+        return False
+
 # Method called from DataSource.getConnection()
     def getUserUri(self, server, name):
         return server + '/' + name
@@ -65,7 +68,7 @@ class Provider(ProviderBase):
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(response, source, 'initAddressbooks()', 1006, parameter.Name, user.Name, parameter.Url)
+            self.raiseForStatus(source, response, 'initAddressbooks()', 1006, parameter, user.Name)
         iterator = self._parseAllBook(response)
         self.initUserBooks(source, database, user, iterator)
 
@@ -110,7 +113,7 @@ class Provider(ProviderBase):
         parameter = self._getRequestParameter(request, 'getUrl', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok or not response.IsRedirect:
-            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
+            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
         if not response.hasHeader('Location'):
             headers = response.Headers
             response.close()
@@ -124,7 +127,7 @@ class Provider(ProviderBase):
         parameter = self._getUserUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(response, source, '_getUserUrl()', 1006, parameter.Name, name, parameter.Url)
+            self.raiseForStatus(source, response, '_getUserUrl()', 1006, parameter, name)
         url = self._parseUserUrl(response)
         return url
 
@@ -153,7 +156,7 @@ class Provider(ProviderBase):
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
+            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
         if not response.hasHeader('DAV'):
             headers = response.Headers
             response.close()
@@ -167,7 +170,7 @@ class Provider(ProviderBase):
         parameter = self._getAddressbooksUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
+            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
         url = self._parseAddressbookUrl(response)
         if url is None:
             msg = response.Text
@@ -221,59 +224,54 @@ class Provider(ProviderBase):
     def _getAllBookParameter(self, user):
         url = user.BaseUrl + user.Uri
         data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav" xmlns:cs="http://calendarserver.org/ns/">
-  <d:prop>
-    <d:displayname />
-    <cs:getctag />
-    <d:sync-token />
-    <d:resourcetype>
-        <card:addressbook />
-    </d:resourcetype>
-  </d:prop>
-</d:propfind>
+<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav" xmlns:CS="http://calendarserver.org/ns/">
+  <D:prop>
+    <D:displayname />
+    <CS:getctag />
+    <D:sync-token />
+    <D:resourcetype>
+        <C:addressbook />
+    </D:resourcetype>
+  </D:prop>
+</D:propfind>
 '''
         return self._getRequestParameter(user.Request, 'getAllAddressbook', url, user.Name, user.Password, data)
 
     def _getUserUrlParameter(self, request, url, name, pwd):
         data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:">
-  <d:prop>
-    <d:current-user-principal />
-  </d:prop>
-</d:propfind>
+<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:">
+  <D:prop>
+    <D:current-user-principal />
+  </D:prop>
+</D:propfind>
 '''
         return self._getRequestParameter(request, 'getUser', url, name, pwd, data)
 
     def _getAddressbooksUrlParameter(self, request, url, name, pwd):
         data = '''\
-<?xml version="1.0"?>
-<d:propfind xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
-  <d:prop>
-    <card:addressbook-home-set />
-  </d:prop>
-</d:propfind>
+<?xml version="1.0" encoding="utf-8" ?>
+<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <C:addressbook-home-set />
+  </D:prop>
+</D:propfind>
 '''
         return self._getRequestParameter(request, 'getAddressbooksUrl', url, name, pwd, data)
 
 
 # Method called from Replicator.run()
     def firstPullCard(self, database, user, addressbook, page, count):
-        args = []
         parameter = self._getFisrtPullParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            cls, mtd = 'Provider', 'firstPullCard()'
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            args += [cls, mtd, 201, parameter.Name, code, user.Name, parameter.Url, msg]
+            args = self.getLoggerArgs(response, 'firstPullCard()', 201, parameter, user.Name)
             return page, count, args
         page += 1
         iterator = self._parseCards(response)
         count += database.mergeCard(addressbook.Id, iterator)
-        return page, count, args
+        return page, count, []
 
     def pullCard(self, database, user, addressbook, page, count):
         if addressbook.Token is not None:
@@ -292,11 +290,7 @@ class Provider(ProviderBase):
         parameter = self._getCardByTokenParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            cls, mtd = 'Provider', '_pullCardByToken()'
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            args += [cls, mtd, 211, parameter.Name, code, user.Name, parameter.Url, msg]
+            args = self.getLoggerArgs(response, '_pullCardByToken()', 211, parameter, user.Name)
             return page, count, args
         args = []
         token, deleted, modified = self._getChangedCards(response)
@@ -316,13 +310,9 @@ class Provider(ProviderBase):
 
     def _mergeCardByToken(self, database, user, addressbook, urls, count):
         parameter = self._getMergeCardByTokenParameter(user, addressbook, urls)
-        response = request.execute(parameter)
+        response = user.Request.execute(parameter)
         if not response.Ok:
-            cls, mtd = 'Provider', '_mergeCardByToken()'
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            args = [cls, mtd, 221, parameter.Name, code, user.Name, parameter.Url, msg]
+            args = self.getLoggerArgs(response, '_mergeCardByToken()', 221, parameter, user.Name)
             return count, args
         iterator = self._parseCards(response)
         count += database.mergeCard(addressbook.Id, iterator)
@@ -361,7 +351,7 @@ class Provider(ProviderBase):
             parser.feed(iterator.nextElement().value)
             for event, element in parser.read_events():
                 if element.tag == '{DAV:}response':
-                    url = modified = None
+                    url = status = None
                     for child in element.iter():
                         if child.tag == '{DAV:}href' and child.text:
                             url = child.text
@@ -377,49 +367,45 @@ class Provider(ProviderBase):
     def _getFisrtPullParameter(self, user, addressbook):
         url = user.BaseUrl + addressbook.Uri
         data = '''\
-<?xml version="1.0"?>
-<card:addressbook-query xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
-  <d:prop>
-    <d:getetag />
-    <card:address-data />
-  </d:prop>
-</card:addressbook-query>
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag />
+    <C:address-data />
+  </D:prop>
+</C:addressbook-query>
 '''
         return self._getRequestParameter(user.Request, 'getAddressbookCards', url, user.Name, user.Password, data)
 
     def _getCardByTokenParameter(self, user, addressbook):
         url = user.BaseUrl + addressbook.Uri
         data = '''\
-<?xml version="1.0"?>
-<d:sync-collection xmlns:d="DAV:">
-  <d:sync-token>%s</d:sync-token>
-  <d:sync-level>1</d:sync-level>
-  <d:prop>
-    <d:getetag />
-  </d:prop>
-</d:sync-collection>
+<?xml version="1.0" encoding="utf-8" ?>
+<D:sync-collection xmlns:D="DAV:">
+  <D:sync-token>%s</D:sync-token>
+  <D:sync-level>1</D:sync-level>
+  <D:prop>
+    <D:getetag />
+  </D:prop>
+</D:sync-collection>
 ''' % addressbook.Token
         return self._getRequestParameter(user.Request, 'getModifiedCardByToken', url, user.Name, user.Password, data)
 
     def _getMergeCardByTokenParameter(self, user, addressbook, urls):
         url = user.BaseUrl + addressbook.Uri
-        href = '''\
-  </d:href>
-  <d:href>
-'''
+        href = '''</D:href>
+  <D:href>'''
         data = '''\
-<?xml version="1.0"?>
-<card:addressbook-multiget xmlns:d="DAV:" xmlns:card="urn:ietf:params:xml:ns:carddav">
-  <d:prop>
-    <d:getetag />
-    <card:address-data />
-  </d:prop>
-  <d:href>
-    %s
-  </d:href>
-</card:addressbook-multiget>
+<?xml version="1.0" encoding="utf-8" ?>
+<C:addressbook-multiget xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
+  <D:prop>
+    <D:getetag />
+    <C:address-data />
+  </D:prop>
+  <D:href>%s</D:href>
+</C:addressbook-multiget>
 ''' % href.join(urls)
-        return self._getRequestParameter(request, 'getAddressbookCards', url, user.Name, user.Password, data)
+        return self._getRequestParameter(user.Request, 'getAddressbookCards', url, user.Name, user.Password, data)
 
 
     # Private getter method for Request Parameter
