@@ -160,21 +160,16 @@ class Provider(ProviderBase):
         return url
 
     def _supportAddressbook(self, source, request, url, name, pwd):
-        support = False
         cls, mtd = 'Provider', '_supportAddressbook'
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
-        if not response.Ok:
+        if not response.Ok or not response.hasHeader('DAV'):
             code = response.StatusCode
             msg = response.Text
             response.close()
             raise getSqlException(self._ctx, source, 1006, 1651, cls, mtd, parameter.Name, code, name, url, msg)
-        if response.hasHeader('DAV'):
-            headers = [header.strip() for header in response.getHeader('DAV').split(',')]
-            print("Provider._supportAddressbook() 1 headers: %s - self._headers: %s" % (headers, self._header))
-            support = self._header in headers
+        support = self._header in (header.strip() for header in response.getHeader('DAV').split(','))
         response.close()
-        print("Provider._supportAddressbook() 2 Support: %s" % support)
         return support
 
     def _getAddressbooksUrl(self, source, request, url, name, pwd):
@@ -276,21 +271,21 @@ class Provider(ProviderBase):
         return self._getRequestParameter(request, 'getAddressbooksUrl', url, name, pwd, data)
 
 
-
 # Method called from Replicator.run()
     def firstPullCard(self, database, user, addressbook, page, count):
+        args = []
         parameter = self._getFisrtPullParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
             cls, mtd = 'Provider', 'firstPullCard()'
             code = response.StatusCode
             msg = response.Text
-            args = cls, mtd, 201, parameter.Name, code, user.Name, parameter.Url, msg
-        else:
-            page += 1
-            count += database.mergeCard(addressbook.Id, self._parseCards(response))
-            args = None
-        response.close()
+            response.close()
+            args += [cls, mtd, 201, parameter.Name, code, user.Name, parameter.Url, msg]
+            return page, count, args
+        page += 1
+        iterator = self._parseCards(response)
+        count += database.mergeCard(addressbook.Id, iterator)
         return page, count, args
 
     def pullCard(self, database, user, addressbook, page, count):
@@ -307,34 +302,30 @@ class Provider(ProviderBase):
 
     # Private method
     def _pullCardByToken(self, database, user, addressbook, page, count):
-        token, deleted, modified, args = self._getCardByToken(user, addressbook)
-        if args is None:
-            if addressbook.Token != token:
-                if deleted:
-                    count += database.deleteCard(deleted)
-                if modified:
-                    count, args = self._mergeCardByToken(database, user, addressbook, count)
-                database.updateAddressbookToken(addressbook.Id, token)
-            page += 1
-        return page, count, args
-
-    def _pullCardByTag(self, database, user, addressbook, page, count):
-        print("Provider._pullCardByTag() %s" % (addressbook.Name, ))
-        return page, count, None
-
-    def _getCardByToken(self, user, addressbook):
         parameter = self._getCardByTokenParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            cls, mtd = 'Provider', '_getCardByToken()'
+            cls, mtd = 'Provider', '_pullCardByToken()'
             code = response.StatusCode
             msg = response.Text
-            args = cls, mtd, 211, parameter.Name, code, user.Name, parameter.Url, msg
-        else:
-            token, deleted, modified = self._getChangedCards(response)
-            args = None
-        response.close()
-        return token, deleted, modified, args
+            response.close()
+            args += [cls, mtd, 211, parameter.Name, code, user.Name, parameter.Url, msg]
+            return page, count, args
+        args = []
+        token, deleted, modified = self._getChangedCards(response)
+        if addressbook.Token != token:
+            if deleted:
+                count += database.deleteCard(deleted)
+            if modified:
+                count, args = self._mergeCardByToken(database, user, addressbook, modified, count)
+            database.updateAddressbookToken(addressbook.Id, token)
+        page += 1
+        return page, count, args
+
+    def _pullCardByTag(self, database, user, addressbook, page, count):
+        # TODO: Need to be implemented method
+        print("Provider._pullCardByTag() %s" % (addressbook.Name, ))
+        return page, count, None
 
     def _mergeCardByToken(self, database, user, addressbook, urls, count):
         parameter = self._getMergeCardByTokenParameter(user, addressbook, urls)
@@ -343,12 +334,12 @@ class Provider(ProviderBase):
             cls, mtd = 'Provider', '_mergeCardByToken()'
             code = response.StatusCode
             msg = response.Text
-            args = cls, mtd, 221, parameter.Name, code, user.Name, parameter.Url, msg
-        else:
-            count += database.mergeCard(addressbook.Id, self._parseCards(response))
-            args = None
-        response.close()
-        return count, args
+            response.close()
+            args = [cls, mtd, 221, parameter.Name, code, user.Name, parameter.Url, msg]
+            return count, args
+        iterator = self._parseCards(response)
+        count += database.mergeCard(addressbook.Id, iterator)
+        return count, []
 
     def _parseCards(self, response):
         deleted = False
@@ -370,6 +361,7 @@ class Provider(ProviderBase):
                         data = child.text
                 if all((url, tag, data)):
                     yield url, tag, deleted, data
+        response.close()
 
     def _getChangedCards(self, response):
         token = None
@@ -392,6 +384,7 @@ class Provider(ProviderBase):
                         modified.append(url) if status else deleted.append(url)
                 elif element.tag == '{DAV:}sync-token':
                     token = element.text
+        response.close()
         return token, deleted, modified
 
     def _getFisrtPullParameter(self, user, addressbook):
@@ -446,6 +439,7 @@ class Provider(ProviderBase):
     def _getRequestParameter(self, request, method, url, name, pwd, data=None):
         parameter = request.getRequestParameter(method)
         parameter.Url = url
+
         if method == 'getUrl':
             parameter.Method = 'PROPFIND'
             parameter.Auth = (name, pwd)
