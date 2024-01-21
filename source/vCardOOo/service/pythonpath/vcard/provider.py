@@ -65,11 +65,7 @@ class Provider(ProviderBase):
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            cls, mtd = 'Provider', 'initAddressbooks()'
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            raise getSqlException(self._ctx, source, 1006, 1601, cls, mtd, parameter.Name, code, user.Name, msg)
+            self.raiseForStatus(response, source, 'initAddressbooks()', 1006, parameter.Name, user.Name, parameter.Url)
         iterator = self._parseAllBook(response)
         self.initUserBooks(source, database, user, iterator)
 
@@ -110,32 +106,25 @@ class Provider(ProviderBase):
         return scheme, server
 
     def _getDiscoveryUrl(self, source, request, url, name, pwd):
-        cls, mtd = 'Provider', '_getDiscoveryUrl'
+        cls, mtd = 'Provider', '_getDiscoveryUrl()'
         parameter = self._getRequestParameter(request, 'getUrl', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok or not response.IsRedirect:
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            raise getSqlException(self._ctx, source, 1006, 1621, cls, mtd, parameter.Name, code, name, url, msg)
-        location = response.getHeader('Location')
-        if not location:
+            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
+        if not response.hasHeader('Location'):
             headers = response.Headers
             response.close()
-            raise getSqlException(self._ctx, source, 1006, 1622, cls, mtd, parameter.Name, name, url, headers)
+            raise getSqlException(self._ctx, source, 1006, 1621, cls, mtd, parameter.Name, name, url, headers)
+        location = response.getHeader('Location')
         response.close()
         redirect = location.endswith(self._url)
         return redirect, location
 
     def _getUserUrl(self, source, request, url, name, pwd):
-        cls, mtd = 'Provider', '_getUserUrl()'
         parameter = self._getUserUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            raise getSqlException(self._ctx, source, 1006, 1631, cls, mtd, parameter.Name, code, name, url, msg)
+            self.raiseForStatus(response, source, '_getUserUrl()', 1006, parameter.Name, name, parameter.Url)
         url = self._parseUserUrl(response)
         return url
 
@@ -160,32 +149,30 @@ class Provider(ProviderBase):
         return url
 
     def _supportAddressbook(self, source, request, url, name, pwd):
-        cls, mtd = 'Provider', '_supportAddressbook'
+        cls, mtd = 'Provider', '_supportAddressbook()'
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
-        if not response.Ok or not response.hasHeader('DAV'):
-            code = response.StatusCode
-            msg = response.Text
+        if not response.Ok:
+            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
+        if not response.hasHeader('DAV'):
+            headers = response.Headers
             response.close()
-            raise getSqlException(self._ctx, source, 1006, 1651, cls, mtd, parameter.Name, code, name, url, msg)
+            raise getSqlException(self._ctx, source, 1006, 1651, cls, mtd, parameter.Name, name, url, headers)
         support = self._header in (header.strip() for header in response.getHeader('DAV').split(','))
         response.close()
         return support
 
     def _getAddressbooksUrl(self, source, request, url, name, pwd):
-        cls, mtd = 'Provider', '_getAddressbooksUrl'
+        cls, mtd = 'Provider', '_getAddressbooksUrl()'
         parameter = self._getAddressbooksUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            code = response.StatusCode
-            msg = response.Text
-            response.close()
-            raise getSqlException(self._ctx, source, 1006, 1661, cls, mtd, parameter.Name, code, name, url, msg)
+            self.raiseForStatus(response, source, mtd, 1006, parameter.Name, name, parameter.Url)
         url = self._parseAddressbookUrl(response)
         if url is None:
             msg = response.Text
             response.close()
-            raise getSqlException(self._ctx, source, 1006, 1662, cls, mtd, parameter.Name, name, url, msg)
+            raise getSqlException(self._ctx, source, 1006, 1661, cls, mtd, parameter.Name, name, url, msg)
         response.close()
         return url
 
