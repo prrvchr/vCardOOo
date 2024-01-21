@@ -266,7 +266,7 @@ class Provider(ProviderBase):
         parameter = self._getFisrtPullParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            args = self.getLoggerArgs(response, 'firstPullCard()', 201, parameter, user.Name)
+            args = self.getLoggerArgs(response, 'firstPullCard()', parameter, user.Name)
             return page, count, args
         page += 1
         iterator = self._parseCards(response)
@@ -290,7 +290,7 @@ class Provider(ProviderBase):
         parameter = self._getCardByTokenParameter(user, addressbook)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            args = self.getLoggerArgs(response, '_pullCardByToken()', 211, parameter, user.Name)
+            args = self.getLoggerArgs(response, '_pullCardByToken()', parameter, user.Name)
             return page, count, args
         args = []
         token, deleted, modified = self._getChangedCards(response)
@@ -312,7 +312,7 @@ class Provider(ProviderBase):
         parameter = self._getMergeCardByTokenParameter(user, addressbook, urls)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            args = self.getLoggerArgs(response, '_mergeCardByToken()', 221, parameter, user.Name)
+            args = self.getLoggerArgs(response, '_mergeCardByToken()', parameter, user.Name)
             return count, args
         iterator = self._parseCards(response)
         count += database.mergeCard(addressbook.Id, iterator)
