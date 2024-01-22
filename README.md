@@ -228,12 +228,12 @@ It will give you access to an information system that only larges companies are 
   `pip install requirements.txt`
 - Modification of the [Requirement][49] section.
 
-### What has been done for version 1.1.0:
+### What has been done for version 1.1.1:
 
 - Using Python package `dateutil` to convert timestamp strings to UNO DateTime.
 - Many other fixes...
 
-### What remains to be done for version 1.1.0:
+### What remains to be done for version 1.1.1:
 
 - Make the address book locally editable with replication of changes.
 
