@@ -260,7 +260,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [19]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
 [20]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
 [21]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
-[22]: <https://prrvchr.github.io/OAuth2OOo/README_fr>
+[22]: <https://prrvchr.github.io/jdbcDriverOOo/README_fr>
 [23]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
