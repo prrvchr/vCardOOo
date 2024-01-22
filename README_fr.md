@@ -29,7 +29,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][4] et à notre [Politique de protection des données][5]**.
 
-# version [1.1.0][6]
+# version [1.1.1][6]
 
 ## Introduction:
 
@@ -228,7 +228,12 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
   `pip install requirements.txt`
 - Modification de la section [Prérequis][49].
 
-### Que reste-t-il à faire pour la version 1.1.0:
+### Ce qui a été fait pour la version 1.1.1:
+
+- Utilisation du package Python `dateutil` pour convertir les chaînes d'horodatage en UNO DateTime.
+- De nombreuses autres corrections...
+
+### Que reste-t-il à faire pour la version 1.1.1:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -260,7 +265,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.0#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.1#right>
 [28]: <img/vCardOOo-1_fr.png>
 [29]: <img/vCardOOo-2_fr.png>
 [30]: <img/vCardOOo-3_fr.png>
