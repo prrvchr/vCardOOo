@@ -1,6 +1,6 @@
-dateutil>=2.8.2
-decorator>=5.1.1
-packaging>=23.2
-setuptools>=69.0.3
-six>=1.16.0
-validators>=0.22.0
+dateutil==2.8.2
+decorator==5.1.1
+packaging==23.2
+setuptools==69.0.3
+six==1.16.0
+validators==0.22.0

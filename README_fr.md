@@ -37,7 +37,7 @@
 
 Cette extension vous donne l'accès, dans LibreOffice, à vos contacts présent sur un serveur CardDAV (ou vCard Extensions to WebDAV).  
 Elle utilise la [RFC 6352][10] pour synchroniser votre carnet d'adresses distant dans une base de données locale HsqlDB 2.7.2.
-​
+
 Etant un logiciel libre je vous encourage:
 - A dupliquer son [code source][11].
 - A apporter des modifications, des corrections, des améliorations.
