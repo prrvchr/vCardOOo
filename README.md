@@ -290,6 +290,6 @@ It will give you access to an information system that only larges companies are 
 [44]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
 [45]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
 [46]: <https://github.com/mangstadt/ez-vcard>
-[47]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vCardOOo/requirements.txt>
+[47]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/requirements.txt>
 [48]: <https://peps.python.org/pep-0508/>
 [49]: <https://prrvchr.github.io/vCardOOo/#requirement>
