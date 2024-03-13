@@ -27,19 +27,20 @@
 <description
   xmlns="http://openoffice.org/extensions/update/2006"
   xmlns:xlink="http://www.w3.org/1999/xlink">
-    <identifier value="io.github.prrvchr.vCardOOo" />
-    <version value="1.1.0" />
+    <identifier value="io.github.prrvchr.vCardOOo"/>
+    <version value="1.1.2"/>
     <update-download>
-        <src xlink:href="https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt" />
+        <src xlink:href="https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt"/>
     </update-download>
     <dependencies xmlns:dep="http://openoffice.org/extensions/description/2006">
         <dep:OpenOffice.org-minimal-version value="4.1" dep:name="OpenOffice.org 4.1"/>
     </dependencies>
     <publisher>
-        <name xlink:href="https://github.com/prrvchr/vCardOOo" lang="en">vCardOOo</name>
+        <name xlink:href="https://prrvchr.github.io/vCardOOo/" lang="en">vCardOOo</name>
+        <name xlink:href="https://prrvchr.github.io/vCardOOo/README_fr" lang="fr">vCardOOo</name>
     </publisher>
     <release-notes>
-        <src xlink:href="https://prrvchr.github.io/vCardOOo/#historical" lang="en" />
-        <src xlink:href="https://prrvchr.github.io/vCardOOo/README_fr#historique" lang="fr" />
+        <src xlink:href="https://prrvchr.github.io/vCardOOo/#what-has-been-done-for-version-112" lang="en"/>
+        <src xlink:href="https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-112" lang="fr"/>
     </release-notes>
 </description>

@@ -41,7 +41,7 @@ import com.sun.star.sdbc.XRow;
 import com.sun.star.task.XJob;
 
 import io.github.prrvchr.uno.helper.UnoHelper;
-import io.github.prrvchr.uno.lang.ServiceInfo;
+import io.github.prrvchr.uno.helper.ServiceInfo;
 import io.github.prrvchr.carddav.scribe.FormattedNameScribe;
 import io.github.prrvchr.carddav.scribe.OrganizationScribe;
 import io.github.prrvchr.carddav.scribe.StructuredNameScribe;
