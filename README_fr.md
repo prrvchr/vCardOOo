@@ -304,4 +304,4 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [48]: <https://peps.python.org/pep-0508/>
 [49]: <https://prrvchr.github.io/vCardOOo/README_fr#pr%C3%A9requis>
 [50]: <https://bugs.documentfoundation.org/show_bug.cgi?id=159988>
-[51]: <https://github.com/prrvchr/vCardOOo/tree/master/uno/lib/uno/ucb/hsqldb>
+[51]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vCardOOo/hsqldb>
