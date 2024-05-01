@@ -81,7 +81,7 @@ public final class DataBase
     public DateTimeWithTimezone getLastUserSync()
         throws SQLException
     {
-        XPreparedStatement call = m_xConnection.prepareCall("CALL \"GetLastUserSync\"(?)");
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"GetLastCardSync\"(?)");
         XRow row = (XRow) UnoRuntime.queryInterface(XRow.class, call);
         call.execute();
         DateTimeWithTimezone timeout = (DateTimeWithTimezone) row.getObject(1, null);
@@ -211,7 +211,7 @@ public final class DataBase
         close(m_xGroupCall);
         m_xCardCall = null;
         m_xCardSetting = null;
-        _updateUser(timestamp);
+        _updateCardSync(timestamp);
         System.out.println("DataBase.commitBatchCall() 2 Count: " + cnum);
     }
 
@@ -235,9 +235,9 @@ public final class DataBase
         m_xConnection.setAutoCommit(true);
     }
 
-    private void _updateUser(DateTimeWithTimezone timestamp) throws SQLException
+    private void _updateCardSync(DateTimeWithTimezone timestamp) throws SQLException
     {
-        XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateUser\"(?)");
+        XPreparedStatement call = m_xConnection.prepareCall("CALL \"UpdateCardSync\"(?)");
         XParameters parameters = (XParameters) UnoRuntime.queryInterface(XParameters.class, call);
         parameters.setObject(1, timestamp);
         call.executeUpdate();
