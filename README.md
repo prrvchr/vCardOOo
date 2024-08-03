@@ -252,7 +252,8 @@ It will give you access to an information system that only larges companies are 
 - Updated the [Python decorator][53] package to version 5.1.1.
 - Updated the [Python packaging][54] package to version 24.1.
 - Updated the [Python setuptools][55] package to version 72.1.0 in order to respond to the [Dependabot security alert][56].
-- Updated the [Python validators][57] package to version 0.33.2.
+- Updated the [Python validators][57] package to version 0.33.0.
+- The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.6 and 1.4.2 respectively minimum.
 
 ### What remains to be done for version 1.1.4:
 
