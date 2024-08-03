@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.1.3][6]
+# version [1.1.4][6]
 
 ## Introduction:
 
@@ -246,7 +246,15 @@ It will give you access to an information system that only larges companies are 
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.4 and 1.3.2 respectively minimum.
 - Many fixes.
 
-### What remains to be done for version 1.1.3:
+### What has been done for version 1.1.4:
+
+- Updated the [Python python-dateutil][52] package to version 2.9.0.post0.
+- Updated the [Python decorator][53] package to version 5.1.1.
+- Updated the [Python packaging][54] package to version 24.1.
+- Updated the [Python setuptools][55] package to version 72.1.0 in order to respond to the [Dependabot security alert][56].
+- Updated the [Python validators][57] package to version 0.33.2.
+
+### What remains to be done for version 1.1.4:
 
 - Make the address book locally editable with replication of changes.
 
@@ -259,7 +267,7 @@ It will give you access to an information system that only larges companies are 
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-110>
+[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-114>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
@@ -280,7 +288,7 @@ It will give you access to an information system that only larges companies are 
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.3#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.4#right>
 [28]: <img/vCardOOo-1.png>
 [29]: <img/vCardOOo-2.png>
 [30]: <img/vCardOOo-3.png>
@@ -305,3 +313,9 @@ It will give you access to an information system that only larges companies are 
 [49]: <https://prrvchr.github.io/vCardOOo/#requirement>
 [50]: <https://bugs.documentfoundation.org/show_bug.cgi?id=159988>
 [51]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vCardOOo/hsqldb>
+[52]: <https://pypi.org/project/python-dateutil/>
+[53]: <https://pypi.org/project/decorator/>
+[54]: <https://pypi.org/project/packaging/>
+[55]: <https://pypi.org/project/setuptools/>
+[56]: <https://github.com/prrvchr/vCardOOo/security/dependabot/1>
+[57]: <https://pypi.org/project/validators/>
