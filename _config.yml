@@ -7,6 +7,7 @@ plugins:
 favicon: true
 logo: /img/contact.svg
 email: prrvchr@gmail.com
+google_analytics: G-KFZFN7BF1Q
 title: vCardOOo
 blank_title: true
 description: Your vCard Nextcloud contacts as an HsqlDB database in LibreOffice

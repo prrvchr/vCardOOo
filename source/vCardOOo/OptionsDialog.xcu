@@ -48,7 +48,7 @@
             <value xml:lang="fr-FR">vCardOOo</value>
           </prop>
           <prop oor:name="OptionsPage">
-            <value>%origin%/vCardOOo/OptionsDialog.xdl</value>
+            <value>%origin%/dialogs/OptionsDialog.xdl</value>
           </prop>
           <prop oor:name="EventHandlerService">
             <value>io.github.prrvchr.vCardOOo.OptionsHandler</value>
