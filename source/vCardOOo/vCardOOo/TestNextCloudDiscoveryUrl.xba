@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="TestNextCloudDiscoveryUrl" script:language="StarBasic">
+
+Rem ╔════════════════════════════════════════════════════════════════════════════════════╗
+Rem ║                                                                                    ║
+Rem ║   Copyright (c) 2020-24 https://prrvchr.github.io                                  ║
+Rem ║                                                                                    ║
+Rem ║   Permission is hereby granted, free of charge, to any person obtaining            ║
+Rem ║   a copy of this software and associated documentation files (the &quot;Software&quot;),     ║
+Rem ║   to deal in the Software without restriction, including without limitation        ║
+Rem ║   the rights to use, copy, modify, merge, publish, distribute, sublicense,         ║
+Rem ║   and/or sell copies of the Software, and to permit persons to whom the Software   ║
+Rem ║   is furnished to do so, subject to the following conditions:                      ║
+Rem ║                                                                                    ║
+Rem ║   The above copyright notice and this permission notice shall be included in       ║
+Rem ║   all copies or substantial portions of the Software.                              ║
+Rem ║                                                                                    ║
+Rem ║   THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,                  ║
+Rem ║   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES                  ║
+Rem ║   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.        ║
+Rem ║   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY             ║
+Rem ║   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,             ║
+Rem ║   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE       ║
+Rem ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
+Rem ║                                                                                    ║
+Rem ╚════════════════════════════════════════════════════════════════════════════════════╝
+
+Sub Main
+
+    Rem First we need to create the UNO OAuth2Service without OAuth2
+    oRequest = CreateUnoService(&quot;io.github.prrvchr.OAuth2OOo.OAuth2Service&quot;)
+    Rem The OAuth2OOo extension is not installed!!!
+    if isNull(oRequest) then
+        Msgbox &quot;ERROR: You need to install the OAuth2OOo extension to use this macro!&quot;
+        exit sub
+    endif
+
+    Rem Ask the user for a NextCloud server address
+    sServer = InputBox(&quot;Please enter a NextCloud server&quot;, _
+                       &quot;Test NextCloud Discovery URL&quot;)
+    Rem User clicked Cancel
+    if sServer = &quot;&quot; then
+        exit sub
+    endif
+
+    Rem Ask the user for a user name
+    sUser = InputBox(&quot;Please enter a user name&quot;, _
+                     &quot;Test NextCloud Discovery URL&quot;)
+    Rem User clicked Cancel
+    if sUser = &quot;&quot; then
+        exit sub
+    endif
+
+    Rem Ask the user for a user password
+    sPassword = InputBox(&quot;Please enter a user password&quot;, _
+                         &quot;Test NextCloud Discovery URL&quot;)
+    Rem User clicked Cancel
+    if sPassword = &quot;&quot; then
+        exit sub
+    endif
+
+    Rem Normally a CardDAV server (ie: NextCloud) should respond
+    Rem on the address: /.well-known/carddav
+    sSuffix = &quot;/.well-known/carddav&quot;
+    sUrl = &quot;https://&quot; &amp; sServer &amp; sSuffix
+
+    Rem In this example we support up to two HTTP redirects (ie: HTTP 301 status code)
+    Redirect = 2
+
+    Rem Looking for the discovery url
+    do while endsWith(sUrl, sSuffix) and Redirect &gt; 0
+        sUrl = geDiscoveryUrl(oRequest, sUrl, sUser, sPassword)
+        Redirect = Redirect - 1
+    loop
+
+    Rem Discorey Url cannot be retrieved
+    if endsWith(sUrl, sSuffix) then
+        Msgbox &quot;ERROR: Discovery URL cannot be retrieved!&quot; &amp; chr(13) &amp; _
+               &quot;Maybe too many redirects&quot;
+        exit sub
+    endif
+
+    Rem The XML data needed to get the user&apos;s url
+    sXml = &quot;&lt;?xml version=&quot;&quot;1.0&quot;&quot; encoding=&quot;&quot;utf-8&quot;&quot; ?&gt;&quot; &amp; _
+           &quot;&lt;D:propfind xmlns:D=&quot;&quot;DAV:&quot;&quot;&gt;&quot; &amp; _
+           &quot;&lt;D:prop&gt;&quot; &amp; _
+           &quot;&lt;D:current-user-principal /&gt;&quot; &amp; _
+           &quot;&lt;/D:prop&gt;&quot; &amp; _
+           &quot;&lt;/D:propfind&gt;&quot;
+
+    Rem To execute an HTTP request we first need a HTTP Request parameter
+    oParameter = oRequest.getRequestParameter(&quot;NextCloud user url&quot;)
+
+    Rem Default Requests method is GET and must be changed
+    oParameter.Method = &quot;PROPFIND&quot;
+    oParameter.Url = sUrl
+
+    Rem Defining all the properties needed to get the User URL
+    oParameter.Auth = Array(sUser, sPassword)
+    oParameter.setHeader(&quot;Content-Type&quot;, &quot;application/xml; charset=utf-8&quot;)
+    oParameter.setHeader(&quot;Depth&quot;, &quot;0&quot;)
+
+    Rem We set the Text property of the parameter:
+    oParameter.Text = sXml
+
+    Rem To obtain the HTTP response we use the execute() method
+    Rem of the OAuth2Service service with the HTTP parameter as argument
+    oResponse = oRequest.execute(oParameter)
+
+    if oResponse.Ok then
+        sText = &quot;Dicovery URL is: &quot; &amp; sUrl &amp; chr(13) &amp; _
+                chr(13) &amp; _
+                &quot;User URL response is:&quot; &amp; chr(13) &amp; _
+                oResponse.Text
+    else
+        sText = &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; _
+                &quot;Response text: &quot; &amp; oResponse.Text
+    endif
+
+    Rem When it is finished we have to close the HTTP response
+    oResponse.close()
+
+    Msgbox sText
+
+End Sub
+
+Function endsWith(sUrl as String, sSuffix as String) as Boolean
+    endsWith = right(sUrl, len(sSuffix)) = sSuffix
+End Function
+
+Function geDiscoveryUrl(oRequest as Variant, sUrl as String, sUser as String, sPassword as String) as String
+
+    Rem To execute an HTTP request we first need a HTTP Request parameter
+    oParameter = oRequest.getRequestParameter(&quot;NextCloud dicovery url&quot;)
+
+    Rem Default Requests method is GET and must be changed
+    oParameter.Method = &quot;PROPFIND&quot;
+    oParameter.Url = sUrl
+
+    Rem Defining all the properties needed to get the Discovery URL
+    oParameter.Auth = Array(sUser, sPassword)
+    oParameter.setHeader(&quot;Content-Type&quot;, &quot;application/xml; charset=utf-8&quot;)
+    oParameter.setHeader(&quot;Depth&quot;, &quot;0&quot;)
+    oParameter.NoRedirect = True
+
+    Rem To obtain the HTTP response we use the execute() method
+    Rem of the OAuth2Service service with the HTTP parameter as argument
+    oResponse = oRequest.execute(oParameter)
+
+    geDiscoveryUrl = sUrl
+
+    if not oResponse.Ok then
+        Msgbox &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; _
+               &quot;Response text: &quot; &amp; oResponse.Text
+        oResponse.close()
+        exit function
+    endif
+
+    if not oResponse.hasHeader(&quot;Location&quot;) then
+        Msgbox &quot;ERROR: not a redirect (ie: Response has no Location header)&quot; &amp; chr(13) &amp; _
+               &quot;Response headers is: &quot; &amp; oResponse.Headers
+        oResponse.close()
+        exit function
+    endif
+
+    sUrl = oResponse.getHeader(&quot;Location&quot;)
+
+    Rem When it is finished we have to close the HTTP response
+    oResponse.close()
+
+    geDiscoveryUrl = sUrl
+End Function
+
+</script:module>
