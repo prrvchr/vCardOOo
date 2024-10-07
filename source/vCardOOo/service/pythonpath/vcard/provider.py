@@ -65,10 +65,11 @@ class Provider(ProviderBase):
         return server + '/' + name
 
     def initAddressbooks(self, source, database, user):
+        cls, mtd = 'Provider', 'initAddressbooks()'
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, response, 'initAddressbooks()', 1006, parameter, user.Name)
+            self.raiseForStatus(source, cls, mtd, response, parameter, user.Name)
         iterator = self._parseAllBook(response)
         self.initUserBooks(source, database, user, iterator)
 
@@ -87,47 +88,48 @@ class Provider(ProviderBase):
     # Private method
     def _getNewUserId(self, source, request, scheme, server, name, pwd):
         cls, mtd = 'Provider', '_getNewUserId()'
-        url = scheme + server + self._url
-        redirect, url = self._getDiscoveryUrl(source, request, url, name, pwd)
-        if redirect:
-            scheme, server = self._getUrlParts(url)
-            redirect, url = self._getDiscoveryUrl(source, request, url, name, pwd)
+        url = self._getDiscoveryUrl(source, request, scheme, server, name, pwd)
         path = self._getUserUrl(source, request, url, name, pwd)
         if path is None:
             password = '*' * len(pwd)
             raise getSqlException(self._ctx, source, 1001, 1641, cls, mtd, name, password, server, url)
+        scheme, server = self._getUrlParts(url)
         url = scheme + server + path
         if not self._supportAddressbook(source, request, url, name, pwd):
             raise getSqlException(self._ctx, source, 1006, 1642, name, url)
         userid = self._getAddressbooksUrl(source, request, url, name, pwd)
         return userid
 
-    def _getUrlParts(self, location):
-        url = getUrl(self._ctx, location)
-        scheme = url.Protocol
-        server = url.Server
-        return scheme, server
-
-    def _getDiscoveryUrl(self, source, request, url, name, pwd):
+    def _getDiscoveryUrl(self, source, request, scheme, server, name, pwd):
         cls, mtd = 'Provider', '_getDiscoveryUrl()'
+        attempt = retry = 3
+        url = scheme + server + self._url
+        while url.endswith(self._url) and retry > 0:
+            url = self._discoverUrl(source, cls, mtd, request, url, name, pwd)
+            retry -= 1
+        if url.endswith(self._url):
+            raise getSqlException(self._ctx, source, 1006, 1622, cls, mtd, attempt, url)
+        return url
+
+    def _discoverUrl(self, source, cls, mtd, request, url, name, pwd):
         parameter = self._getRequestParameter(request, 'getUrl', url, name, pwd)
         response = request.execute(parameter)
-        if not response.Ok or not response.IsRedirect:
-            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
-        if not response.hasHeader('Location'):
+        if not response.Ok:
+            self.raiseForStatus(source, cls, mtd, response, parameter, name)
+        if not response.IsRedirect or not response.hasHeader('Location'):
             headers = response.Headers
             response.close()
             raise getSqlException(self._ctx, source, 1006, 1621, cls, mtd, parameter.Name, name, url, headers)
         location = response.getHeader('Location')
         response.close()
-        redirect = location.endswith(self._url)
-        return redirect, location
+        return location
 
     def _getUserUrl(self, source, request, url, name, pwd):
+        cls, mtd = 'Provider', '_getUserUrl()'
         parameter = self._getUserUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, response, '_getUserUrl()', 1006, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, parameter, name)
         url = self._parseUserUrl(response)
         return url
 
@@ -151,12 +153,18 @@ class Provider(ProviderBase):
         response.close()
         return url
 
+    def _getUrlParts(self, location):
+        url = getUrl(self._ctx, location)
+        scheme = url.Protocol
+        server = url.Server
+        return scheme, server
+
     def _supportAddressbook(self, source, request, url, name, pwd):
         cls, mtd = 'Provider', '_supportAddressbook()'
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, parameter, name)
         if not response.hasHeader('DAV'):
             headers = response.Headers
             response.close()
@@ -170,7 +178,7 @@ class Provider(ProviderBase):
         parameter = self._getAddressbooksUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, response, mtd, 1006, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, parameter, name)
         url = self._parseAddressbookUrl(response)
         if url is None:
             msg = response.Text
