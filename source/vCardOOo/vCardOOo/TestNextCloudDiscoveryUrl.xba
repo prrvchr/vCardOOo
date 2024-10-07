@@ -109,7 +109,7 @@ Sub Main
     oResponse = oRequest.execute(oParameter)
 
     if oResponse.Ok then
-        sText = &quot;Dicovery URL is: &quot; &amp; sUrl &amp; chr(13) &amp; _
+        sText = &quot;Discovery URL is: &quot; &amp; sUrl &amp; chr(13) &amp; _
                 chr(13) &amp; _
                 &quot;User URL response is:&quot; &amp; chr(13) &amp; _
                 oResponse.Text
