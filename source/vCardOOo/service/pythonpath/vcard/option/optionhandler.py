@@ -4,7 +4,7 @@
 """
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
-║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
+║   Copyright (c) 2020-24 https://prrvchr.github.io                                  ║
 ║                                                                                    ║
 ║   Permission is hereby granted, free of charge, to any person obtaining            ║
 ║   a copy of this software and associated documentation files (the "Software"),     ║
@@ -29,70 +29,31 @@
 
 import unohelper
 
-from com.sun.star.logging.LogLevel import SEVERE
-
-from com.sun.star.lang import XServiceInfo
 from com.sun.star.awt import XContainerWindowEventHandler
-
-from vcard import OptionManager
-
-from vcard import getLogger
-
-from vcard import g_identifier
-from vcard import g_defaultlog
 
 import traceback
 
-# pythonloader looks for a static g_ImplementationHelper variable
-g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationName = f'{g_identifier}.OptionsHandler'
 
-
-class OptionsHandler(unohelper.Base,
-                     XServiceInfo,
-                     XContainerWindowEventHandler):
-    def __init__(self, ctx):
-        self._ctx = ctx
-        self._manager = None
-        self._logger = getLogger(ctx, g_defaultlog)
+class WindowHandler(unohelper.Base,
+                    XContainerWindowEventHandler):
+    def __init__(self, manager):
+        self._manager = manager
 
     # XContainerWindowEventHandler
-    def callHandlerMethod(self, window, event, method):
+    def callHandlerMethod(self, dialog, event, method):
         try:
             handled = False
-            if method == 'external_event':
-                if event == 'initialize':
-                    self._manager = OptionManager(self._ctx, window, self._logger, 65)
-                    handled = True
-                elif event == 'ok':
-                    self._manager.saveSetting()
-                    handled = True
-                elif event == 'back':
-                    self._manager.loadSetting()
-                    handled = True
-            elif method == 'ViewData':
-                self._manager.viewData()
+            if method == 'ServerConnection':
+                self._manager.serverConnection()
+                handled = True
+            elif method == 'EditMacro':
+                self._manager.editMacro()
                 handled = True
             return handled
         except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 101, e, traceback.format_exc())
+            print("ERROR: %s - %s" % (e, traceback.format_exc()))
 
     def getSupportedMethodNames(self):
-        return ('external_event',
-                'ViewData')
+        return ('ServerConnection',
+                'EditMacro')
 
-    def dispose(self):
-        print("OptionsHandler.dispose() *****************************************************")
-
-    # XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-    def getImplementationName(self):
-        return g_ImplementationName
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
-
-g_ImplementationHelper.addImplementation(OptionsHandler,                             # UNO object class
-                                         g_ImplementationName,                      # Implementation name
-                                        (g_ImplementationName,))                    # List of implemented services

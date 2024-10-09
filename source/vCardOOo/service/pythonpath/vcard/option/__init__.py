@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+#!
+# -*- coding: utf-8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
-║   Copyright (c) 2020-24 https://prrvchr.github.io                                  ║
+║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
 ║                                                                                    ║
 ║   Permission is hereby granted, free of charge, to any person obtaining            ║
 ║   a copy of this software and associated documentation files (the "Software"),     ║
@@ -23,8 +25,6 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<!DOCTYPE library:library PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "library.dtd">
-<library:library xmlns:library="http://openoffice.org/2000/library" library:name="vCardOOo" library:readonly="false" library:passwordprotected="false">
-  <library:element library:name="CardDAVDiscoveryUrl"/>
-</library:library>
+"""
+
+from .optionmanager import OptionManager

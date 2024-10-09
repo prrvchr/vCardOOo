@@ -27,72 +27,61 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import unohelper
-
 from com.sun.star.logging.LogLevel import SEVERE
 
-from com.sun.star.lang import XServiceInfo
-from com.sun.star.awt import XContainerWindowEventHandler
+from .optionview import OptionView
+from .optionhandler import WindowHandler
 
-from vcard import OptionManager
+from ..options import OptionsManager
 
-from vcard import getLogger
+from ..unotool import createService
+from ..unotool import executeFrameDispatch
+from ..unotool import getDesktop
+from ..unotool import getPropertyValueSet
 
-from vcard import g_identifier
-from vcard import g_defaultlog
+from ..configuration import g_extension
 
 import traceback
 
-# pythonloader looks for a static g_ImplementationHelper variable
-g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationName = f'{g_identifier}.OptionsHandler'
 
-
-class OptionsHandler(unohelper.Base,
-                     XServiceInfo,
-                     XContainerWindowEventHandler):
-    def __init__(self, ctx):
+class OptionManager():
+    def __init__(self, ctx, window, logger, offset):
         self._ctx = ctx
-        self._manager = None
-        self._logger = getLogger(ctx, g_defaultlog)
+        self._module = 'CardDAVDiscoveryUrl'
+        self._sub = 'Main'
+        self._line = 26
+        self._optionsmanager = OptionsManager(ctx, window, logger, offset)
+        self._view = OptionView(ctx, window, WindowHandler(self))
+        self._logger = logger
 
-    # XContainerWindowEventHandler
-    def callHandlerMethod(self, window, event, method):
+    def saveSetting(self):
+        self._optionsmanager.saveSetting()
+
+    def loadSetting(self):
+        self._optionsmanager.loadSetting()
+
+    def viewData(self):
+        self._optionsmanager.viewData()
+
+    def serverConnection(self):
+        service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
+        factory = self._ctx.getByName(service)
+        provider = factory.createScriptProvider(self._ctx)
+        url = f'vnd.sun.star.script:{g_extension}.{self._module}.{self._sub}?language=Basic&location=application'
+        script = provider.getScript(url) 
         try:
-            handled = False
-            if method == 'external_event':
-                if event == 'initialize':
-                    self._manager = OptionManager(self._ctx, window, self._logger, 65)
-                    handled = True
-                elif event == 'ok':
-                    self._manager.saveSetting()
-                    handled = True
-                elif event == 'back':
-                    self._manager.loadSetting()
-                    handled = True
-            elif method == 'ViewData':
-                self._manager.viewData()
-                handled = True
-            return handled
+            script.invoke(((), ), (), ())
         except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 101, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, 'OptionManager', 'serverConnection()', 101, e, traceback.format_exc())
+            print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
 
-    def getSupportedMethodNames(self):
-        return ('external_event',
-                'ViewData')
+    def editMacro(self):
+        frame = createService(self._ctx, 'com.sun.star.frame.Frame')
+        args = getPropertyValueSet({'Document': 'LibreOffice Macros & Dialogs',
+                                    'LibName': g_extension,
+                                    'Name': self._module,
+                                    'Type': 'Module',
+                                    'Line': self._line})
+        dispatcher = createService(self._ctx, 'com.sun.star.frame.DispatchHelper')
+        dispatcher.executeDispatch(frame, '.uno:BasicIDEAppear', "", 0, args)
 
-    def dispose(self):
-        print("OptionsHandler.dispose() *****************************************************")
-
-    # XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-    def getImplementationName(self):
-        return g_ImplementationName
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
-
-g_ImplementationHelper.addImplementation(OptionsHandler,                             # UNO object class
-                                         g_ImplementationName,                      # Implementation name
-                                        (g_ImplementationName,))                    # List of implemented services

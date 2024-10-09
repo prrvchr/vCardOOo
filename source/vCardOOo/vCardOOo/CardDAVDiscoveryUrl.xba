@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE script:module PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "module.dtd">
-<script:module xmlns:script="http://openoffice.org/2000/script" script:name="TestNextCloudDiscoveryUrl" script:language="StarBasic">
-
+<script:module xmlns:script="http://openoffice.org/2000/script" script:name="CardDAVDiscoveryUrl" script:language="StarBasic">
 Rem ╔════════════════════════════════════════════════════════════════════════════════════╗
 Rem ║                                                                                    ║
 Rem ║   Copyright (c) 2020-24 https://prrvchr.github.io                                  ║
@@ -28,56 +27,59 @@ Rem ╚════════════════════════�
 
 Sub Main
 
+    sTitle = &quot;CardDAV Discovery URL&quot;
+
     Rem First we need to create the UNO OAuth2Service without OAuth2
     oRequest = CreateUnoService(&quot;io.github.prrvchr.OAuth2OOo.OAuth2Service&quot;)
     Rem The OAuth2OOo extension is not installed!!!
     if isNull(oRequest) then
-        Msgbox &quot;ERROR: You need to install the OAuth2OOo extension to use this macro!&quot;
+        Msgbox &quot;ERROR: You need to install the OAuth2OOo extension to use this macro!&quot;, 0, sTitle
         exit sub
     endif
 
     Rem Ask the user for a NextCloud server address
-    sServer = InputBox(&quot;Please enter a NextCloud server&quot;, _
-                       &quot;Test NextCloud Discovery URL&quot;)
+    sServer = InputBox(&quot;Please enter a CardDAV (ie: NextCloud) server&quot;, sTitle)
     Rem User clicked Cancel
     if sServer = &quot;&quot; then
         exit sub
     endif
 
     Rem Ask the user for a user name
-    sUser = InputBox(&quot;Please enter a user name&quot;, _
-                     &quot;Test NextCloud Discovery URL&quot;)
+    sUser = InputBox(&quot;Please enter a user name&quot;, sTitle)
     Rem User clicked Cancel
     if sUser = &quot;&quot; then
         exit sub
     endif
 
     Rem Ask the user for a user password
-    sPassword = InputBox(&quot;Please enter a user password&quot;, _
-                         &quot;Test NextCloud Discovery URL&quot;)
+    sPassword = InputBox(&quot;Please enter a user password&quot;, sTitle)
     Rem User clicked Cancel
     if sPassword = &quot;&quot; then
         exit sub
     endif
 
-    Rem Normally a CardDAV server (ie: NextCloud) should respond
-    Rem on the address: /.well-known/carddav
+    Rem Normally a CardDAV server (ie: NextCloud) should
+    Rem respond on the address: /.well-known/carddav
     sSuffix = &quot;/.well-known/carddav&quot;
     sUrl = &quot;https://&quot; &amp; sServer &amp; sSuffix
 
-    Rem In this example we support up to two HTTP redirects (ie: HTTP 301 status code)
+    Rem In this example, we support up to two HTTP redirects
+    Rem (ie: HTTP status code 301) when looking up the discovery URL
     Redirect = 2
-
-    Rem Looking for the discovery url
     do while endsWith(sUrl, sSuffix) and Redirect &gt; 0
-        sUrl = geDiscoveryUrl(oRequest, sUrl, sUser, sPassword)
+        sUrl = getDiscoveryUrl(oRequest, sTitle, sUrl, sUser, sPassword)
         Redirect = Redirect - 1
     loop
 
-    Rem Discorey Url cannot be retrieved
+    Rem An error occurred in getDiscoveryUrl() function
+    if sUrl = &quot;&quot; then
+        exit sub
+    endif
+
+    Rem Or discovery url cannot be retrieved
     if endsWith(sUrl, sSuffix) then
         Msgbox &quot;ERROR: Discovery URL cannot be retrieved!&quot; &amp; chr(13) &amp; _
-               &quot;Maybe too many redirects&quot;
+               &quot;Maybe too many redirects&quot;, 0, sTitle
         exit sub
     endif
 
@@ -90,7 +92,7 @@ Sub Main
            &quot;&lt;/D:propfind&gt;&quot;
 
     Rem To execute an HTTP request we first need a HTTP Request parameter
-    oParameter = oRequest.getRequestParameter(&quot;NextCloud user url&quot;)
+    oParameter = oRequest.getRequestParameter(&quot;CardDAV user url&quot;)
 
     Rem Default Requests method is GET and must be changed
     oParameter.Method = &quot;PROPFIND&quot;
@@ -109,19 +111,17 @@ Sub Main
     oResponse = oRequest.execute(oParameter)
 
     if oResponse.Ok then
-        sText = &quot;Discovery URL is: &quot; &amp; sUrl &amp; chr(13) &amp; _
-                chr(13) &amp; _
-                &quot;User URL response is:&quot; &amp; chr(13) &amp; _
-                oResponse.Text
+        sText = &quot;CardDAV Discovery URL: &quot; &amp; sUrl &amp; chr(13) &amp; chr(13) &amp; _
+                &quot;User URL response:&quot; &amp; chr(13) &amp; oResponse.Text
     else
-        sText = &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; _
-                &quot;Response text: &quot; &amp; oResponse.Text
+        sText = &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; chr(13) &amp; _
+                &quot;Response text:&quot; &amp; chr(13) &amp; oResponse.Text
     endif
 
     Rem When it is finished we have to close the HTTP response
     oResponse.close()
 
-    Msgbox sText
+    Msgbox sText, 0, sTitle
 
 End Sub
 
@@ -129,10 +129,12 @@ Function endsWith(sUrl as String, sSuffix as String) as Boolean
     endsWith = right(sUrl, len(sSuffix)) = sSuffix
 End Function
 
-Function geDiscoveryUrl(oRequest as Variant, sUrl as String, sUser as String, sPassword as String) as String
+Function getDiscoveryUrl(oRequest as Variant, sTitle as String, sUrl as String, _
+                         sUser as String, sPassword as String) as String
+    getDiscoveryUrl = &quot;&quot;
 
     Rem To execute an HTTP request we first need a HTTP Request parameter
-    oParameter = oRequest.getRequestParameter(&quot;NextCloud dicovery url&quot;)
+    oParameter = oRequest.getRequestParameter(&quot;CardDAV discovery url&quot;)
 
     Rem Default Requests method is GET and must be changed
     oParameter.Method = &quot;PROPFIND&quot;
@@ -148,18 +150,17 @@ Function geDiscoveryUrl(oRequest as Variant, sUrl as String, sUser as String, sP
     Rem of the OAuth2Service service with the HTTP parameter as argument
     oResponse = oRequest.execute(oParameter)
 
-    geDiscoveryUrl = sUrl
-
     if not oResponse.Ok then
-        Msgbox &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; _
-               &quot;Response text: &quot; &amp; oResponse.Text
+        Msgbox &quot;ERROR: HTTP status code error: &quot; &amp; oResponse.StatusCode &amp; chr(13) &amp; chr(13) &amp; _
+               &quot;Response text:&quot; &amp; chr(13) &amp; oResponse.Text, 0, sTitle
         oResponse.close()
         exit function
     endif
 
     if not oResponse.hasHeader(&quot;Location&quot;) then
-        Msgbox &quot;ERROR: not a redirect (ie: Response has no Location header)&quot; &amp; chr(13) &amp; _
-               &quot;Response headers is: &quot; &amp; oResponse.Headers
+        Msgbox &quot;ERROR: response is not an HTTP redirect (ie: response has no Location header)&quot; &amp; chr(13) &amp; chr(13) &amp; _
+               &quot;Response headers: &quot; &amp; oResponse.Headers &amp; chr(13) &amp; _
+               &quot;Response text:&quot; &amp; chr(13) &amp; oResponse.Text, 0, sTitle
         oResponse.close()
         exit function
     endif
@@ -169,7 +170,7 @@ Function geDiscoveryUrl(oRequest as Variant, sUrl as String, sUser as String, sP
     Rem When it is finished we have to close the HTTP response
     oResponse.close()
 
-    geDiscoveryUrl = sUrl
+    getDiscoveryUrl = sUrl
 End Function
 
 </script:module>

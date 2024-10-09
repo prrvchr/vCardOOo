@@ -27,72 +27,15 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import unohelper
+from ..unotool import getContainerWindow
 
-from com.sun.star.logging.LogLevel import SEVERE
-
-from com.sun.star.lang import XServiceInfo
-from com.sun.star.awt import XContainerWindowEventHandler
-
-from vcard import OptionManager
-
-from vcard import getLogger
-
-from vcard import g_identifier
-from vcard import g_defaultlog
+from ..configuration import g_identifier
 
 import traceback
 
-# pythonloader looks for a static g_ImplementationHelper variable
-g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationName = f'{g_identifier}.OptionsHandler'
 
+class OptionView():
+    def __init__(self, ctx, window, handler):
+        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionWindow')
+        self._window.setVisible(True)
 
-class OptionsHandler(unohelper.Base,
-                     XServiceInfo,
-                     XContainerWindowEventHandler):
-    def __init__(self, ctx):
-        self._ctx = ctx
-        self._manager = None
-        self._logger = getLogger(ctx, g_defaultlog)
-
-    # XContainerWindowEventHandler
-    def callHandlerMethod(self, window, event, method):
-        try:
-            handled = False
-            if method == 'external_event':
-                if event == 'initialize':
-                    self._manager = OptionManager(self._ctx, window, self._logger, 65)
-                    handled = True
-                elif event == 'ok':
-                    self._manager.saveSetting()
-                    handled = True
-                elif event == 'back':
-                    self._manager.loadSetting()
-                    handled = True
-            elif method == 'ViewData':
-                self._manager.viewData()
-                handled = True
-            return handled
-        except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 101, e, traceback.format_exc())
-
-    def getSupportedMethodNames(self):
-        return ('external_event',
-                'ViewData')
-
-    def dispose(self):
-        print("OptionsHandler.dispose() *****************************************************")
-
-    # XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-    def getImplementationName(self):
-        return g_ImplementationName
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
-
-g_ImplementationHelper.addImplementation(OptionsHandler,                             # UNO object class
-                                         g_ImplementationName,                      # Implementation name
-                                        (g_ImplementationName,))                    # List of implemented services
