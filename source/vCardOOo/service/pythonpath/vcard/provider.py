@@ -65,11 +65,11 @@ class Provider(ProviderBase):
         return server + '/' + name
 
     def initAddressbooks(self, source, database, user):
-        cls, mtd = 'Provider', 'initAddressbooks()'
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, cls, mtd, response, parameter, user.Name)
+            cls, mtd = 'Provider', 'initAddressbooks()'
+            self.raiseForStatus(source, cls, mtd, response, user.Name)
         iterator = self._parseAllBook(response)
         self.initUserBooks(source, database, user, iterator)
 
@@ -87,11 +87,11 @@ class Provider(ProviderBase):
 
     # Private method
     def _getNewUserId(self, source, request, scheme, server, name, pwd):
-        cls, mtd = 'Provider', '_getNewUserId()'
         url = self._getDiscoveryUrl(source, request, scheme, server, name, pwd)
         path = self._getUserUrl(source, request, url, name, pwd)
         if path is None:
             password = '*' * len(pwd)
+            cls, mtd = 'Provider', '_getNewUserId()'
             raise getSqlException(self._ctx, source, 1001, 1641, cls, mtd, name, password, server, url)
         scheme, server = self._getUrlParts(url)
         url = scheme + server + path
@@ -115,7 +115,7 @@ class Provider(ProviderBase):
         parameter = self._getRequestParameter(request, 'getUrl', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, cls, mtd, response, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, name)
         if not response.IsRedirect or not response.hasHeader('Location'):
             headers = response.Headers
             response.close()
@@ -125,11 +125,11 @@ class Provider(ProviderBase):
         return location
 
     def _getUserUrl(self, source, request, url, name, pwd):
-        cls, mtd = 'Provider', '_getUserUrl()'
         parameter = self._getUserUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, cls, mtd, response, parameter, name)
+            cls, mtd = 'Provider', '_getUserUrl()'
+            self.raiseForStatus(source, cls, mtd, response, name)
         url = self._parseUserUrl(response)
         return url
 
@@ -164,7 +164,7 @@ class Provider(ProviderBase):
         parameter = self._getRequestParameter(request, 'hasAddressbook', url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, cls, mtd, response, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, name)
         if not response.hasHeader('DAV'):
             headers = response.Headers
             response.close()
@@ -178,7 +178,7 @@ class Provider(ProviderBase):
         parameter = self._getAddressbooksUrlParameter(request, url, name, pwd)
         response = request.execute(parameter)
         if not response.Ok:
-            self.raiseForStatus(source, cls, mtd, response, parameter, name)
+            self.raiseForStatus(source, cls, mtd, response, name)
         url = self._parseAddressbookUrl(response)
         if url is None:
             msg = response.Text
