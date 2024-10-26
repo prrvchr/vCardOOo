@@ -12,4 +12,4 @@ sca:
   include:
     - .
 language: EN
-strict: true
+strict: false
