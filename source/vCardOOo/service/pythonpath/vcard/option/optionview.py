@@ -36,6 +36,6 @@ import traceback
 
 class OptionView():
     def __init__(self, ctx, window, handler):
-        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionWindow')
+        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionDialog')
         self._window.setVisible(True)
 
