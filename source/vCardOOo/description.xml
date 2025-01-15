@@ -28,7 +28,7 @@
   xmlns="http://openoffice.org/extensions/description/2006"
   xmlns:d="http://openoffice.org/extensions/description/2006"
   xmlns:xlink="http://www.w3.org/1999/xlink">
-    <version value="1.1.6"/>
+    <version value="1.2.0"/>
     <identifier value="io.github.prrvchr.vCardOOo"/>
     <platform value="all"/>
     <dependencies>
@@ -59,7 +59,7 @@
         <high-contrast xlink:href="img/vCardOOo.svg"/>
     </icon>
     <extension-description>
-        <src xlink:href="description/desc_en.txt" lang="en-US"/>
-        <src xlink:href="description/desc_fr.txt" lang="fr-FR"/>
+        <src xlink:href="description/description_en.txt" lang="en-US"/>
+        <src xlink:href="description/description_fr.txt" lang="fr-FR"/>
     </extension-description>
 </description>

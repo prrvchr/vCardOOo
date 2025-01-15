@@ -42,16 +42,20 @@ from com.sun.star.sdbcx import XCreateCatalog
 from com.sun.star.sdbcx import XDataDefinitionSupplier
 from com.sun.star.sdbcx import XDropCatalog
 
-from vcard import getDataSource
+from vcard import DataSource
+
+from vcard import getDataSourceUrl
 from vcard import getDriverPropertyInfos
 from vcard import getLogger
 from vcard import getLogException
 from vcard import getUrl
 
-from vcard import g_identifier
-from vcard import g_protocol
-from vcard import g_scheme
 from vcard import g_defaultlog
+from vcard import g_protocol
+from vcard import g_version
+
+from vcard import g_identifier
+from vcard import g_scheme
 
 import traceback
 
@@ -67,10 +71,12 @@ class Driver(unohelper.Base,
              XDropCatalog,
              XServiceInfo):
     def __init__(self, ctx):
+        self._cls = 'Driver'
+        mtd = '__init__'
         self._ctx = ctx
         self._supportedProtocol = g_protocol
         self._logger = getLogger(ctx, g_defaultlog)
-        self._logger.logprb(INFO, 'Driver', '__init__()', 1101)
+        self._logger.logprb(INFO, self._cls, mtd, 1101)
 
     __datasource = None
 
@@ -93,28 +99,28 @@ class Driver(unohelper.Base,
 
 # XDriver
     def connect(self, url, infos):
-        cls, mtd = 'Driver', 'connect()'
+        mtd = 'connect'
         try:
-            self._logger.logprb(INFO, cls, mtd, 1111, url)
+            self._logger.logprb(INFO, self._cls, mtd, 1111, url)
             protocols = url.strip().split(':')
             if len(protocols) < 4 or not all(protocols):
-                raise getLogException(self._logger, self, 1000, 1112, cls, mtd, url)
+                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
             location = ':'.join(protocols[3:]).strip('/')
             scheme, server = self._getUrlParts(location)
             if not server:
-                raise getLogException(self._logger, self, 1000, 1112, cls, mtd, url)
+                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
             username, password = self._getUserCredential(infos)
             if not username or not password:
-                raise getLogException(self._logger, self, 1001, 1113, cls, mtd)
-            connection = self.DataSource.getConnection(self, scheme, server, username, password)
+                raise getLogException(self._logger, self, 1001, 1113, self._cls, mtd)
+            connection = self.DataSource.getConnection(self, server, scheme, server, username, password)
             version = self.DataSource.DataBase.Version
             name = connection.getMetaData().getUserName()
-            self._logger.logprb(INFO, cls, mtd, 1115, version, name)
+            self._logger.logprb(INFO, self._cls, mtd, 1115, version, name)
             return connection
         except SQLException as e:
             raise e
         except Exception as e:
-            self._logger.logprb(SEVERE, cls, mtd, 1116, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, self._cls, mtd, 1116, e, traceback.format_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
@@ -145,14 +151,22 @@ class Driver(unohelper.Base,
 
 # Private getter methods
     def _getDataSource(self):
-        cls, mtd = 'Driver', '_getDataSource()'
-        return getDataSource(self._ctx, self._logger, self, cls, mtd)
+        mtd = '_getDataSource'
+        url = getDataSourceUrl(self._ctx, self._logger, self, 1003, 1121, self._cls, mtd)
+        try:
+            datasource = DataSource(self._ctx, self._logger, url)
+        except SQLException as e:
+            raise getLogException(self._logger, self, 1005, 1123, self._cls, mtd, url, e.Message)
+        except Exception as e:
+            raise getLogException(self._logger, self, 1005, 1123, self._cls, mtd, url, str(e))
+        if not datasource.isUptoDate():
+            raise getLogException(self._logger, self, 1005, 1124, self._cls, mtd, datasource.getDataBaseVersion(), g_version)
+        return datasource
 
     def _getUrlParts(self, location):
         url = getUrl(self._ctx, location, g_scheme)
         if url is None:
-            cls, mtd = 'Driver', '_getUrlParts()'
-            raise getLogException(self._logger, self, 1000, 1131, cls, mtd, location)
+            raise getLogException(self._logger, self, 1000, 1131, self._cls, '_getUrlParts', location)
         scheme = url.Protocol
         server = url.Server
         if not location.startswith(scheme):

@@ -29,16 +29,19 @@
 
 from .option import OptionManager
 
-from .logger import getLogger
+from .datasource import DataSource
 
-from .drvtool import getDataSource
-
+from .cardtool import getDataSourceUrl
 from .cardtool import getLogException
 
 from .dbtool import getDriverPropertyInfos
 
+from .logger import getLogger
+
 # FIXME Import necessary exclusively for vCardOOo
 from .unotool import getUrl
+
+from .dbconfig import g_version
 
 from .configuration import g_defaultlog
 from .configuration import g_host
