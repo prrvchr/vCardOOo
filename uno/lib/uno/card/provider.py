@@ -29,29 +29,19 @@
 
 import uno
 
-from .book import Book
+from .cardtool import getSqlException
 
-from ..provider import Provider as ProviderMain
-
-from ..cardtool import getSqlException
-
-from ..oauth20 import getRequest
+from .oauth20 import getRequest
 
 from dateutil import parser
 from dateutil import tz
 
+import traceback
 
-class Provider(ProviderMain):
-    def __init__(self, ctx, paths, lists, maps, types, tmps, fields):
-        ProviderMain.__init__(self)
+class Provider():
+    def __init__(self, ctx):
         self._cls = 'Provider'
         self._ctx = ctx
-        self._paths = paths
-        self._lists = lists
-        self._maps = maps
-        self._types = types
-        self._tmps = tmps
-        self._fields = fields
 
     # Currently only vCardOOo supports multiple address books
     def supportAddressBook(self):
@@ -105,11 +95,10 @@ class Provider(ProviderMain):
                     print("Provider.initUserBooks() 2 %s" % (name, ))
             else:
                 newid = database.insertBook(user.Id, uri, name, tag, token)
-                book = Book(self._ctx, True, Book=newid, Uri=uri, Name=name, Tag=tag, Token=token)
-                user.Books.setBook(uri, book)
+                user.Books.setNewBook(uri, Book=newid, Uri=uri, Name=name, Tag=tag, Token=token)
                 modified = True
-                print("Provider.initUserBooks() 3 %s - %s - %s" % (book.Id, name, uri))
-            self.initUserGroups(source, database, user, book)
+                print("Provider.initUserBooks() 3 %s - %s - %s" % (user.Books.getBook(uri).Id, name, uri))
+            self.initUserGroups(source, database, user, uri)
             count += 1
         print("Provider.initUserBooks() 4")
         if not count:
@@ -117,7 +106,7 @@ class Provider(ProviderMain):
         if modified and self.supportAddressBook():
             database.initAddressbooks(user)
 
-    def initUserGroups(self, source, database, user, book):
+    def initUserGroups(self, source, database, user, uri):
         raise NotImplementedError
 
     def firstPullCard(self, database, user, addressbook, pages, count):
