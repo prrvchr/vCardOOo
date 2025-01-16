@@ -27,10 +27,9 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from .card import DataBase as DataBaseSuper
 
 import traceback
 
 
-class DataBase(DataBaseSuper):
+class DataBase():
     pass

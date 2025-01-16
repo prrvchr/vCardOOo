@@ -27,6 +27,8 @@ package io.github.prrvchr.carddav;
 
 import com.sun.star.lang.XServiceInfo;
 
+import java.util.Map.Entry;
+
 import com.sun.star.beans.NamedValue;
 import com.sun.star.lang.XSingleComponentFactory;
 import com.sun.star.lib.uno.helper.Factory;
@@ -167,7 +169,7 @@ public final class CardSync
                             }
                         }
                         else {
-                            for (var entry : property.getPropertiesValue().entrySet()) {
+                            for (Entry<String, String> entry : property.getPropertiesValue().entrySet()) {
                                 String field = entry.getKey();
                                 String data = entry.getValue();
                                 // FIXME: We must parse only the property that we have previously configured in the database

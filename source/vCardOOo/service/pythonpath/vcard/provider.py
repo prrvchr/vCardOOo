@@ -35,9 +35,7 @@ from .unotool import getUrl
 
 from .cardtool import getSqlException
 
-from .card import Provider as ProviderBase
-
-from .oauth2 import getRequest
+from .oauth20 import getRequest
 
 from .configuration import g_identifier
 
@@ -45,9 +43,8 @@ import xml.etree.ElementTree as ET
 import traceback
 
 
-class Provider(ProviderBase):
-    def __init__(self, ctx, database):
-        ProviderBase.__init__(self, ctx)
+class Provider():
+    def __init__(self):
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
         self._url = '/.well-known/carddav'
