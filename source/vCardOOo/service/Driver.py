@@ -57,6 +57,7 @@ from vcard import g_version
 from vcard import g_identifier
 from vcard import g_scheme
 
+import traceback
 
 # pythonloader looks for a static g_ImplementationHelper variable
 g_ImplementationHelper = unohelper.ImplementationHelper()
