@@ -98,23 +98,28 @@ class Driver(unohelper.Base,
 
 # XDriver
     def connect(self, url, infos):
-        mtd = 'connect'
-        self._logger.logprb(INFO, self._cls, mtd, 1111, url)
-        protocols = url.strip().split(':')
-        if len(protocols) < 4 or not all(protocols):
-            raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
-        location = ':'.join(protocols[3:]).strip('/')
-        scheme, server = self._getUrlParts(location)
-        if not server:
-            raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
-        username, password = self._getUserCredential(infos)
-        if not username or not password:
-            raise getLogException(self._logger, self, 1001, 1113, self._cls, mtd)
-        connection = self.DataSource.getConnection(self, server, scheme, server, username, password)
-        version = self.DataSource.DataBase.Version
-        name = connection.getMetaData().getUserName()
-        self._logger.logprb(INFO, self._cls, mtd, 1115, version, name)
-        return connection
+        try:
+            mtd = 'connect'
+            self._logger.logprb(INFO, self._cls, mtd, 1111, url)
+            protocols = url.strip().split(':')
+            if len(protocols) < 4 or not all(protocols):
+                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
+            location = ':'.join(protocols[3:]).strip('/')
+            scheme, server = self._getUrlParts(location)
+            if not server:
+                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
+            username, password = self._getUserCredential(infos)
+            if not username or not password:
+                raise getLogException(self._logger, self, 1001, 1113, self._cls, mtd)
+            connection = self.DataSource.getConnection(self, self._logger, server, scheme, server, username, password)
+            version = self.DataSource.DataBase.Version
+            name = connection.getMetaData().getUserName()
+            self._logger.logprb(INFO, self._cls, mtd, 1115, version, name)
+            return connection
+        except SQLException as e:
+            raise e
+        except Exception as e:
+            raise getLogException(self._logger, self, 1005, 1116, self._cls, mtd, str(e), traceback.format_exc())
 
     def acceptsURL(self, url):
         accept = url.startswith(self._supportedProtocol)
