@@ -75,10 +75,10 @@ class Provider(ProviderMain):
         if not response.Ok:
             self.raiseForStatus(source, self._cls, mtd, response, user.Name)
         iterator = self._parseAllBook(response)
-        self.initUserBooks(source, database, user, iterator)
+        self.initUserBooks(source, logger, database, user, iterator)
         logger.logprb(INFO, self._cls, mtd, 1322, user.Name)
 
-    def initUserGroups(self, logger, database, user, uri):
+    def initUserGroups(self, source, logger, database, user, uri):
         pass
 
     # Method called from User.__init__()
