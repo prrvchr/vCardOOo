@@ -104,7 +104,7 @@ class Provider(ProviderMain):
         url = scheme + server + path
         if not self._supportAddressbook(request, url, name, pwd):
             raise getSqlException(self._ctx, self._src, 1006, 1642, name, url)
-        userid = self._getAddressbooksUrl(source, request, url, name, pwd)
+        userid = self._getAddressbooksUrl(request, url, name, pwd)
         return userid
 
     def _getDiscoveryUrl(self, request, scheme, server, name, pwd):
@@ -277,22 +277,22 @@ class Provider(ProviderMain):
 
 
 # Method called from Replicator.run()
-    def firstPullCard(self, database, user, addressbook, page, count):
-        parameter = self._getFisrtPullParameter(user, addressbook)
+    def firstPullCard(self, database, user, book, page, count):
+        parameter = self._getFisrtPullParameter(user, book)
         response = user.Request.execute(parameter)
         if not response.Ok:
             args = self.getLoggerArgs(response, 'firstPullCard()', parameter, user.Name)
             return page, count, args
         page += 1
         iterator = self._parseCards(response)
-        count += database.mergeCard(addressbook.Id, iterator)
+        count += database.mergeCard(book.Id, iterator)
         return page, count, []
 
-    def pullCard(self, database, user, addressbook, page, count):
-        if addressbook.Token is not None:
-            page, count, args = self._pullCardByToken(database, user, addressbook, page, count)
-        elif addressbook.Tag is not None:
-            page, count, args = self._pullCardByTag(database, user, addressbook, page, count)
+    def pullCard(self, database, user, book, page, count):
+        if book.Token is not None:
+            page, count, args = self._pullCardByToken(database, user, book, page, count)
+        elif book.Tag is not None:
+            page, count, args = self._pullCardByTag(database, user, book, page, count)
         return page, count, args
 
     def parseCard(self, database):
@@ -301,36 +301,36 @@ class Provider(ProviderMain):
         executeDispatch(self._ctx, url, arguments)
 
     # Private method
-    def _pullCardByToken(self, database, user, addressbook, page, count):
-        parameter = self._getCardByTokenParameter(user, addressbook)
+    def _pullCardByToken(self, database, user, book, page, count):
+        parameter = self._getCardByTokenParameter(user, book)
         response = user.Request.execute(parameter)
         if not response.Ok:
             args = self.getLoggerArgs(response, '_pullCardByToken()', parameter, user.Name)
             return page, count, args
         args = []
         token, deleted, modified = self._getChangedCards(response)
-        if addressbook.Token != token:
+        if book.Token != token:
             if deleted:
                 count += database.deleteCard(deleted)
             if modified:
-                count, args = self._mergeCardByToken(database, user, addressbook, modified, count)
-            database.updateAddressbookToken(addressbook.Id, token)
+                count, args = self._mergeCardByToken(database, user, book, modified, count)
+            database.updateAddressbookToken(book.Id, token)
         page += 1
         return page, count, args
 
-    def _pullCardByTag(self, database, user, addressbook, page, count):
+    def _pullCardByTag(self, database, user, book, page, count):
         # TODO: Need to be implemented method
-        print("Provider._pullCardByTag() %s" % (addressbook.Name, ))
+        print("Provider._pullCardByTag() %s" % (book.Name, ))
         return page, count, None
 
-    def _mergeCardByToken(self, database, user, addressbook, urls, count):
-        parameter = self._getMergeCardByTokenParameter(user, addressbook, urls)
+    def _mergeCardByToken(self, database, user, book, urls, count):
+        parameter = self._getMergeCardByTokenParameter(user, book, urls)
         response = user.Request.execute(parameter)
         if not response.Ok:
             args = self.getLoggerArgs(response, '_mergeCardByToken()', parameter, user.Name)
             return count, args
         iterator = self._parseCards(response)
-        count += database.mergeCard(addressbook.Id, iterator)
+        count += database.mergeCard(book.Id, iterator)
         return count, []
 
     def _parseCards(self, response):
@@ -379,8 +379,8 @@ class Provider(ProviderMain):
         response.close()
         return token, deleted, modified
 
-    def _getFisrtPullParameter(self, user, addressbook):
-        url = user.BaseUrl + addressbook.Uri
+    def _getFisrtPullParameter(self, user, book):
+        url = user.BaseUrl + book.Uri
         data = '''\
 <?xml version="1.0" encoding="utf-8" ?>
 <C:addressbook-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
@@ -392,8 +392,8 @@ class Provider(ProviderMain):
 '''
         return self._getRequestParameter(user.Request, 'getAddressbookCards', url, user.Name, user.Password, data)
 
-    def _getCardByTokenParameter(self, user, addressbook):
-        url = user.BaseUrl + addressbook.Uri
+    def _getCardByTokenParameter(self, user, book):
+        url = user.BaseUrl + book.Uri
         data = '''\
 <?xml version="1.0" encoding="utf-8" ?>
 <D:sync-collection xmlns:D="DAV:">
@@ -403,11 +403,11 @@ class Provider(ProviderMain):
     <D:getetag />
   </D:prop>
 </D:sync-collection>
-''' % addressbook.Token
+''' % book.Token
         return self._getRequestParameter(user.Request, 'getModifiedCardByToken', url, user.Name, user.Password, data)
 
-    def _getMergeCardByTokenParameter(self, user, addressbook, urls):
-        url = user.BaseUrl + addressbook.Uri
+    def _getMergeCardByTokenParameter(self, user, book, urls):
+        url = user.BaseUrl + book.Uri
         href = '''</D:href>
   <D:href>'''
         data = '''\
