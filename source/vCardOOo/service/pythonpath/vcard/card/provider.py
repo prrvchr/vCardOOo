@@ -63,43 +63,13 @@ class Provider(ProviderMain):
     def supportGroup(self):
         return False
 
-# Method called from DataSource.getConnection()
-    def getUserUri(self, server, name):
-        return server + '/' + name
-
-    def initAddressbooks(self, logger, database, user):
-        mtd = 'initAddressbooks'
-        logger.logprb(INFO, self._cls, mtd, 1321, user.Name)
-        parameter = self._getAllBookParameter(user)
-        response = user.Request.execute(parameter)
-        if not response.Ok:
-            self.raiseForStatus(mtd, response, user.Name)
-        iterator = self._parseAllBook(response)
-        self.initUserBooks(logger, database, user, iterator)
-        logger.logprb(INFO, self._cls, mtd, 1322, user.Name)
-
-    def initUserGroups(self, logger, database, user, uri):
-        pass
-
-    # Method called from User.__init__()
-    # This method call Request without OAuth2 mode
-    def getRequest(self, url, user):
-        return getRequest(self._ctx)
-
-    def insertUser(self, logger, database, request, scheme, server, name, pwd):
-        mtd = 'insertUser'
-        logger.logprb(INFO, self._cls, mtd, 1301, name)
-        userid = self._getNewUserId(request, scheme, server, name, pwd)
-        logger.logprb(INFO, self._cls, mtd, 1302, userid, name)
-        return database.insertUser(userid, scheme, server, '', name)
-
-    # Private method
-    def _getNewUserId(self, request, scheme, server, name, pwd):
+# Method called from Provider.insertUser()
+    def getNewUserId(self, request, scheme, server, name, pwd):
         url = self._getDiscoveryUrl(request, scheme, server, name, pwd)
         path = self._getUserUrl(request, url, name, pwd)
         if path is None:
             password = '*' * len(pwd)
-            raise getSqlException(self._ctx, self._src, 1001, 1641, self._cls, '_getNewUserId', name, password, server, url)
+            raise getSqlException(self._ctx, self._src, 1001, 1641, self._cls, 'getNewUserId', name, password, server, url)
         scheme, server = self._getUrlParts(url)
         url = scheme + server + path
         if not self._supportAddressbook(request, url, name, pwd):
@@ -107,6 +77,27 @@ class Provider(ProviderMain):
         userid = self._getAddressbooksUrl(request, url, name, pwd)
         return userid
 
+# Method called from DataSource.getConnection()
+    def getUserUri(self, server, name):
+        return server + '/' + name
+
+# Method called from Provider.initAddressbooks()
+    def getAddressbooks(self, logger, database, user):
+        parameter = self._getAllBookParameter(user)
+        response = user.Request.execute(parameter)
+        if not response.Ok:
+            self.raiseForStatus(mtd, response, user.Name)
+        return self._parseAllBook(response)
+
+    def initUserGroups(self, logger, database, user, book):
+        pass
+
+    # Method called from User.__init__()
+    # This method call Request without OAuth2 mode
+    def getRequest(self, url, user):
+        return getRequest(self._ctx)
+
+    # Private method
     def _getDiscoveryUrl(self, request, scheme, server, name, pwd):
         mtd = '_getDiscoveryUrl'
         attempt = retry = 3
