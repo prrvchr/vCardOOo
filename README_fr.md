@@ -29,7 +29,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][4] et à notre [Politique de protection des données][5]**.
 
-# version [1.1.6][6]
+# version [1.2.0][6]
 
 ## Introduction:
 
@@ -269,7 +269,14 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - L'extension vous demandera d'installer les extensions OAuth2OOo et jdbcDriverOOo en version respectivement 1.3.8 et 1.4.6 minimum.
 - Modification des options de l'extension accessibles via : **Outils -> Options... -> Internet -> vCardOOo** afin de respecter la nouvelle charte graphique.
 
-### Que reste-t-il à faire pour la version 1.1.6:
+### Ce qui a été fait pour la version 1.2.0:
+
+- L'extension vous demandera d'installer les extensions OAuth2OOo et jdbcDriverOOo en version respectivement 1.4.0 et 1.4.6 minimum.
+- Il est possible de construire l'archive de l'extension (ie: le fichier oxt) avec l'utilitaire [Apache Ant][58] et le fichier script [build.xml][59].
+- L'extension refusera de s'installer sous OpenOffice quelle que soit la version ou LibreOffice autre que 7.x ou supérieur.
+- Ajout des fichiers binaires nécessaires aux bibliothèques Python pour fonctionner sous Linux et LibreOffice 24.8 (ie: Python 3.9).
+
+### Que reste-t-il à faire pour la version 1.2.0:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -282,7 +289,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [3]: <https://prrvchr.github.io/vCardOOo>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-116>
+[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-120>
 [7]: <https://prrvchr.github.io/README_fr>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>
@@ -303,7 +310,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.6#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.2.0#right>
 [28]: <img/vCardOOo-1_fr.png>
 [29]: <img/vCardOOo-2_fr.png>
 [30]: <img/vCardOOo-3_fr.png>
@@ -334,3 +341,5 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [55]: <https://pypi.org/project/setuptools/>
 [56]: <https://github.com/prrvchr/vCardOOo/security/dependabot/1>
 [57]: <https://pypi.org/project/validators/>
+[58]: <https://ant.apache.org/>
+[59]: <https://github.com/prrvchr/vCardOOo/blob/master/source/vCardOOo/build.xml>

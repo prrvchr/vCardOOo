@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.1.6][6]
+# version [1.2.0][6]
 
 ## Introduction:
 
@@ -269,7 +269,14 @@ It will give you access to an information system that only larges companies are 
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.8 and 1.4.6 respectively minimum.
 - Modification of the extension options accessible via: **Tools -> Options... -> Internet -> vCardOOo** in order to comply with the new graphic charter.
 
-### What remains to be done for version 1.1.6:
+### What has been done for version 1.2.0:
+
+- The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.4.0 and 1.4.6 respectively minimum.
+- It is possible to build the extension archive (ie: the oxt file) with the [Apache Ant][58] utility and the [build.xml][59] script file.
+- The extension will refuse to install under OpenOffice regardless of version or LibreOffice other than 7.x or higher.
+- Added binaries needed for Python libraries to work on Linux and LibreOffice 24.8 (ie: Python 3.9).
+
+### What remains to be done for version 1.2.0:
 
 - Make the address book locally editable with replication of changes.
 
@@ -334,3 +341,5 @@ It will give you access to an information system that only larges companies are 
 [55]: <https://pypi.org/project/setuptools/>
 [56]: <https://github.com/prrvchr/vCardOOo/security/dependabot/1>
 [57]: <https://pypi.org/project/validators/>
+[58]: <https://ant.apache.org/>
+[59]: <https://github.com/prrvchr/vCardOOo/blob/master/source/vCardOOo/build.xml>
