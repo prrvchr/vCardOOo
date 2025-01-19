@@ -289,7 +289,7 @@ It will give you access to an information system that only larges companies are 
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-116>
+[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-120>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
@@ -310,7 +310,7 @@ It will give you access to an information system that only larges companies are 
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.1.6#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.2.0#right>
 [28]: <img/vCardOOo-1.png>
 [29]: <img/vCardOOo-2.png>
 [30]: <img/vCardOOo-3.png>
