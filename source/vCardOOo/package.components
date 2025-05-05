@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<components xmlns="http://openoffice.org/2010/uno-components">
+  <component loader="com.sun.star.loader.Java2" uri="vCardOOo.jar">
+    <implementation name="io.github.prrvchr.carddav.CardSync">
+      <service name="io.github.prrvchr.vCardOOo.CardSync"/>
+      <service name="com.sun.star.task.Job"/>
+    </implementation>
+  </component>
+  <component loader="com.sun.star.loader.Python" uri="service/Driver.py">
+    <implementation name="io.github.prrvchr.vCardOOo.Driver">
+      <service name="io.github.prrvchr.vCardOOo.Driver"/>
+      <service name="com.sun.star.sdbc.Driver"/>
+    </implementation>
+  </component>
+  <component loader="com.sun.star.loader.Python" uri="service/OptionsHandler.py">
+    <implementation name="io.github.prrvchr.vCardOOo.OptionsHandler">
+      <service name="io.github.prrvchr.vCardOOo.OptionsHandler"/>
+    </implementation>
+  </component>
+</components>

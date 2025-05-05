@@ -1,7 +1,7 @@
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
-║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
+║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
 ║                                                                                    ║
 ║   Permission is hereby granted, free of charge, to any person obtaining            ║
 ║   a copy of this software and associated documentation files (the "Software"),     ║
@@ -44,8 +44,8 @@ import com.sun.star.sdbc.XStatement;
 import com.sun.star.uno.AnyConverter;
 import com.sun.star.uno.Type;
 import com.sun.star.uno.UnoRuntime;
+import com.sun.star.util.DateTimeWithTimezone;
 
-import io.github.prrvchr.css.util.DateTimeWithTimezone;
 import io.github.prrvchr.uno.helper.Array;
 import io.github.prrvchr.uno.helper.UnoHelper;
 

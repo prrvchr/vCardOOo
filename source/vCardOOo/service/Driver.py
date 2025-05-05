@@ -4,7 +4,7 @@
 """
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
-║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
+║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
 ║                                                                                    ║
 ║   Permission is hereby granted, free of charge, to any person obtaining            ║
 ║   a copy of this software and associated documentation files (the "Software"),     ║
@@ -27,170 +27,59 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import uno
 import unohelper
-
-from com.sun.star.lang import XServiceInfo
 
 from com.sun.star.logging.LogLevel import INFO
 from com.sun.star.logging.LogLevel import SEVERE
 
-from com.sun.star.sdbc import SQLException
-from com.sun.star.sdbc import XDriver
+from com.sun.star.uno import Exception as UNOException
 
-from com.sun.star.sdbcx import XCreateCatalog
-from com.sun.star.sdbcx import XDataDefinitionSupplier
-from com.sun.star.sdbcx import XDropCatalog
+from vcard import Driver as DriverBase
 
-from vcard import DataSource
+from vcard import checkConfiguration
 
-from vcard import getDataSourceUrl
-from vcard import getDriverPropertyInfos
 from vcard import getLogger
-from vcard import getLogException
-from vcard import getUrl
 
 from vcard import g_defaultlog
-from vcard import g_protocol
-from vcard import g_version
+from vcard import g_basename
 
 from vcard import g_identifier
-from vcard import g_scheme
 
+from threading import Lock
 import traceback
 
 # pythonloader looks for a static g_ImplementationHelper variable
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationName = f'{g_identifier}.Driver'
+g_ImplementationName = 'io.github.prrvchr.vCardOOo.Driver'
+g_ServiceNames = ('io.github.prrvchr.vCardOOo.Driver', 'com.sun.star.sdbc.Driver')
 
+# XXX: This class is simply a bootstrap to enable the following:
+# XXX: - Check the required configuration
+# XXX: - Log any errors that occur while loading the Java driver
 
-class Driver(unohelper.Base,
-             XCreateCatalog,
-             XDataDefinitionSupplier,
-             XDriver,
-             XDropCatalog,
-             XServiceInfo):
-    def __init__(self, ctx):
-        self._cls = 'Driver'
-        mtd = '__init__'
-        self._ctx = ctx
-        self._supportedProtocol = g_protocol
-        self._logger = getLogger(ctx, g_defaultlog)
-        self._logger.logprb(INFO, self._cls, mtd, 1101)
+class Driver():
+    def __new__(cls, ctx, *args, **kwargs):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    logger = getLogger(ctx, g_defaultlog, g_basename)
+                    try:
+                        checkConfiguration(ctx, logger)
+                        cls._instance = DriverBase(ctx, logger, g_ImplementationName, g_ServiceNames)
+                        logger.logprb(INFO, 'Driver', '__new__', 101, g_ImplementationName)
+                    except UNOException as e:
+                        if cls._logger is None:
+                            cls._logger = logger
+                        logger.logprb(SEVERE, 'Driver', '__new__', 102, g_ImplementationName, e.Message)
+                        raise e
+        return cls._instance
 
-    __datasource = None
+    # XXX: If the driver fails to load then we keep a reference
+    # XXX: to the logger so we can read the error message later
+    _logger = None
+    _instance = None
+    _lock = Lock()
 
-    @property
-    def DataSource(self):
-        if Driver.__datasource is None:
-            Driver.__datasource = self._getDataSource()
-        return Driver.__datasource
-
-# XCreateCatalog
-    def createCatalog(self, info):
-        pass
-
-# XDataDefinitionSupplier
-    def getDataDefinitionByConnection(self, connection):
-        return connection
-
-    def getDataDefinitionByURL(self, url, infos):
-        return self.connect(url, infos)
-
-# XDriver
-    def connect(self, url, infos):
-        try:
-            mtd = 'connect'
-            self._logger.logprb(INFO, self._cls, mtd, 1111, url)
-            protocols = url.strip().split(':')
-            if len(protocols) < 4 or not all(protocols):
-                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
-            location = ':'.join(protocols[3:]).strip('/')
-            scheme, server = self._getUrlParts(location)
-            if not server:
-                raise getLogException(self._logger, self, 1000, 1112, self._cls, mtd, url)
-            username, password = self._getUserCredential(infos)
-            if not username or not password:
-                raise getLogException(self._logger, self, 1001, 1113, self._cls, mtd)
-            connection = self.DataSource.getConnection(self, self._logger, server, scheme, server, username, password)
-            version = self.DataSource.DataBase.Version
-            name = connection.getMetaData().getUserName()
-            self._logger.logprb(INFO, self._cls, mtd, 1115, version, name)
-            return connection
-        except SQLException as e:
-            raise e
-        except Exception as e:
-            raise getLogException(self._logger, self, 1005, 1116, self._cls, mtd, str(e), traceback.format_exc())
-
-    def acceptsURL(self, url):
-        accept = url.startswith(self._supportedProtocol)
-        return accept
-
-    def getPropertyInfo(self, url, infos):
-        properties = ()
-        if self.acceptsURL(url):
-            properties = getDriverPropertyInfos()
-        return properties
-
-    def getMajorVersion(self):
-        return 1
-
-    def getMinorVersion(self):
-        return 0
-
-# XDropCatalog
-    def dropCatalog(self, name, info):
-        pass
-
-# XServiceInfo
-    def supportsService(self, service):
-        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
-
-    def getImplementationName(self):
-        return g_ImplementationName
-
-    def getSupportedServiceNames(self):
-        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
-# Private getter methods
-    def _getDataSource(self):
-        mtd = '_getDataSource'
-        url = getDataSourceUrl(self._ctx, self._logger, self, 1003, 1121, self._cls, mtd)
-        try:
-            datasource = DataSource(self._ctx, self, self._logger, url)
-        except SQLException as e:
-            raise getLogException(self._logger, self, 1005, 1123, self._cls, mtd, url, e.Message)
-        except Exception as e:
-            raise getLogException(self._logger, self, 1005, 1123, self._cls, mtd, url, str(e))
-        if not datasource.isUptoDate():
-            raise getLogException(self._logger, self, 1005, 1124, self._cls, mtd, datasource.getDataBaseVersion(), g_version)
-        return datasource
-
-    def _getUrlParts(self, location):
-        url = getUrl(self._ctx, location, g_scheme)
-        if url is None:
-            raise getLogException(self._logger, self, 1000, 1131, self._cls, '_getUrlParts', location)
-        scheme = url.Protocol
-        server = url.Server
-        if not location.startswith(scheme):
-            scheme = g_scheme
-        return scheme, server
-
-    def _getUserCredential(self, infos):
-        user = ''
-        pwd = ''
-        for info in infos:
-            if info.Name == 'user':
-                user = info.Value.strip()
-            elif info.Name == 'password':
-                pwd = info.Value.strip()
-            if user and pwd:
-                break
-        return user, pwd
-
-
-g_ImplementationHelper.addImplementation(Driver,
-                                         g_ImplementationName,
-                                        (g_ImplementationName,
-                                        'com.sun.star.sdbc.Driver',
-                                        'com.sun.star.sdbcx.Driver'))
+g_ImplementationHelper.addImplementation(Driver,                          # UNO object class
+                                         g_ImplementationName,            # Implementation name
+                                         g_ServiceNames)                  # List of implemented services

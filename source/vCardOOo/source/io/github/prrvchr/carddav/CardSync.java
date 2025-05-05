@@ -1,7 +1,7 @@
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
-║   Copyright (c) 2020 https://prrvchr.github.io                                     ║
+║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
 ║                                                                                    ║
 ║   Permission is hereby granted, free of charge, to any person obtaining            ║
 ║   a copy of this software and associated documentation files (the "Software"),     ║
@@ -30,12 +30,10 @@ import com.sun.star.lang.XServiceInfo;
 import java.util.Map.Entry;
 
 import com.sun.star.beans.NamedValue;
-import com.sun.star.lang.XSingleComponentFactory;
-import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.uno.UnoRuntime;
 import com.sun.star.uno.XComponentContext;
+import com.sun.star.util.DateTimeWithTimezone;
 
-import com.sun.star.registry.XRegistryKey;
 import com.sun.star.sdbc.SQLException;
 import com.sun.star.sdbc.XPreparedStatement;
 import com.sun.star.sdbc.XResultSet;
@@ -53,7 +51,6 @@ import io.github.prrvchr.carddav.scribe.UidScribe;
 import io.github.prrvchr.carddav.scribe.AddressScribe;
 import io.github.prrvchr.carddav.scribe.CategoriesScribe;
 import io.github.prrvchr.carddav.scribe.EmailScribe;
-import io.github.prrvchr.css.util.DateTimeWithTimezone;
 
 import com.sun.star.lib.uno.helper.ComponentBase;
 
@@ -68,9 +65,9 @@ public final class CardSync
     implements XServiceInfo,
                XJob
 {
-    private static final String m_name = CardSync.class.getName();
-    private static final String[] m_services = {"io.github.prrvchr.vCardOOo.CardSync",
-                                                "com.sun.star.task.Job"};
+    private static final String mImplementationName = CardSync.class.getName();
+    private static final String[] m_serviceNames = {"io.github.prrvchr.vCardOOo.CardSync",
+                                                    "com.sun.star.task.Job"};
     @SuppressWarnings("unused")
     private XComponentContext m_xContext;
     @SuppressWarnings("unused")
@@ -82,40 +79,23 @@ public final class CardSync
         m_xContext = context;
     }
 
-
-    // UNO Service Registration:
-    public static XSingleComponentFactory __getComponentFactory(String name)
-    {
-        XSingleComponentFactory xFactory = null;
-        if (name.equals(m_name)) {
-            xFactory = Factory.createComponentFactory(CardSync.class, m_services);
-        }
-        return xFactory;
-    }
-
-    public static boolean __writeRegistryServiceInfo(XRegistryKey key)
-    {
-        return Factory.writeRegistryServiceInfo(m_name, m_services, key);
-    }
-
-
     // com.sun.star.lang.XServiceInfo:
     @Override
     public String getImplementationName()
     {
-        return ServiceInfo.getImplementationName(m_name);
+        return ServiceInfo.getImplementationName(mImplementationName);
     }
 
     @Override
     public String[] getSupportedServiceNames()
     {
-        return ServiceInfo.getSupportedServiceNames(m_services);
+        return ServiceInfo.getSupportedServiceNames(m_serviceNames);
     }
 
     @Override
     public boolean supportsService(String service)
     {
-        return ServiceInfo.supportsService(m_services, service);
+        return ServiceInfo.supportsService(m_serviceNames, service);
     }
 
 
