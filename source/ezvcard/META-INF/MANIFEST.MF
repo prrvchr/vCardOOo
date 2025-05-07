@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: lib/freemarker-2.3.32.jar lib/jackson-annotations-2.15.2.jar
+  lib/jackson-core-2.15.2.jar /ezvcard/lib/jackson-databind-2.15.2.jar l
+ ib/jsoup-1.16.1.jar /ezvcard/lib/vinnie.jar

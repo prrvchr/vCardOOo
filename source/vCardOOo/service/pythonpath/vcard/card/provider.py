@@ -38,7 +38,7 @@ from ..unotool import executeDispatch
 from ..unotool import getPropertyValueSet
 from ..unotool import getUrl
 
-from ..cardtool import getSqlException
+from ..helper import getSqlException
 
 from ..oauth20 import getRequest
 
