@@ -84,8 +84,6 @@ After restarting LibreOffice, you can ensure that the extension and its driver a
 If the driver is not listed, the reason for the driver failure can be found in the extension's logging. This log is accessible via the menu: **Tools -> Options -> LibreOffice Base -> CardDAV Contacts -> Logging Options**.  
 The `vCardLog` logging must first be enabled and then LibreOffice restarted to get the error message in the log.
 
-Remember to first update the version of the Java JRE or JDK installed on your computer, this new version of jdbcDriverOOo requires **Java version 17 or later** instead of Java 11 previously.
-
 ___
 
 ## Use:
@@ -171,12 +169,12 @@ ___
 ## How to build the extension:
 
 Normally, the extension is created with Eclipse for Java and [LOEclipse][38]. To work around Eclipse, I modified LOEclipse to allow the extension to be created with Apache Ant.  
-To create the mContactOOo extension with the help of Apache Ant, you need to:
-- Install the [Java SDK][39] version 8 or higher.
+To create the vCardOOo extension with the help of Apache Ant, you need to:
+- Install the [Java SDK][39] version 17 or higher.
 - Install [Apache Ant][40] version 1.10.0 or higher.
 - Install [LibreOffice and its SDK][41] version 7.x or higher.
-- Clone the [mContactOOo][42] repository on GitHub into a folder.
-- From this folder, move to the directory: `source/mContactOOo/`
+- Clone the [vCardOOo][42] repository on GitHub into a folder.
+- From this folder, move to the directory: `source/vCardOOo/`
 - In this directory, edit the file: `build.properties` so that the `office.install.dir` and `sdk.dir` properties point to the folders where LibreOffice and its SDK were installed, respectively.
 - Start the archive creation process using the command: `ant`
 - You will find the generated archive in the subfolder: `dist/`
@@ -304,8 +302,8 @@ It will give you access to an information system that only larges companies are 
 - Downgrade the [Python setuptools][60] package to version 75.3.2. to ensure support for Python 3.8.
 - Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][38] extension via [PR#152][65] and [PR#157][66].
 - It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][67] section has been added to the documentation.
-- To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo.
-- Implemented [PEP 570][70] in [logging][71] to support unique multiple arguments.
+- To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo and are now compiled as a Java module. An [enhancement request][70] has been made to find a simpler solution if possible.
+- Implemented [PEP 570][71] in [logging][72] to support unique multiple arguments.
 - Any errors occurring while loading the driver will be logged in the extension's log if logging has been previously enabled. This makes it easier to identify installation problems on Windows.
 - To ensure the correct creation of the vCardOOo database, it will be checked that the jdbcDriverOOo extension has `com.sun.star.sdb` as API level.
 - Requires the **jdbcDriverOOo extension at least version 1.5.0**.
@@ -357,7 +355,7 @@ It will give you access to an information system that only larges companies are 
 [36]: <img/vCardOOo-9.png>
 [37]: <img/vCardOOo-10.png>
 [38]: <https://github.com/LibreOffice/loeclipse>
-[39]: <https://adoptium.net/temurin/releases/?version=8&package=jdk>
+[39]: <https://adoptium.net/temurin/releases/?version=17&package=jdk>
 [40]: <https://ant.apache.org/manual/install.html>
 [41]: <https://downloadarchive.documentfoundation.org/libreoffice/old/7.6.7.2/>
 [42]: <https://github.com/prrvchr/vCardOOo.git>
@@ -386,5 +384,8 @@ It will give you access to an information system that only larges companies are 
 [65]: <https://github.com/LibreOffice/loeclipse/pull/152>
 [66]: <https://github.com/LibreOffice/loeclipse/pull/157>
 [67]: <https://prrvchr.github.io/vCardOOo/#how-to-build-the-extension>
-[68]: <https://peps.python.org/pep-0570/>
-[69]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>
+[68]: <https://github.com/prrvchr/vCardOOo/tree/main/source/ezvcard>
+[69]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vinnie>
+[70]: <https://github.com/mangstadt/ez-vcard/issues/156>
+[71]: <https://peps.python.org/pep-0570/>
+[72]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>

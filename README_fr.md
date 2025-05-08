@@ -84,8 +84,6 @@ Après avoir redémarré LibreOffice, vous pouvez vous assurer que l'extension e
 Si le pilote n'est pas répertorié, la raison de l'échec du chargement du pilote peut être trouvée dans la journalisation de l'extension. Cette journalisation est accessible via le menu: **Outils -> Options -> LibreOffice Base -> Contacts CardDAV -> Options de journalisation**.  
 La journalisation `vCardLog` doit d'abord être activée, puis LibreOffice redémarré pour obtenir le message d'erreur dans le journal.
 
-N'oubliez pas au préalable de mettre à jour la version du JRE ou JDK Java installée sur votre ordinateur, cette nouvelle version de jdbcDriverOOo nécessite **Java version 17 ou ultérieure** au lieu de Java 11 auparavant.
-
 ___
 
 ## Utilisation:
@@ -304,8 +302,8 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Rétrogradage du paquet [Python setuptools][60] vers la version 75.3.2, afin d'assurer la prise en charge de Python 3.8.
 - Déploiement de l'enregistrement passif permettant une installation beaucoup plus rapide des extensions et de différencier les services UNO enregistrés de ceux fournis par une implémentation Java ou Python. Cet enregistrement passif est assuré par l'extension [LOEclipse][38] via les [PR#152][65] et [PR#157][66].
 - Il est désormais possible de créer le fichier oxt de l'extension vCardOOo uniquement avec Apache Ant et une copie du dépôt GitHub. La section [Comment créer l'extension][67] a été ajoutée à la documentation.
-- Afin de faciliter la construction sous Ant, les deux bibliothèques Java [ezvcard][68] et [vinnie][69] utilisées par vCardOOo ont été intégrées à Eclipse aux côtés de vCardOOo.
-- Implémentation de [PEP 570][70] dans la [journalisation][71] pour prendre en charge les arguments multiples uniques.
+- Pour faciliter la construction sous Ant, les deux bibliothèques Java [ezvcard][68] et [vinnie][69] utilisées par vCardOOo ont été intégrées dans Eclipse aux côtés de vCardOOo et sont désormais compilées sous forme de module Java. Une [demande d'amélioration][70] a été faite pour trouver une solution plus simple si possible.
+- Implémentation de [PEP 570][71] dans la [journalisation][72] pour prendre en charge les arguments multiples uniques.
 - Toute erreur survenant lors du chargement du pilote sera consignée dans le journal de l'extension si la journalisation a été préalablement activé. Cela facilite l'identification des problèmes d'installation sous Windows.
 - Pour garantir la création correcte de la base de données vCardOOo, il sera vérifié que l'extension jdbcDriverOOo a `com.sun.star.sdb` comme niveau d'API.
 - Nécessite l'extension **jdbcDriverOOo en version 1.5.0 minimum**.
@@ -386,5 +384,8 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [65]: <https://github.com/LibreOffice/loeclipse/pull/152>
 [66]: <https://github.com/LibreOffice/loeclipse/pull/157>
 [67]: <https://prrvchr.github.io/vCardOOo/README_fr#comment-cr%C3%A9er-lextension>
-[68]: <https://peps.python.org/pep-0570/>
-[69]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>
+[68]: <https://github.com/prrvchr/vCardOOo/tree/main/source/ezvcard>
+[69]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vinnie>
+[70]: <https://github.com/mangstadt/ez-vcard/issues/156>
+[71]: <https://peps.python.org/pep-0570/>
+[72]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>
