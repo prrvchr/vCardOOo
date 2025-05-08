@@ -1,5 +1,5 @@
 #UNO project configuration file
-#Wed May 07 20:24:07 CEST 2025
+#Thu May 08 00:10:02 CEST 2025
 javaversion=java5
 project.build=build
 project.idl=/idl

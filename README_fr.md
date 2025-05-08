@@ -304,7 +304,8 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Rétrogradage du paquet [Python setuptools][60] vers la version 75.3.2, afin d'assurer la prise en charge de Python 3.8.
 - Déploiement de l'enregistrement passif permettant une installation beaucoup plus rapide des extensions et de différencier les services UNO enregistrés de ceux fournis par une implémentation Java ou Python. Cet enregistrement passif est assuré par l'extension [LOEclipse][38] via les [PR#152][65] et [PR#157][66].
 - Il est désormais possible de créer le fichier oxt de l'extension vCardOOo uniquement avec Apache Ant et une copie du dépôt GitHub. La section [Comment créer l'extension][67] a été ajoutée à la documentation.
-- Implémentation de [PEP 570][68] dans la [journalisation][69] pour prendre en charge les arguments multiples uniques.
+- Afin de faciliter la construction sous Ant, les deux bibliothèques Java [ezvcard][68] et [vinnie][69] utilisées par vCardOOo ont été intégrées à Eclipse aux côtés de vCardOOo.
+- Implémentation de [PEP 570][70] dans la [journalisation][71] pour prendre en charge les arguments multiples uniques.
 - Toute erreur survenant lors du chargement du pilote sera consignée dans le journal de l'extension si la journalisation a été préalablement activé. Cela facilite l'identification des problèmes d'installation sous Windows.
 - Pour garantir la création correcte de la base de données vCardOOo, il sera vérifié que l'extension jdbcDriverOOo a `com.sun.star.sdb` comme niveau d'API.
 - Nécessite l'extension **jdbcDriverOOo en version 1.5.0 minimum**.

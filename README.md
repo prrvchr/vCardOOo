@@ -304,7 +304,8 @@ It will give you access to an information system that only larges companies are 
 - Downgrade the [Python setuptools][60] package to version 75.3.2. to ensure support for Python 3.8.
 - Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][38] extension via [PR#152][65] and [PR#157][66].
 - It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][67] section has been added to the documentation.
-- Implemented [PEP 570][68] in [logging][69] to support unique multiple arguments.
+- To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo.
+- Implemented [PEP 570][70] in [logging][71] to support unique multiple arguments.
 - Any errors occurring while loading the driver will be logged in the extension's log if logging has been previously enabled. This makes it easier to identify installation problems on Windows.
 - To ensure the correct creation of the vCardOOo database, it will be checked that the jdbcDriverOOo extension has `com.sun.star.sdb` as API level.
 - Requires the **jdbcDriverOOo extension at least version 1.5.0**.

@@ -27,13 +27,10 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from .jdbcdriver import g_services
-
 # General configuration
 g_extension = 'vCardOOo'
 g_identifier = 'io.github.prrvchr.%s' % g_extension
 g_protocol = 'sdbc:address:vcard'
-g_service = g_services['com.sun.star.sdb']
 g_implementation = '%s.Driver' % g_identifier
 
 # Resource strings files folder
