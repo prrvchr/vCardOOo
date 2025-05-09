@@ -35,14 +35,14 @@
 
 **vCardOOo** fait partie d'une [Suite][7] d'extensions [LibreOffice][8] ~~et/ou [OpenOffice][9]~~ permettant de vous offrir des services inovants dans ces suites bureautique.
 
-Cette extension vous donne l'accès, dans LibreOffice, à vos contacts présent sur un serveur CardDAV (ou vCard Extensions to WebDAV).  
-Elle utilise la [RFC 6352][10] pour synchroniser votre carnet d'adresses distant dans une base de données locale HsqlDB 2.7.2.  
-Cette extension est vu par LibreOffice comme un [pilote de base de données][11] répondant à l'URL: `sdbc:address:vcard:*`.
+Cette extension vous donne l'accès, dans LibreOffice, à vos contacts présent sur un [serveur CardDAV][10] (ou vCard Extensions to WebDAV).  
+Elle utilise la [RFC 6352][11] pour synchroniser votre carnet d'adresses distant dans une base de données locale HsqlDB 2.7.4.  
+Cette extension est vu par LibreOffice comme un [pilote de base de données][12] répondant à l'URL: `sdbc:address:vcard:*`.
 
 Etant un logiciel libre je vous encourage:
-- A dupliquer son [code source][12].
+- A dupliquer son [code source][13].
 - A apporter des modifications, des corrections, des améliorations.
-- D'ouvrir un [dysfonctionnement][13] si nécessaire.
+- D'ouvrir un [dysfonctionnement][14] si nécessaire.
 
 Bref, à participer au developpement de cette extension.  
 Car c'est ensemble que nous pouvons rendre le Logiciel Libre plus intelligent.
@@ -52,10 +52,10 @@ ___
 ## Prérequis:
 
 L'extension vCardOOo utilise l'extension OAuth2OOo pour fonctionner.  
-Elle doit donc répondre aux [prérequis de l'extension OAuth2OOo][14].
+Elle doit donc répondre aux [prérequis de l'extension OAuth2OOo][15].
 
 L'extension vCardOOo utilise l'extension jdbcDriverOOo pour fonctionner.  
-Elle doit donc répondre aux [prérequis de l'extension jdbcDriverOOo][15].
+Elle doit donc répondre aux [prérequis de l'extension jdbcDriverOOo][16].
 
 ___
 
@@ -194,7 +194,7 @@ ___
 * **Ne fonctionne pas avec OpenOffice sous Windows** voir [dysfonctionnement 128569][43]. N'ayant aucune solution, je vous encourrage d'installer **LibreOffice**.
 
 Je vous encourage en cas de problème :confused:  
-de créer un [dysfonctionnement][13]  
+de créer un [dysfonctionnement][14]  
 J'essaierai de le résoudre :smile:
 
 ___
@@ -301,6 +301,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Mise à jour du paquet [Python packaging][59] vers la version 25.0.
 - Rétrogradage du paquet [Python setuptools][60] vers la version 75.3.2, afin d'assurer la prise en charge de Python 3.8.
 - Déploiement de l'enregistrement passif permettant une installation beaucoup plus rapide des extensions et de différencier les services UNO enregistrés de ceux fournis par une implémentation Java ou Python. Cet enregistrement passif est assuré par l'extension [LOEclipse][38] via les [PR#152][65] et [PR#157][66].
+- Compilation de toutes les archives Java contenues dans l'extension sous forme de modules et avec **Java JDK version 17**.
 - Il est désormais possible de créer le fichier oxt de l'extension vCardOOo uniquement avec Apache Ant et une copie du dépôt GitHub. La section [Comment créer l'extension][67] a été ajoutée à la documentation.
 - Pour faciliter la construction sous Ant, les deux bibliothèques Java [ezvcard][68] et [vinnie][69] utilisées par vCardOOo ont été intégrées dans Eclipse aux côtés de vCardOOo et sont désormais compilées sous forme de module Java. Une [demande d'amélioration][70] a été faite pour trouver une solution plus simple si possible.
 - Implémentation de [PEP 570][71] dans la [journalisation][72] pour prendre en charge les arguments multiples uniques.
@@ -326,13 +327,13 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [7]: <https://prrvchr.github.io/README_fr>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>
-[10]: <https://www.rfc-editor.org/rfc/rfc6352.html>
-[11]: <https://wiki.openoffice.org/wiki/Documentation/DevGuide/Database/Driver_Service>
-[12]: <https://github.com/prrvchr/vCardOOo>
-[13]: <https://github.com/prrvchr/vCardOOo/issues/new>
-[14]: <https://prrvchr.github.io/OAuth2OOo/README_fr#pr%C3%A9requis>
-[15]: <https://prrvchr.github.io/jdbcDriverOOo/README_fr#pr%C3%A9requis>
-[16]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-110>
+[10]: <https://fr.wikipedia.org/wiki/CardDAV>
+[11]: <https://www.rfc-editor.org/rfc/rfc6352.html>
+[12]: <https://wiki.openoffice.org/wiki/Documentation/DevGuide/Database/Driver_Service>
+[13]: <https://github.com/prrvchr/vCardOOo>
+[14]: <https://github.com/prrvchr/vCardOOo/issues/new>
+[15]: <https://prrvchr.github.io/OAuth2OOo/README_fr#pr%C3%A9requis>
+[16]: <https://prrvchr.github.io/jdbcDriverOOo/README_fr#pr%C3%A9requis>
 [17]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
 [18]: <https://prrvchr.github.io/OAuth2OOo/README_fr>
 [19]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>

@@ -35,14 +35,14 @@
 
 **vCardOOo** is part of a [Suite][7] of [LibreOffice][8] ~~and/or [OpenOffice][9]~~ extensions allowing to offer you innovative services in these office suites.
 
-This extension gives you access, in LibreOffice, to your contacts present on a CardDAV server (or vCard Extensions to WebDAV).  
-It uses [RFC 6352][10] to synchronize your remote address book into a local HsqlDB 2.7.2 database.  
-This extension is seen by LibreOffice as a [database driver][11] responding to the URL: `sdbc:address:vcard:*`.
+This extension gives you access, in LibreOffice, to your contacts present on a [CardDAV server][10] (or vCard Extensions to WebDAV).  
+It uses [RFC 6352][11] to synchronize your remote address book into a local HsqlDB 2.7.4 database.  
+This extension is seen by LibreOffice as a [database driver][12] responding to the URL: `sdbc:address:vcard:*`.
 
 Being free software I encourage you:
-- To duplicate its [source code][12].
+- To duplicate its [source code][13].
 - To make changes, corrections, improvements.
-- To open [issue][13] if needed.
+- To open [issue][14] if needed.
 
 In short, to participate in the development of this extension.  
 Because it is together that we can make Free Software smarter.
@@ -52,10 +52,10 @@ ___
 ## Requirement:
 
 The vCardOOo extension uses the OAuth2OOo extension to work.  
-It must therefore meet the [requirement of the OAuth2OOo extension][14].
+It must therefore meet the [requirement of the OAuth2OOo extension][15].
 
 The vCardOOo extension uses the jdbcDriverOOo extension to work.  
-It must therefore meet the [requirement of the jdbcDriverOOo extension][15].
+It must therefore meet the [requirement of the jdbcDriverOOo extension][16].
 
 ___
 
@@ -194,7 +194,7 @@ ___
 * **Does not work with OpenOffice on Windows** see [bug 128569][43]. Having no solution, I encourage you to install **LibreOffice**.
 
 I encourage you in case of problem :confused:  
-to create an [issue][13]  
+to create an [issue][14]  
 I will try to solve it :smile:
 
 ___
@@ -301,6 +301,7 @@ It will give you access to an information system that only larges companies are 
 - Updated the [Python packaging][59] package to version 25.0.
 - Downgrade the [Python setuptools][60] package to version 75.3.2. to ensure support for Python 3.8.
 - Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][38] extension via [PR#152][65] and [PR#157][66].
+- Compilation of all Java archives contained in the extension as modules and with **Java JDK version 17**.
 - It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][67] section has been added to the documentation.
 - To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo and are now compiled as a Java module. An [enhancement request][70] has been made to find a simpler solution if possible.
 - Implemented [PEP 570][71] in [logging][72] to support unique multiple arguments.
@@ -326,13 +327,13 @@ It will give you access to an information system that only larges companies are 
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
-[10]: <https://www.rfc-editor.org/rfc/rfc6352.html>
-[11]: <https://wiki.openoffice.org/wiki/Documentation/DevGuide/Database/Driver_Service>
-[12]: <https://github.com/prrvchr/vCardOOo>
-[13]: <https://github.com/prrvchr/vCardOOo/issues/new>
-[14]: <https://prrvchr.github.io/OAuth2OOo/#requirement>
-[15]: <https://prrvchr.github.io/jdbcDriverOOo/#requirement>
-[16]: <https://prrvchr.github.io/vCardOOo/#what-has-been-done-for-version-110>
+[10]: <https://en.wikipedia.org/wiki/CardDAV>
+[11]: <https://www.rfc-editor.org/rfc/rfc6352.html>
+[12]: <https://wiki.openoffice.org/wiki/Documentation/DevGuide/Database/Driver_Service>
+[13]: <https://github.com/prrvchr/vCardOOo>
+[14]: <https://github.com/prrvchr/vCardOOo/issues/new>
+[15]: <https://prrvchr.github.io/OAuth2OOo/#requirement>
+[16]: <https://prrvchr.github.io/jdbcDriverOOo/#requirement>
 [17]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
 [18]: <https://prrvchr.github.io/OAuth2OOo/>
 [19]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
