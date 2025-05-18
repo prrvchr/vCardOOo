@@ -1,12 +1,12 @@
 #UNO project configuration file
-#Thu May 08 00:10:02 CEST 2025
+#Sun May 18 16:46:54 CEST 2025
 javaversion=java5
 project.build=build
 project.idl=/idl
 project.implementation=carddav
 project.language=Java
-project.ooo=LibreOffice 7.3
+project.ooo=LibreOffice 7.6
 project.prefix=io.github.prrvchr
-project.sdk=7.3.7.2
+project.sdk=7.6.7.2
 project.srcdir=/source
 regclassname=io.github.prrvchr.carddav.RegistrationHandler
