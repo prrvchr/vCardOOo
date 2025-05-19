@@ -34,10 +34,7 @@ from .optionhandler import WindowHandler
 
 from ..options import OptionsManager
 
-from ..unotool import createService
-from ..unotool import executeFrameDispatch
-from ..unotool import getDesktop
-from ..unotool import getPropertyValueSet
+from ..unotool import executeDispatch
 
 from ..configuration import g_extension
 
@@ -67,8 +64,9 @@ class OptionManager():
         service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
         factory = self._ctx.getByName(service)
         provider = factory.createScriptProvider(self._ctx)
-        url = f'vnd.sun.star.script:{g_extension}.{self._module}.{self._sub}?language=Basic&location=application'
-        script = provider.getScript(url) 
+        args = (g_extension, self._module, self._sub)
+        url = 'vnd.sun.star.script:%s.%s.%s?language=Basic&location=application' % args
+        script = provider.getScript(url)
         try:
             script.invoke(((), ), (), ())
         except Exception as e:
@@ -76,12 +74,10 @@ class OptionManager():
             print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
 
     def editMacro(self):
-        frame = createService(self._ctx, 'com.sun.star.frame.Frame')
-        args = getPropertyValueSet({'Document': 'LibreOffice Macros & Dialogs',
-                                    'LibName': g_extension,
-                                    'Name': self._module,
-                                    'Type': 'Module',
-                                    'Line': self._line})
-        dispatcher = createService(self._ctx, 'com.sun.star.frame.DispatchHelper')
-        dispatcher.executeDispatch(frame, '.uno:BasicIDEAppear', "", 0, args)
+        args = {'Document': 'LibreOffice Macros & Dialogs',
+                'LibName': g_extension,
+                'Name': self._module,
+                'Type': 'Module',
+                'Line': self._line}
+        executeDispatch(self._ctx, '.uno:BasicIDEAppear', **args)
 

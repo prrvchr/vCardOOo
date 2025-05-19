@@ -55,7 +55,8 @@ The vCardOOo extension uses the OAuth2OOo extension to work.
 It must therefore meet the [requirement of the OAuth2OOo extension][15].
 
 The vCardOOo extension uses the jdbcDriverOOo extension to work.  
-It must therefore meet the [requirement of the jdbcDriverOOo extension][16].
+It must therefore meet the [requirement of the jdbcDriverOOo extension][16].  
+Additionally, vCardOOo requires the jdbcDriverOOo extension to be configured to provide `com.sun.star.sdb` as the API level, which is the default configuration.
 
 ___
 
@@ -301,6 +302,7 @@ It will give you access to an information system that only larges companies are 
 - Updated the [Python packaging][59] package to version 25.0.
 - Downgrade the [Python setuptools][60] package to version 75.3.2. to ensure support for Python 3.8.
 - Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][38] extension via [PR#152][65] and [PR#157][66].
+- Modified [LOEclipse][38] to support the new `rdb` file format produced by the `unoidl-write` compilation utility. `idl` files have been updated to support both available compilation tools: idlc and unoidl-write.
 - Compilation of all Java archives contained in the extension as modules and with **Java JDK version 17**.
 - It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][67] section has been added to the documentation.
 - To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo and are now compiled as a Java module. An [enhancement request][70] has been made to find a simpler solution if possible.

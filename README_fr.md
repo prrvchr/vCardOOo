@@ -55,7 +55,8 @@ L'extension vCardOOo utilise l'extension OAuth2OOo pour fonctionner.
 Elle doit donc répondre aux [prérequis de l'extension OAuth2OOo][15].
 
 L'extension vCardOOo utilise l'extension jdbcDriverOOo pour fonctionner.  
-Elle doit donc répondre aux [prérequis de l'extension jdbcDriverOOo][16].
+Elle doit donc répondre aux [prérequis de l'extension jdbcDriverOOo][16].  
+De plus, vCardOOo nécessite que l'extension jdbcDriverOOo soit configurée pour fournir `com.sun.star.sdb` comme niveau d'API, qui est la configuration par défaut.
 
 ___
 
@@ -301,6 +302,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Mise à jour du paquet [Python packaging][59] vers la version 25.0.
 - Rétrogradage du paquet [Python setuptools][60] vers la version 75.3.2, afin d'assurer la prise en charge de Python 3.8.
 - Déploiement de l'enregistrement passif permettant une installation beaucoup plus rapide des extensions et de différencier les services UNO enregistrés de ceux fournis par une implémentation Java ou Python. Cet enregistrement passif est assuré par l'extension [LOEclipse][38] via les [PR#152][65] et [PR#157][66].
+- Modification de [LOEclipse][38] pour prendre en charge le nouveau format de fichier `rdb` produit par l'utilitaire de compilation `unoidl-write`. Les fichiers `idl` ont été mis à jour pour prendre en charge les deux outils de compilation disponibles: idlc et unoidl-write.
 - Compilation de toutes les archives Java contenues dans l'extension sous forme de modules et avec **Java JDK version 17**.
 - Il est désormais possible de créer le fichier oxt de l'extension vCardOOo uniquement avec Apache Ant et une copie du dépôt GitHub. La section [Comment créer l'extension][67] a été ajoutée à la documentation.
 - Pour faciliter la construction sous Ant, les deux bibliothèques Java [ezvcard][68] et [vinnie][69] utilisées par vCardOOo ont été intégrées dans Eclipse aux côtés de vCardOOo et sont désormais compilées sous forme de module Java. Une [demande d'amélioration][70] a été faite pour trouver une solution plus simple si possible.

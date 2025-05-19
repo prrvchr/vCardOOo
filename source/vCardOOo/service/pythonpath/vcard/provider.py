@@ -35,7 +35,6 @@ from com.sun.star.logging.LogLevel import SEVERE
 from .card import Provider as ProviderMain
 
 from .unotool import executeDispatch
-from .unotool import getPropertyValueSet
 from .unotool import getUrl
 
 from .helper import getSqlException
@@ -82,14 +81,14 @@ class Provider(ProviderMain):
         return server + '/' + name
 
 # Method called from Provider.initAddressbooks()
-    def getAddressbooks(self, logger, database, user):
+    def getAddressbooks(self, database, user):
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:
             self.raiseForStatus(mtd, response, user.Name)
         return self._parseAllBook(response)
 
-    def initUserGroups(self, logger, database, user, book):
+    def initUserGroups(self, database, user, book):
         pass
 
     # Method called from User.__init__()
@@ -288,8 +287,8 @@ class Provider(ProviderMain):
 
     def parseCard(self, database):
         url = 'vnd.sun.star.job:service=%s' % self._cardsync
-        arguments = getPropertyValueSet({'Connection': database.Connection})
-        executeDispatch(self._ctx, url, arguments)
+        args = {'Connection': database.Connection}
+        executeDispatch(self._ctx, url, **args)
 
     # Private method
     def _pullCardByToken(self, database, user, book, page, count):
