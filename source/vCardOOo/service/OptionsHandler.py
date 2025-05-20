@@ -63,7 +63,7 @@ class OptionsHandler(unohelper.Base,
             handled = False
             if method == 'external_event':
                 if event == 'initialize':
-                    self._manager = OptionManager(self._ctx, window, self._logger, 61)
+                    self._manager = OptionManager(self._ctx, self._logger, window, 60)
                     handled = True
                 elif event == 'ok':
                     self._manager.saveSetting()
@@ -76,14 +76,11 @@ class OptionsHandler(unohelper.Base,
                 handled = True
             return handled
         except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 101, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 201, e, traceback.format_exc())
 
     def getSupportedMethodNames(self):
         return ('external_event',
                 'ViewData')
-
-    def dispose(self):
-        print("OptionsHandler.dispose() *****************************************************")
 
     # XServiceInfo
     def supportsService(self, service):
@@ -92,7 +89,6 @@ class OptionsHandler(unohelper.Base,
         return g_ImplementationName
     def getSupportedServiceNames(self):
         return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
-
 
 g_ImplementationHelper.addImplementation(OptionsHandler,                  # UNO object class
                                          g_ImplementationName,            # Implementation name
