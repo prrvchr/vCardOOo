@@ -32,6 +32,7 @@ import unohelper
 from com.sun.star.logging.LogLevel import SEVERE
 
 from com.sun.star.lang import XServiceInfo
+
 from com.sun.star.awt import XContainerWindowEventHandler
 
 from vcard import OptionManager
@@ -85,8 +86,10 @@ class OptionsHandler(unohelper.Base,
     # XServiceInfo
     def supportsService(self, service):
         return g_ImplementationHelper.supportsService(g_ImplementationName, service)
+
     def getImplementationName(self):
         return g_ImplementationName
+
     def getSupportedServiceNames(self):
         return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
 

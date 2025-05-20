@@ -42,12 +42,12 @@ import traceback
 
 
 class OptionManager():
-    def __init__(self, ctx, window, logger, offset):
+    def __init__(self, ctx, logger, window, offset):
         self._ctx = ctx
         self._module = 'CardDAVDiscoveryUrl'
         self._sub = 'Main'
         self._line = 26
-        self._optionsmanager = OptionsManager(ctx, window, logger, offset)
+        self._optionsmanager = OptionsManager(ctx, logger, window, offset)
         self._view = OptionView(ctx, window, WindowHandler(self))
         self._logger = logger
 
