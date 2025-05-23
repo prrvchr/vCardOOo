@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.2.1][6]
+# version [1.3.0][6]
 
 ## Introduction:
 
@@ -346,7 +346,7 @@ It will give you access to an information system that only larges companies are 
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.2.1#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.0#right>
 [28]: <img/vCardOOo-1.png>
 [29]: <img/vCardOOo-2.png>
 [30]: <img/vCardOOo-3.png>
