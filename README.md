@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.3.0][6]
+# version [1.3.1][6]
 
 ## Introduction:
 
@@ -312,7 +312,13 @@ It will give you access to an information system that only larges companies are 
 - Requires the **jdbcDriverOOo extension at least version 1.5.0**.
 - Requires the **OAuth2OOo extension at least version 1.5.0**.
 
-### What remains to be done for version 1.3.0:
+### What has been done for version 1.3.1:
+
+vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating this library in jdbcDriverOOo requires the same update in vCardOOo.
+- Requires the **jdbcDriverOOo extension at least version 1.5.4**.
+- Requires the **OAuth2OOo extension at least version 1.5.1**.
+
+### What remains to be done for version 1.3.1:
 
 - Make the address book locally editable with replication of changes.
 
@@ -325,7 +331,7 @@ It will give you access to an information system that only larges companies are 
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-130>
+[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-131>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
@@ -346,7 +352,7 @@ It will give you access to an information system that only larges companies are 
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.0#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.1#right>
 [28]: <img/vCardOOo-1.png>
 [29]: <img/vCardOOo-2.png>
 [30]: <img/vCardOOo-3.png>
