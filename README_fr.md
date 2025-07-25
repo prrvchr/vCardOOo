@@ -29,7 +29,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][4] et à notre [Politique de protection des données][5]**.
 
-# version [1.3.0][6]
+# version [1.3.1][6]
 
 ## Introduction:
 
@@ -312,7 +312,13 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 - Nécessite l'extension **jdbcDriverOOo en version 1.5.0 minimum**.
 - Nécessite l'extension **OAuth2OOo en version 1.5.0 minimum**.
 
-### Que reste-t-il à faire pour la version 1.3.0:
+### Ce qui a été fait pour la version 1.3.1:
+
+vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mise à jour de cette bibliothèque dans jdbcDriverOOo nécessite la même mise à jour dans vCardOOo.
+- Nécessite l'extension **jdbcDriverOOo en version 1.5.4 minimum**.
+- Nécessite l'extension **OAuth2OOo en version 1.5.1 minimum**.
+
+### Que reste-t-il à faire pour la version 1.3.1:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 

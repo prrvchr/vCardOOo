@@ -1,15 +1,23 @@
 namespace: vCardOOo
+
 output:
   file_path: ./Fluid-Attacks-Results.csv
   format: CSV
+
 working_dir: .
+
 sast:
   include:
     - glob(source/vCardOOo/service/*.py)
     - glob(source/vCardOOo/service/pythonpath/vcard/*)
     - glob(source/vCardOOo/source/*)
+
 sca:
+  exclude:
+    - dependency_name: setuptools
+      reason: False Positive
   include:
     - .
+
 language: EN
 strict: true
