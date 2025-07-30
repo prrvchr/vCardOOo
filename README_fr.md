@@ -29,7 +29,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][4] et à notre [Politique de protection des données][5]**.
 
-# version [1.3.1][6]
+# version [1.3.2][6]
 
 ## Introduction:
 
@@ -318,7 +318,12 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 - Nécessite l'extension **jdbcDriverOOo en version 1.5.4 minimum**.
 - Nécessite l'extension **OAuth2OOo en version 1.5.1 minimum**.
 
-### Que reste-t-il à faire pour la version 1.3.1:
+### Ce qui a été fait pour la version 1.3.2:
+
+- Support de LibreOffice 25.2.x et 25.8.x sous Windows 64 bits.
+- Nécessite l'extension **OAuth2OOo en version 1.5.2 minimum**.
+
+### Que reste-t-il à faire pour la version 1.3.2:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -331,7 +336,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 [3]: <https://prrvchr.github.io/vCardOOo>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-130>
+[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-132>
 [7]: <https://prrvchr.github.io/README_fr>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>
@@ -352,7 +357,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 [24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [25]: <img/vCardOOo.svg#middle>
 [26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.0#right>
+[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.2#right>
 [28]: <img/vCardOOo-1_fr.png>
 [29]: <img/vCardOOo-2_fr.png>
 [30]: <img/vCardOOo-3_fr.png>
