@@ -28,11 +28,13 @@ package io.github.prrvchr.carddav.property;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Uid extends ezvcard.property.Uid
-{
+
+public class Uid extends ezvcard.property.Uid {
+
     public Uid(String uid) {
         super(uid);
     }
+
     public Uid(Uid original) {
         super(original);
     }
@@ -41,6 +43,7 @@ public class Uid extends ezvcard.property.Uid
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -48,9 +51,10 @@ public class Uid extends ezvcard.property.Uid
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getValue() != null) values.put("value", getValue());
+        if (getValue() != null) {
+            values.put("value", getValue());
+        }
         return values;
     }
 
 }
-

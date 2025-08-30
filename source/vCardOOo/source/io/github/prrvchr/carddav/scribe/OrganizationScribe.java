@@ -39,8 +39,8 @@ import ezvcard.parameter.VCardParameters;
 import io.github.prrvchr.carddav.property.Organization;
 
 
-public final class OrganizationScribe extends VCardPropertyScribe<Organization>
-{
+public final class OrganizationScribe extends VCardPropertyScribe<Organization> {
+
     public OrganizationScribe() {
         super(Organization.class, "ORG");
     }
@@ -52,12 +52,14 @@ public final class OrganizationScribe extends VCardPropertyScribe<Organization>
 
     @Override
     protected String _writeText(Organization property, WriteContext context) {
-        boolean escapeCommas = (context.getVersion() != VCardVersion.V2_1);
-        return VObjectPropertyValues.writeSemiStructured(property.getValues(), escapeCommas, context.isIncludeTrailingSemicolons());
+        boolean escapeCommas = context.getVersion() != VCardVersion.V2_1;
+        return VObjectPropertyValues.writeSemiStructured(property.getValues(), escapeCommas,
+                                                         context.isIncludeTrailingSemicolons());
     }
 
     @Override
-    protected Organization _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+    protected Organization _parseText(String value, VCardDataType dataType,
+                                      VCardParameters parameters, ParseContext context) {
         Organization property = new Organization();
 
         List<String> values = VObjectPropertyValues.parseSemiStructured(value);
@@ -67,4 +69,3 @@ public final class OrganizationScribe extends VCardPropertyScribe<Organization>
     }
 
 }
-

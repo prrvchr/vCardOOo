@@ -29,11 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Categories extends ezvcard.property.Categories
-{
-    public Categories() {
-        //empty
-    }
+public class Categories extends ezvcard.property.Categories {
+
+    public Categories() { }
+
     public Categories(Categories original) {
         super(original);
     }
@@ -42,6 +41,7 @@ public class Categories extends ezvcard.property.Categories
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -56,4 +56,3 @@ public class Categories extends ezvcard.property.Categories
     }
 
 }
-

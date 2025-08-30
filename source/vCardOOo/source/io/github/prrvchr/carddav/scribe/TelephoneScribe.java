@@ -38,8 +38,7 @@ import ezvcard.util.TelUri;
 import io.github.prrvchr.carddav.property.Telephone;
 
 
-public final class TelephoneScribe extends VCardPropertyScribe<Telephone>
-{
+public final class TelephoneScribe extends VCardPropertyScribe<Telephone> {
     public TelephoneScribe() {
         super(Telephone.class, "TEL");
     }
@@ -50,43 +49,54 @@ public final class TelephoneScribe extends VCardPropertyScribe<Telephone>
     }
 
     @Override
-    protected Telephone _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+    protected Telephone _parseText(String value, VCardDataType dataType,
+                                   VCardParameters parameters, ParseContext context) {
         value = VObjectPropertyValues.unescape(value);
         return parse(value, dataType, context);
     }
 
     private Telephone parse(String value, VCardDataType dataType, ParseContext context) {
+        Telephone tel;
         try {
-            return new Telephone(TelUri.parse(value));
+            tel = new Telephone(TelUri.parse(value));
         } catch (IllegalArgumentException e) {
             if (dataType == VCardDataType.URI) {
-                context.addWarning(18);
+                final int WARN = 18;
+                context.addWarning(WARN);
             }
+            tel = new Telephone(value);
         }
-
-        return new Telephone(value);
+        return tel;
     }
 
     @Override
     protected String _writeText(Telephone property, WriteContext context) {
+        String card = "";
         String text = property.getText();
         if (text != null) {
-            return escape(text, context);
-        }
-
-        TelUri uri = property.getUri();
-        if (uri != null) {
-            if (context.getVersion() == VCardVersion.V4_0) {
-                return uri.toString();
+            card = escape(text, context);
+        } else {
+            TelUri uri = property.getUri();
+            if (uri != null) {
+                if (context.getVersion() == VCardVersion.V4_0) {
+                    card = uri.toString();
+                } else {
+                    card = getCardNumber(uri, context);
+                }
             }
-
-            String ext = uri.getExtension();
-            String value = (ext == null) ? uri.getNumber() : uri.getNumber() + " x" + ext;
-            return escape(value, context);
         }
+        return card;
+    }
 
-        return "";
+    private String getCardNumber(TelUri uri, WriteContext context) {
+        String ext = uri.getExtension();
+        String value;
+        if (ext == null) {
+            value = uri.getNumber();
+        } else {
+            value = uri.getNumber() + " x" + ext;
+        }
+        return escape(value, context);
     }
 
 }
-

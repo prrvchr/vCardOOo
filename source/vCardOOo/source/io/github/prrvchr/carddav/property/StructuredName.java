@@ -28,11 +28,13 @@ package io.github.prrvchr.carddav.property;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class StructuredName extends ezvcard.property.StructuredName
-{
+
+public class StructuredName extends ezvcard.property.StructuredName {
+
     public StructuredName() {
         super();
     }
+
     public StructuredName(StructuredName original) {
         super(original);
     }
@@ -41,6 +43,7 @@ public class StructuredName extends ezvcard.property.StructuredName
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -48,13 +51,22 @@ public class StructuredName extends ezvcard.property.StructuredName
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getFamily() != null) values.put("family", getFamily());
-        if (getGiven() != null) values.put("given", getGiven());
-        if (!getAdditionalNames().isEmpty()) values.put("additional", getAdditionalNames().get(0));
-        if (!getPrefixes().isEmpty()) values.put("prefix", getPrefixes().get(0));
-        if (!getSuffixes().isEmpty()) values.put("suffix", getSuffixes().get(0));
+        if (getFamily() != null) {
+            values.put("family", getFamily());
+        }
+        if (getGiven() != null) {
+            values.put("given", getGiven());
+        }
+        if (!getAdditionalNames().isEmpty()) {
+            values.put("additional", getAdditionalNames().get(0));
+        }
+        if (!getPrefixes().isEmpty()) {
+            values.put("prefix", getPrefixes().get(0));
+        }
+        if (!getSuffixes().isEmpty()) {
+            values.put("suffix", getSuffixes().get(0));
+        }
         return values;
     }
 
 }
-

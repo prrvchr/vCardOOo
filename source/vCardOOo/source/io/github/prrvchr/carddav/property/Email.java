@@ -33,11 +33,12 @@ import java.util.Map;
 import ezvcard.parameter.EmailType;
 
 
-public class Email extends ezvcard.property.Email
-{
+public class Email extends ezvcard.property.Email {
+
     public Email(String value) {
         super(value);
     }
+
     public Email(Email original) {
         super(original);
     }
@@ -46,6 +47,7 @@ public class Email extends ezvcard.property.Email
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -53,7 +55,9 @@ public class Email extends ezvcard.property.Email
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getValue() != null) values.put("value", getValue());
+        if (getValue() != null) {
+            values.put("value", getValue());
+        }
         return values;
     }
 
@@ -66,4 +70,3 @@ public class Email extends ezvcard.property.Email
     }
 
 }
-

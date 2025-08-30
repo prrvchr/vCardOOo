@@ -40,8 +40,8 @@ import static ezvcard.util.StringUtils.join;
 import io.github.prrvchr.carddav.property.Address;
 
 
-public final class AddressScribe extends VCardPropertyScribe<Address>
-{
+public final class AddressScribe extends VCardPropertyScribe<Address> {
+
     public AddressScribe() {
         super(Address.class, "ADR");
     }
@@ -52,21 +52,25 @@ public final class AddressScribe extends VCardPropertyScribe<Address>
     }
 
     @Override
-    protected Address _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+    protected Address _parseText(String value, VCardDataType dataType,
+                                 VCardParameters parameters, ParseContext context) {
+        Address address;
         if (context.getVersion() == VCardVersion.V2_1) {
             /*
              * 2.1 does not recognize multi-valued components.
              */
             SemiStructuredValueIterator it = new SemiStructuredValueIterator(value);
-            return parseSemiStructuredValue(it);
+            address = parseSemiStructuredValue(it);
         } else {
             StructuredValueIterator it = new StructuredValueIterator(value);
-            return parseStructuredValue(it);
+            address = parseStructuredValue(it);
         }
+        return address;
     }
 
     @Override
     protected String _writeText(Address property, WriteContext context) {
+        String card;
         /*
          * StructuredValueBuilder cannot be used with 2.1 because it escapes
          * comma characters. For example, if someone's street address is
@@ -90,7 +94,7 @@ public final class AddressScribe extends VCardPropertyScribe<Address>
             builder.append(join(property.getRegions(), ","));
             builder.append(join(property.getPostalCodes(), ","));
             builder.append(join(property.getCountries(), ","));
-            return builder.build(false, context.isIncludeTrailingSemicolons());
+            card = builder.build(false, context.isIncludeTrailingSemicolons());
         } else {
             StructuredValueBuilder builder = new StructuredValueBuilder();
             builder.append(property.getPoBoxes());
@@ -100,8 +104,9 @@ public final class AddressScribe extends VCardPropertyScribe<Address>
             builder.append(property.getRegions());
             builder.append(property.getPostalCodes());
             builder.append(property.getCountries());
-            return builder.build(context.isIncludeTrailingSemicolons());
+            card = builder.build(context.isIncludeTrailingSemicolons());
         }
+        return card;
     }
 
     private static Address parseStructuredValue(StructuredValueIterator it) {
@@ -161,4 +166,3 @@ public final class AddressScribe extends VCardPropertyScribe<Address>
 
 
 }
-

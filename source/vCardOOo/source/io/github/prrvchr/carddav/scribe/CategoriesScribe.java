@@ -29,8 +29,8 @@ import ezvcard.io.scribe.ListPropertyScribe;
 import io.github.prrvchr.carddav.property.Categories;
 
 
-public final class CategoriesScribe extends ListPropertyScribe<Categories>
-{
+public final class CategoriesScribe extends ListPropertyScribe<Categories> {
+
     public CategoriesScribe() {
         super(Categories.class, "CATEGORIES");
     }
@@ -41,4 +41,3 @@ public final class CategoriesScribe extends ListPropertyScribe<Categories>
     }
 
 }
-

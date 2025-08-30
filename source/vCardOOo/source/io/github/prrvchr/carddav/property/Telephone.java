@@ -33,14 +33,17 @@ import java.util.Map;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.util.TelUri;
 
-public class Telephone extends ezvcard.property.Telephone
-{
+
+public class Telephone extends ezvcard.property.Telephone {
+
     public Telephone(String value) {
         super(value);
     }
+
     public Telephone(TelUri uri) {
         super(uri);
     }
+
     public Telephone(Telephone original) {
         super(original);
     }
@@ -49,6 +52,7 @@ public class Telephone extends ezvcard.property.Telephone
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -56,7 +60,9 @@ public class Telephone extends ezvcard.property.Telephone
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getText() != null) values.put("text", getText());
+        if (getText() != null) {
+            values.put("text", getText());
+        }
         return values;
     }
 
@@ -69,4 +75,3 @@ public class Telephone extends ezvcard.property.Telephone
     }
 
 }
-

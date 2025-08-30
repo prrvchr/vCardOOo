@@ -33,11 +33,12 @@ import java.util.Map;
 import ezvcard.parameter.AddressType;
 
 
-public class Address extends ezvcard.property.Address
-{
+public class Address extends ezvcard.property.Address {
+
     public Address() {
-          super();
+        super();
     }
+
     public Address(Address original) {
         super(original);
     }
@@ -46,6 +47,7 @@ public class Address extends ezvcard.property.Address
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -53,13 +55,27 @@ public class Address extends ezvcard.property.Address
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getPoBox() != null) values.put("poBox", getPoBox());
-        if (getExtendedAddress() != null) values.put("extendedAddress", getExtendedAddress());
-        if (getStreetAddress() != null) values.put("streetAddress", getStreetAddress());
-        if (getLocality() != null) values.put("locality", getLocality());
-        if (getRegion() != null) values.put("region", getRegion());
-        if (getPostalCode() != null) values.put("postalCode", getPostalCode());
-        if (getCountry() != null) values.put("country", getCountry());
+        if (getPoBox() != null) {
+            values.put("poBox", getPoBox());
+        }
+        if (getExtendedAddress() != null) {
+            values.put("extendedAddress", getExtendedAddress());
+        }
+        if (getStreetAddress() != null) {
+            values.put("streetAddress", getStreetAddress());
+        }
+        if (getLocality() != null) {
+            values.put("locality", getLocality());
+        }
+        if (getRegion() != null) {
+            values.put("region", getRegion());
+        }
+        if (getPostalCode() != null) {
+            values.put("postalCode", getPostalCode());
+        }
+        if (getCountry() != null) {
+            values.put("country", getCountry());
+        }
         return values;
     }
 
@@ -72,4 +88,3 @@ public class Address extends ezvcard.property.Address
     }
 
 }
-

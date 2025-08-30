@@ -41,8 +41,8 @@ import static ezvcard.util.StringUtils.join;
 import io.github.prrvchr.carddav.property.StructuredName;
 
 
-public final class StructuredNameScribe extends VCardPropertyScribe<StructuredName>
-{
+public final class StructuredNameScribe extends VCardPropertyScribe<StructuredName> {
+
     public StructuredNameScribe() {
         super(StructuredName.class, "N");
     }
@@ -53,7 +53,8 @@ public final class StructuredNameScribe extends VCardPropertyScribe<StructuredNa
     }
 
     @Override
-    protected StructuredName _parseText(String value, VCardDataType dataType, VCardParameters parameters, ParseContext context) {
+    protected StructuredName _parseText(String value, VCardDataType dataType,
+                                        VCardParameters parameters, ParseContext context) {
         StructuredName property = new StructuredName();
 
         if (context.getVersion() == VCardVersion.V2_1) {
@@ -92,6 +93,7 @@ public final class StructuredNameScribe extends VCardPropertyScribe<StructuredNa
 
     @Override
     protected String _writeText(StructuredName property, WriteContext context) {
+        String card;
         /*
          * StructuredValueBuilder cannot be used with 2.1 because it escapes
          * comma characters. For example, if someone's last name is "Foo,bar",
@@ -112,7 +114,7 @@ public final class StructuredNameScribe extends VCardPropertyScribe<StructuredNa
             builder.append(join(property.getAdditionalNames(), ","));
             builder.append(join(property.getPrefixes(), ","));
             builder.append(join(property.getSuffixes(), ","));
-            return builder.build(false, context.isIncludeTrailingSemicolons());
+            card = builder.build(false, context.isIncludeTrailingSemicolons());
         } else {
             StructuredValueBuilder builder = new StructuredValueBuilder();
             builder.append(property.getFamily());
@@ -120,9 +122,9 @@ public final class StructuredNameScribe extends VCardPropertyScribe<StructuredNa
             builder.append(property.getAdditionalNames());
             builder.append(property.getPrefixes());
             builder.append(property.getSuffixes());
-            return builder.build(context.isIncludeTrailingSemicolons());
+            card = builder.build(context.isIncludeTrailingSemicolons());
         }
+        return card;
     }
 
 }
-
