@@ -139,7 +139,7 @@ public final class DataBase {
             XPreparedStatement call = mConnection.prepareCall("CALL \"MergeCardData\"(?,?,?,?,?,?,?)");
             mCardSetting = UnoRuntime.queryInterface(XParameters.class, call);
             mCardSetting.setArray(1, columns);
-            mCardSetting.setTimestamp(2, UnoHelper.currentUnoDateTime());
+            mCardSetting.setTimestamp(2, UnoHelper.currentDateTime());
             mCardCall = UnoRuntime.queryInterface(XPreparedBatchExecution.class, call);
             XPreparedStatement call2 = mConnection.prepareCall("CALL \"MergeCardGroup\"(?,?)");
             mGroupSetting = UnoRuntime.queryInterface(XParameters.class, call2);
