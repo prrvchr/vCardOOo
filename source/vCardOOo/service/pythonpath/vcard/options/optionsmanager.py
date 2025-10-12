@@ -27,15 +27,57 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from ..unotool import getContainerWindow
+from com.sun.star.logging.LogLevel import SEVERE
 
-from ..configuration import g_identifier
+from .optionsview import OptionsView
+from .optionshandler import WindowHandler
+
+from .options import OptionsManager as Manager
+
+from ..unotool import executeDispatch
+
+from ..configuration import g_extension
 
 import traceback
 
 
-class OptionView():
-    def __init__(self, ctx, window, handler):
-        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionDialog')
-        self._window.setVisible(True)
+class OptionsManager():
+    def __init__(self, ctx, logger, window, offset):
+        self._ctx = ctx
+        self._module = 'CardDAVDiscoveryUrl'
+        self._sub = 'Main'
+        self._line = 26
+        self._manager = Manager(ctx, logger, window, offset)
+        self._view = OptionsView(ctx, window, WindowHandler(self))
+        self._logger = logger
+
+    def saveSetting(self):
+        self._manager.saveSetting()
+
+    def loadSetting(self):
+        self._manager.loadSetting()
+
+    def viewData(self):
+        self._manager.viewData()
+
+    def serverConnection(self):
+        service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
+        factory = self._ctx.getByName(service)
+        provider = factory.createScriptProvider(self._ctx)
+        args = (g_extension, self._module, self._sub)
+        url = 'vnd.sun.star.script:%s.%s.%s?language=Basic&location=application' % args
+        script = provider.getScript(url)
+        try:
+            script.invoke(((), ), (), ())
+        except Exception as e:
+            self._logger.logprb(SEVERE, 'OptionManager', 'serverConnection()', 101, e, traceback.format_exc())
+            print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
+
+    def editMacro(self):
+        args = {'Document': 'LibreOffice Macros & Dialogs',
+                'LibName': g_extension,
+                'Name': self._module,
+                'Type': 'Module',
+                'Line': self._line}
+        executeDispatch(self._ctx, '.uno:BasicIDEAppear', **args)
 

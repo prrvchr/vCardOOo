@@ -35,7 +35,7 @@ from com.sun.star.lang import XServiceInfo
 
 from com.sun.star.awt import XContainerWindowEventHandler
 
-from vcard import OptionManager
+from vcard import OptionsManager
 
 from vcard import getLogger
 
@@ -64,7 +64,7 @@ class OptionsHandler(unohelper.Base,
             handled = False
             if method == 'external_event':
                 if event == 'initialize':
-                    self._manager = OptionManager(self._ctx, self._logger, window, 60)
+                    self._manager = OptionsManager(self._ctx, self._logger, window, 60)
                     handled = True
                 elif event == 'ok':
                     self._manager.saveSetting()

@@ -27,57 +27,15 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from com.sun.star.logging.LogLevel import SEVERE
+from ..unotool import getContainerWindow
 
-from .optionview import OptionView
-from .optionhandler import WindowHandler
-
-from ..options import OptionsManager
-
-from ..unotool import executeDispatch
-
-from ..configuration import g_extension
+from ..configuration import g_identifier
 
 import traceback
 
 
-class OptionManager():
-    def __init__(self, ctx, logger, window, offset):
-        self._ctx = ctx
-        self._module = 'CardDAVDiscoveryUrl'
-        self._sub = 'Main'
-        self._line = 26
-        self._optionsmanager = OptionsManager(ctx, logger, window, offset)
-        self._view = OptionView(ctx, window, WindowHandler(self))
-        self._logger = logger
-
-    def saveSetting(self):
-        self._optionsmanager.saveSetting()
-
-    def loadSetting(self):
-        self._optionsmanager.loadSetting()
-
-    def viewData(self):
-        self._optionsmanager.viewData()
-
-    def serverConnection(self):
-        service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
-        factory = self._ctx.getByName(service)
-        provider = factory.createScriptProvider(self._ctx)
-        args = (g_extension, self._module, self._sub)
-        url = 'vnd.sun.star.script:%s.%s.%s?language=Basic&location=application' % args
-        script = provider.getScript(url)
-        try:
-            script.invoke(((), ), (), ())
-        except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionManager', 'serverConnection()', 101, e, traceback.format_exc())
-            print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
-
-    def editMacro(self):
-        args = {'Document': 'LibreOffice Macros & Dialogs',
-                'LibName': g_extension,
-                'Name': self._module,
-                'Type': 'Module',
-                'Line': self._line}
-        executeDispatch(self._ctx, '.uno:BasicIDEAppear', **args)
+class OptionsView():
+    def __init__(self, ctx, window, handler):
+        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionDialog')
+        self._window.setVisible(True)
 
