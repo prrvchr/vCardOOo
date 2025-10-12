@@ -325,6 +325,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 
 ### Ce qui a été fait pour la version 1.4.0:
 
+- A été testé sous LibreOfficeDev 26.2.
 - Nécessite l'extension **jdbcDriverOOo en version 1.6.0 minimum**.
 - Nécessite l'extension **OAuth2OOo en version 1.6.0 minimum**.
 
