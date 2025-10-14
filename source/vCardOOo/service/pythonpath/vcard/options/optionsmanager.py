@@ -64,9 +64,6 @@ class OptionsManager():
     def loadSetting(self):
         self._manager.loadSetting()
 
-    def viewData(self):
-        self._manager.viewData()
-
     def serverConnection(self):
         service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
         factory = self._ctx.getByName(service)
