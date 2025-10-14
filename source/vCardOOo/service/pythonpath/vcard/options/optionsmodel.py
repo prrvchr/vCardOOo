@@ -27,33 +27,26 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import unohelper
+from ..jdbcdriver import isInstrumented
 
-from com.sun.star.awt import XContainerWindowEventHandler
+from ..unotool import getStringResource
+
+from ..configuration import g_identifier
+
 
 import traceback
 
 
-class WindowHandler(unohelper.Base,
-                    XContainerWindowEventHandler):
-    def __init__(self, manager):
-        self._manager = manager
+class OptionsModel():
+    def __init__(self, ctx):
+        self._instrumented = isInstrumented(ctx, 'xdbc:jdbc')
+        resolver = getStringResource(ctx, g_identifier, 'dialogs', 'OptionsDialog')
+        self._url = resolver.resolveString('OptionsDialog.Hyperlink1.Url')
 
-    # XContainerWindowEventHandler
-    def callHandlerMethod(self, dialog, event, method):
-        try:
-            handled = False
-            if method == 'ServerConnection':
-                self._manager.serverConnection()
-                handled = True
-            elif method == 'EditMacro':
-                self._manager.editMacro()
-                handled = True
-            return handled
-        except Exception as e:
-            print("ERROR: %s - %s" % (e, traceback.format_exc()))
+# OptionsModel getter methods
+    def isInstrumented(self):
+        return self._instrumented
 
-    def getSupportedMethodNames(self):
-        return ('ServerConnection',
-                'EditMacro')
+    def getViewData(self):
+        return self._url, self._instrumented
 

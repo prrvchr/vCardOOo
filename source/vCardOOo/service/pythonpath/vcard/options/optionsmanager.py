@@ -29,8 +29,9 @@
 
 from com.sun.star.logging.LogLevel import SEVERE
 
+from .optionsmodel import OptionsModel
+
 from .optionsview import OptionsView
-from .optionshandler import WindowHandler
 
 from .options import OptionsManager as Manager
 
@@ -42,17 +43,23 @@ import traceback
 
 
 class OptionsManager():
-    def __init__(self, ctx, logger, window, offset):
+    def __init__(self, ctx, logger, window):
         self._ctx = ctx
+        self._model = OptionsModel(ctx)
+        self._view = OptionsView(window, OptionsManager._restart, *self._model.getViewData())
+        self._manager = Manager(ctx, logger, window)
+        self._logger = logger
         self._module = 'CardDAVDiscoveryUrl'
         self._sub = 'Main'
         self._line = 26
-        self._manager = Manager(ctx, logger, window, offset)
-        self._view = OptionsView(ctx, window, WindowHandler(self))
-        self._logger = logger
+
+    _restart = False
 
     def saveSetting(self):
-        self._manager.saveSetting()
+        if self._manager.saveSetting():
+            print("OptionsManager.saveSetting() restart")
+            OptionsManager._restart = True
+            self._view.setWarning(True, self._model.isInstrumented())
 
     def loadSetting(self):
         self._manager.loadSetting()
