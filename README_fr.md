@@ -325,9 +325,10 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 
 ### Ce qui a été fait pour la version 1.4.0:
 
-- A été testé sous LibreOfficeDev 26.2.
+- Si un mot de passe incorrect est fourni lors de la connexion à la source de données, il n'est plus nécessaire de redémarrer LibreOffice pour tenter de se connecter à nouveau.
 - Nécessite l'extension **jdbcDriverOOo en version 1.6.0 minimum**.
 - Nécessite l'extension **OAuth2OOo en version 1.6.0 minimum**.
+- A été testé sous LibreOfficeDev 26.2.0.0.alpha0 / Python 3.12.11.
 
 ### Que reste-t-il à faire pour la version 1.4.0:
 

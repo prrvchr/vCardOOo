@@ -67,11 +67,11 @@ If necessary, rename it before installing it.
 
 - [![OAuth2OOo logo][17]][18] Install **[OAuth2OOo.oxt][19]** extension [![Version][20]][19]
 
-    You must install this extension, if it is not already installed.
+  You must install this extension, if it is not already installed.
 
 - [![jdbcDriverOOo logo][21]][22] Install **[jdbcDriverOOo.oxt][23]** extension [![Version][24]][23]
 
-    You must install this extension, if it is not already installed.
+  You must install this extension, if it is not already installed.
 
 - ![vCardOOo logo][25] Install **[vCardOOo.oxt][26]** extension [![Version][27]][26]
 
@@ -325,9 +325,10 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 
 ### What has been done for version 1.4.0:
 
-- Has been tested under LibreOfficeDev 26.2.
+- If an incorrect password is provided when connecting to the data source, it is no longer necessary to restart LibreOffice to attempt to connect again.
 - Requires the **jdbcDriverOOo extension at least version 1.6.0**.
 - Requires the **OAuth2OOo extension at least version 1.6.0**.
+- Has been tested under LibreOfficeDev 26.2.0.0.alpha0 / Python 3.12.11.
 
 ### What remains to be done for version 1.4.0:
 
