@@ -27,4 +27,21 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from .optionmanager import OptionManager
+from ..unotool import createService
+from ..unotool import getPropertyValueSet
+
+from .configuration import g_instrumented
+from .configuration import g_service
+
+
+def isInstrumented(ctx, url):
+    support = False
+    driver = createService(ctx, g_service)
+    if driver:
+        properties = getPropertyValueSet({g_instrumented: True})
+        for info in driver.getPropertyInfo(url, properties):
+            if info.Name == g_instrumented:
+                support = info.Value != 'false'
+                break
+    return support
+

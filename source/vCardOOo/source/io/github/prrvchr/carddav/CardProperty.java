@@ -28,62 +28,55 @@ package io.github.prrvchr.carddav;
 import org.json.JSONObject;
 
 
-public final class CardProperty
-{
+public final class CardProperty {
 
-    private final String m_name;
-    private final String m_getter;
-    private final boolean m_isgroup;
-    private final boolean m_istyped;
-    private final JSONObject m_methods;
+    private final String mName;
+    private final String mGetter;
+    private final boolean mIsGroup;
+    private final boolean mIsTyped;
+    private final JSONObject mMethods;
 
     public CardProperty(String name,
                         String getter,
                         boolean isgroup,
                         boolean istyped,
-                        JSONObject methods)
-    {
-        m_name = name;
-        m_getter = getter;
-        m_isgroup = isgroup;
-        m_istyped = istyped;
-        m_methods = methods;
+                        JSONObject methods) {
+        mName = name;
+        mGetter = getter;
+        mIsGroup = isgroup;
+        mIsTyped = istyped;
+        mMethods = methods;
     }
 
-    public String getName()
-    {
-        return m_name;
+    public String getName() {
+        return mName;
     }
 
-    public String getGetter()
-    {
-        return m_getter;
+    public String getGetter() {
+        return mGetter;
     }
 
-    public Boolean isGroup()
-    {
-        if (m_isgroup) {
-            System.out.println("CardProperty.isGroup() IsGroup: " + m_isgroup);
+    public Boolean isGroup() {
+        if (mIsGroup) {
+            System.out.println("CardProperty.isGroup() IsGroup: " + mIsGroup);
         }
-        return m_isgroup;
+        return mIsGroup;
     }
 
-    public Boolean isTyped()
-    {
-        return m_istyped;
+    public Boolean isTyped() {
+        return mIsTyped;
     }
 
-    public String[] getMethods()
-    {
-        return (String[]) m_methods.keySet().toArray();
+    public String[] getMethods() {
+        return (String[]) mMethods.keySet().toArray();
     }
 
-    public String getLabel(String name)
-    {
-        if (m_methods.has(name)) {
-            return m_methods.getString(name);
+    public String getLabel(String name) {
+        String label = null;
+        if (mMethods.has(name)) {
+            label = mMethods.getString(name);
         }
-        return null;
+        return label;
     }
 
 }

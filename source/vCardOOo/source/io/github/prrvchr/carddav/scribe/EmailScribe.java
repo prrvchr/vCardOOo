@@ -29,8 +29,7 @@ import ezvcard.io.scribe.StringPropertyScribe;
 import io.github.prrvchr.carddav.property.Email;
 
 
-public final class EmailScribe extends StringPropertyScribe<Email>
-{
+public final class EmailScribe extends StringPropertyScribe<Email> {
     public EmailScribe() {
         super(Email.class, "EMAIL");
     }
@@ -41,4 +40,3 @@ public final class EmailScribe extends StringPropertyScribe<Email>
     }
 
 }
-

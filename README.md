@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.3.2][6]
+# version [1.4.0][6]
 
 ## Introduction:
 
@@ -43,6 +43,7 @@ Being free software I encourage you:
 - To duplicate its [source code][13].
 - To make changes, corrections, improvements.
 - To open [issue][14] if needed.
+- To [participate in the costs][15] of [CASA certification][16].
 
 In short, to participate in the development of this extension.  
 Because it is together that we can make Free Software smarter.
@@ -52,10 +53,10 @@ ___
 ## Requirement:
 
 The vCardOOo extension uses the OAuth2OOo extension to work.  
-It must therefore meet the [requirement of the OAuth2OOo extension][15].
+It must therefore meet the [requirement of the OAuth2OOo extension][17].
 
 The vCardOOo extension uses the jdbcDriverOOo extension to work.  
-It must therefore meet the [requirement of the jdbcDriverOOo extension][16].  
+It must therefore meet the [requirement of the jdbcDriverOOo extension][18].  
 Additionally, vCardOOo requires the jdbcDriverOOo extension to be configured to provide `com.sun.star.sdb` as the API level, which is the default configuration.
 
 ___
@@ -65,15 +66,15 @@ ___
 It seems important that the file was not renamed when it was downloaded.  
 If necessary, rename it before installing it.
 
-- [![OAuth2OOo logo][17]][18] Install **[OAuth2OOo.oxt][19]** extension [![Version][20]][19]
+- [![OAuth2OOo logo][19]][20] Install **[OAuth2OOo.oxt][21]** extension [![Version][22]][21]
 
-    You must install this extension, if it is not already installed.
+  You must install this extension, if it is not already installed.
 
-- [![jdbcDriverOOo logo][21]][22] Install **[jdbcDriverOOo.oxt][23]** extension [![Version][24]][23]
+- [![jdbcDriverOOo logo][23]][24] Install **[jdbcDriverOOo.oxt][25]** extension [![Version][26]][25]
 
-    You must install this extension, if it is not already installed.
+  You must install this extension, if it is not already installed.
 
-- ![vCardOOo logo][25] Install **[vCardOOo.oxt][26]** extension [![Version][27]][26]
+- ![vCardOOo logo][27] Install **[vCardOOo.oxt][28]** extension [![Version][29]][28]
 
 Restart LibreOffice after installation.  
 **Be careful, restarting LibreOffice may not be enough.**
@@ -91,7 +92,7 @@ ___
 
 In LibreOffice / OpenOffice go to: **File -> Wizards -> Address Data Source...**
 
-![vCardOOo screenshot 1][28]
+![vCardOOo screenshot 1][30]
 
 The **Address Book Datasource Wizard** open.
 
@@ -99,12 +100,12 @@ In step: **1.Address Book Type**:
 - Select: **Other external data source**.
 - Click button: **Next**.
 
-![vCardOOo screenshot 2][29]
+![vCardOOo screenshot 2][31]
 
 In step: **2.Connection Settings**:
 - Click button: **Settings**.
 
-![vCardOOo screenshot 3][30]
+![vCardOOo screenshot 3][32]
 
 A new wizard opens. **Data source properties**.
 
@@ -113,7 +114,7 @@ In Database type list:
 - Select: **vCard Contacts**.
 - click button: **Next**.
 
-![vCardOOo screenshot 4][31]
+![vCardOOo screenshot 4][33]
 
 In step: **2.Connection Settings**.  
 In General: Enter the DBMS/driver-specific connection string here.
@@ -126,20 +127,20 @@ In User Authentication: User name:
 Then:
 - Click button: **Test connection**.
 
-![vCardOOo screenshot 5][32]
+![vCardOOo screenshot 5][34]
 
 In Authentication required: Password:
 - Put your password.
 
-![vCardOOo screenshot 6][33]
+![vCardOOo screenshot 6][35]
 
 Normally you should see: Connection Test: The connection was established successfully.
 
-![vCardOOo screenshot 7][34]
+![vCardOOo screenshot 7][36]
 
 If the connection has been established, you can complete this wizard with the **Finish** button.
 
-![vCardOOo screenshot 8][35]
+![vCardOOo screenshot 8][37]
 
 In step: **3.Table Selection**.  
 If your data source has multiple tables, you will be asked to select the primary table.  
@@ -149,7 +150,7 @@ In step: **4.Field Assignment**.
 If necessary it is possible to rename the names of the columns of the data source using the button: **Field Assignment**.  
 Please continue this wizard with the button: **Next**.
 
-![vCardOOo screenshot 9][36]
+![vCardOOo screenshot 9][38]
 
 In step: **5.Data Source Title**.
 
@@ -161,7 +162,7 @@ This odb file must also be made accessible. To do this you must:
 - **Check the box**: Make this address book available to all modules in LibreOffice
 - Named the address book in the field: **Address book name**.
 
-![vCardOOo screenshot 10][37]
+![vCardOOo screenshot 10][39]
 
 Have fun...
 
@@ -169,12 +170,12 @@ ___
 
 ## How to build the extension:
 
-Normally, the extension is created with Eclipse for Java and [LOEclipse][38]. To work around Eclipse, I modified LOEclipse to allow the extension to be created with Apache Ant.  
+Normally, the extension is created with Eclipse for Java and [LOEclipse][40]. To work around Eclipse, I modified LOEclipse to allow the extension to be created with Apache Ant.  
 To create the vCardOOo extension with the help of Apache Ant, you need to:
-- Install the [Java SDK][39] version 17 or higher.
-- Install [Apache Ant][40] version 1.10.0 or higher.
-- Install [LibreOffice and its SDK][41] version 7.x or higher.
-- Clone the [vCardOOo][42] repository on GitHub into a folder.
+- Install the [Java SDK][41] version 17 or higher.
+- Install [Apache Ant][42] version 1.10.0 or higher.
+- Install [LibreOffice and its SDK][43] version 7.x or higher.
+- Clone the [vCardOOo][44] repository on GitHub into a folder.
 - From this folder, move to the directory: `source/vCardOOo/`
 - In this directory, edit the file: `build.properties` so that the `office.install.dir` and `sdk.dir` properties point to the folders where LibreOffice and its SDK were installed, respectively.
 - Start the archive creation process using the command: `ant`
@@ -192,7 +193,7 @@ ___
 
 * LibreOffice 24.8.0.3 (x86_64) - Windows 10(x64) - Python version 3.9.19 (under Lubuntu 22.04 / VirtualBox 6.1.38)
 
-* **Does not work with OpenOffice on Windows** see [bug 128569][43]. Having no solution, I encourage you to install **LibreOffice**.
+* **Does not work with OpenOffice on Windows** see [bug 128569][45]. Having no solution, I encourage you to install **LibreOffice**.
 
 I encourage you in case of problem :confused:  
 to create an [issue][14]  
@@ -206,24 +207,24 @@ ___
 
 This extension was written in order to make usable in free software (LibreOffice or OpenOffice) your personal data (your vCard) stored on a Nextcloud server.
 
-With the [eMailerOOo][44] extension, it can be the data source for [mail merge][45] by email, to your correspondents (your vCard) coming from the Nextcloud server.
+With the [eMailerOOo][46] extension, it can be the data source for [mail merge][47] by email, to your correspondents (your vCard) coming from the Nextcloud server.
 
 It will give you access to an information system that only larges companies are able, today, to implement.
 
 ### What has been done for version 0.0.1:
 
-- Writing of the UNO service [com.sun.star.sdbc.Driver][46] responding to the call from the url `sdbc:address:vcard:*`  
-  The `connect(url, info)` method of this Driver use the [DataSource][47] singleton to return the UNO service `com.sun.star.sdbc.Connection`.
+- Writing of the UNO service [com.sun.star.sdbc.Driver][48] responding to the call from the url `sdbc:address:vcard:*`  
+  The `connect(url, info)` method of this Driver use the [DataSource][49] singleton to return the UNO service `com.sun.star.sdbc.Connection`.
 
 - This DataSource singleton is responsible for:
 
-  - When created, create a [Replicator][48] thread to track remote changes on Nextcloud servers.
-  - Create and cache a [User][49] Interface needed for:
+  - When created, create a [Replicator][50] thread to track remote changes on Nextcloud servers.
+  - Create and cache a [User][51] Interface needed for:
     - Creating the connection to the underlying database.
     - Connect the Replicator to Nextcloud servers.
   - Start the Replicator each time you connect to the database.
 
--  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][50] written in Java and using the [ez-vcard][51] library.
+-  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][52] written in Java and using the [ez-vcard][53] library.
 
 ### What has been done for version 1.0.1:
 
@@ -241,10 +242,10 @@ It will give you access to an information system that only larges companies are 
 
 ### What has been done for version 1.1.0:
 
-- All Python packages necessary for the extension are now recorded in a [requirements.txt][52] file following [PEP 508][53].
+- All Python packages necessary for the extension are now recorded in a [requirements.txt][54] file following [PEP 508][55].
 - Now if you are not on Windows then the Python packages necessary for the extension can be easily installed with the command:  
   `pip install requirements.txt`
-- Modification of the [Requirement][54] section.
+- Modification of the [Requirement][56] section.
 
 ### What has been done for version 1.1.1:
 
@@ -253,26 +254,26 @@ It will give you access to an information system that only larges companies are 
 
 ### What has been done for version 1.1.2:
 
-- Integration of a fix to workaround the [issue #159988][55].
+- Integration of a fix to workaround the [issue #159988][57].
 
 ### What has been done for version 1.1.3:
 
-- The creation of the database, during the first connection, uses the UNO API offered by the jdbcDriverOOo extension since version 1.3.2. This makes it possible to record all the information necessary for creating the database in 9 text tables which are in fact [9 csv files][56].
+- The creation of the database, during the first connection, uses the UNO API offered by the jdbcDriverOOo extension since version 1.3.2. This makes it possible to record all the information necessary for creating the database in 9 text tables which are in fact [9 csv files][58].
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.4 and 1.3.2 respectively minimum.
 - Many fixes.
 
 ### What has been done for version 1.1.4:
 
-- Updated the [Python python-dateutil][57] package to version 2.9.0.post0.
-- Updated the [Python decorator][58] package to version 5.1.1.
-- Updated the [Python packaging][59] package to version 24.1.
-- Updated the [Python setuptools][60] package to version 72.1.0 in order to respond to the [Dependabot security alert][61].
-- Updated the [Python validators][62] package to version 0.33.0.
+- Updated the [Python python-dateutil][59] package to version 2.9.0.post0.
+- Updated the [Python decorator][60] package to version 5.1.1.
+- Updated the [Python packaging][61] package to version 24.1.
+- Updated the [Python setuptools][62] package to version 72.1.0 in order to respond to the [Dependabot security alert][63].
+- Updated the [Python validators][64] package to version 0.33.0.
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.6 and 1.4.2 respectively minimum.
 
 ### What has been done for version 1.1.5:
 
-- Updated the [Python setuptools][60] package to version 73.0.1.
+- Updated the [Python setuptools][62] package to version 73.0.1.
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.7 and 1.4.5 respectively minimum.
 - Changes to extension options that require a restart of LibreOffice will result in a message being displayed.
 - Support for LibreOffice version 24.8.x.
@@ -285,28 +286,28 @@ It will give you access to an information system that only larges companies are 
 ### What has been done for version 1.2.0:
 
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.4.0 and 1.4.6 respectively minimum.
-- It is possible to build the extension archive (ie: the oxt file) with the [Apache Ant][40] utility and the [build.xml][63] script file.
+- It is possible to build the extension archive (ie: the oxt file) with the [Apache Ant][42] utility and the [build.xml][65] script file.
 - The extension will refuse to install under OpenOffice regardless of version or LibreOffice other than 7.x or higher.
 - Added binaries needed for Python libraries to work on Linux and LibreOffice 24.8 (ie: Python 3.9).
 
 ### What has been done for version 1.2.1:
 
-- Updated the [Python packaging][59] package to version 24.2.
-- Updated the [Python setuptools][60] package to version 75.8.0.
-- Updated the [Python six][64] package to version 1.17.0.
-- Updated the [Python validators][62] package to version 0.34.0.
+- Updated the [Python packaging][61] package to version 24.2.
+- Updated the [Python setuptools][62] package to version 75.8.0.
+- Updated the [Python six][66] package to version 1.17.0.
+- Updated the [Python validators][64] package to version 0.34.0.
 - Support for Python version 3.13.
 
 ### What has been done for version 1.3.0:
 
-- Updated the [Python packaging][59] package to version 25.0.
-- Downgrade the [Python setuptools][60] package to version 75.3.2. to ensure support for Python 3.8.
-- Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][38] extension via [PR#152][65] and [PR#157][66].
-- Modified [LOEclipse][38] to support the new `rdb` file format produced by the `unoidl-write` compilation utility. `idl` files have been updated to support both available compilation tools: idlc and unoidl-write.
+- Updated the [Python packaging][61] package to version 25.0.
+- Downgrade the [Python setuptools][62] package to version 75.3.2. to ensure support for Python 3.8.
+- Passive registration deployment that allows for much faster installation of extensions and differentiation of registered UNO services from those provided by a Java or Python implementation. This passive registration is provided by the [LOEclipse][40] extension via [PR#152][67] and [PR#157][68].
+- Modified [LOEclipse][40] to support the new `rdb` file format produced by the `unoidl-write` compilation utility. `idl` files have been updated to support both available compilation tools: idlc and unoidl-write.
 - Compilation of all Java archives contained in the extension as modules and with **Java JDK version 17**.
-- It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][67] section has been added to the documentation.
-- To facilitate building under Ant, the two Java libraries [ezvcard][68] and [vinnie][69] used by vCardOOo have been integrated into Eclipse alongside vCardOOo and are now compiled as a Java module. An [enhancement request][70] has been made to find a simpler solution if possible.
-- Implemented [PEP 570][71] in [logging][72] to support unique multiple arguments.
+- It is now possible to build the oxt file of the vCardOOo extension only with the help of Apache Ant and a copy of the GitHub repository. The [How to build the extension][69] section has been added to the documentation.
+- To facilitate building under Ant, the two Java libraries [ezvcard][70] and [vinnie][71] used by vCardOOo have been integrated into Eclipse alongside vCardOOo and are now compiled as a Java module. An [enhancement request][72] has been made to find a simpler solution if possible.
+- Implemented [PEP 570][73] in [logging][74] to support unique multiple arguments.
 - Any errors occurring while loading the driver will be logged in the extension's log if logging has been previously enabled. This makes it easier to identify installation problems on Windows.
 - To ensure the correct creation of the vCardOOo database, it will be checked that the jdbcDriverOOo extension has `com.sun.star.sdb` as API level.
 - Requires the **jdbcDriverOOo extension at least version 1.5.0**.
@@ -323,7 +324,15 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 - Support for LibreOffice 25.2.x and 25.8.x on Windows 64-bit.
 - Requires the **OAuth2OOo extension at least version 1.5.2**.
 
-### What remains to be done for version 1.3.2:
+### What has been done for version 1.4.0:
+
+- If an incorrect password is provided when connecting to the data source, it is no longer necessary to restart LibreOffice to attempt to connect again.
+- If the jdbcDriverOOo extension works without Java instrumentation, a warning message will be displayed in the extension options.
+- Requires the **jdbcDriverOOo extension at least version 1.6.0**.
+- Requires the **OAuth2OOo extension at least version 1.6.0**.
+- Has been tested under LibreOfficeDev 26.2.
+
+### What remains to be done for version 1.4.0:
 
 - Make the address book locally editable with replication of changes.
 
@@ -336,7 +345,7 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-132>
+[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-140>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
@@ -345,61 +354,63 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 [12]: <https://wiki.openoffice.org/wiki/Documentation/DevGuide/Database/Driver_Service>
 [13]: <https://github.com/prrvchr/vCardOOo>
 [14]: <https://github.com/prrvchr/vCardOOo/issues/new>
-[15]: <https://prrvchr.github.io/OAuth2OOo/#requirement>
-[16]: <https://prrvchr.github.io/jdbcDriverOOo/#requirement>
-[17]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
-[18]: <https://prrvchr.github.io/OAuth2OOo/>
-[19]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
-[20]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
-[21]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
-[22]: <https://prrvchr.github.io/jdbcDriverOOo/>
-[23]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
-[24]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
-[25]: <img/vCardOOo.svg#middle>
-[26]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[27]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.3.2#right>
-[28]: <img/vCardOOo-1.png>
-[29]: <img/vCardOOo-2.png>
-[30]: <img/vCardOOo-3.png>
-[31]: <img/vCardOOo-4.png>
-[32]: <img/vCardOOo-5.png>
-[33]: <img/vCardOOo-6.png>
-[34]: <img/vCardOOo-7.png>
-[35]: <img/vCardOOo-8.png>
-[36]: <img/vCardOOo-9.png>
-[37]: <img/vCardOOo-10.png>
-[38]: <https://github.com/LibreOffice/loeclipse>
-[39]: <https://adoptium.net/temurin/releases/?version=17&package=jdk>
-[40]: <https://ant.apache.org/manual/install.html>
-[41]: <https://downloadarchive.documentfoundation.org/libreoffice/old/7.6.7.2/>
-[42]: <https://github.com/prrvchr/vCardOOo.git>
-[43]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
-[44]: <https://prrvchr.github.io/eMailerOOo/>
-[45]: <https://en.wikipedia.org/wiki/Mail_merge>
-[46]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
-[47]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
-[48]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
-[49]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
-[50]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
-[51]: <https://github.com/mangstadt/ez-vcard>
-[52]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/requirements.txt>
-[53]: <https://peps.python.org/pep-0508/>
-[54]: <https://prrvchr.github.io/vCardOOo/#requirement>
-[55]: <https://bugs.documentfoundation.org/show_bug.cgi?id=159988>
-[56]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vCardOOo/hsqldb>
-[57]: <https://pypi.org/project/python-dateutil/>
-[58]: <https://pypi.org/project/decorator/>
-[59]: <https://pypi.org/project/packaging/>
-[60]: <https://pypi.org/project/setuptools/>
-[61]: <https://github.com/prrvchr/vCardOOo/security/dependabot/1>
-[62]: <https://pypi.org/project/validators/>
-[63]: <https://github.com/prrvchr/vCardOOo/blob/master/source/vCardOOo/build.xml>
-[64]: <https://pypi.org/project/six/>
-[65]: <https://github.com/LibreOffice/loeclipse/pull/152>
-[66]: <https://github.com/LibreOffice/loeclipse/pull/157>
-[67]: <https://prrvchr.github.io/vCardOOo/#how-to-build-the-extension>
-[68]: <https://github.com/prrvchr/vCardOOo/tree/main/source/ezvcard>
-[69]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vinnie>
-[70]: <https://github.com/mangstadt/ez-vcard/issues/156>
-[71]: <https://peps.python.org/pep-0570/>
-[72]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>
+[15]: <https://github.com/sponsors/prrvchr>
+[16]: <https://appdefensealliance.dev/casa>
+[17]: <https://prrvchr.github.io/OAuth2OOo/#requirement>
+[18]: <https://prrvchr.github.io/jdbcDriverOOo/#requirement>
+[19]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
+[20]: <https://prrvchr.github.io/OAuth2OOo/>
+[21]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
+[22]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
+[23]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
+[24]: <https://prrvchr.github.io/jdbcDriverOOo/>
+[25]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
+[26]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
+[27]: <img/vCardOOo.svg#middle>
+[28]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
+[29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.0#right>
+[30]: <img/vCardOOo-1.png>
+[31]: <img/vCardOOo-2.png>
+[32]: <img/vCardOOo-3.png>
+[33]: <img/vCardOOo-4.png>
+[34]: <img/vCardOOo-5.png>
+[35]: <img/vCardOOo-6.png>
+[36]: <img/vCardOOo-7.png>
+[37]: <img/vCardOOo-8.png>
+[38]: <img/vCardOOo-9.png>
+[39]: <img/vCardOOo-10.png>
+[40]: <https://github.com/LibreOffice/loeclipse>
+[41]: <https://adoptium.net/temurin/releases/?version=17&package=jdk>
+[42]: <https://ant.apache.org/manual/install.html>
+[43]: <https://downloadarchive.documentfoundation.org/libreoffice/old/7.6.7.2/>
+[44]: <https://github.com/prrvchr/vCardOOo.git>
+[45]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
+[46]: <https://prrvchr.github.io/eMailerOOo/>
+[47]: <https://en.wikipedia.org/wiki/Mail_merge>
+[48]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
+[49]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
+[50]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
+[51]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/user.py>
+[52]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/source/io/github/prrvchr/carddav/CardSync.java>
+[53]: <https://github.com/mangstadt/ez-vcard>
+[54]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/requirements.txt>
+[55]: <https://peps.python.org/pep-0508/>
+[56]: <https://prrvchr.github.io/vCardOOo/#requirement>
+[57]: <https://bugs.documentfoundation.org/show_bug.cgi?id=159988>
+[58]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vCardOOo/hsqldb>
+[59]: <https://pypi.org/project/python-dateutil/>
+[60]: <https://pypi.org/project/decorator/>
+[61]: <https://pypi.org/project/packaging/>
+[62]: <https://pypi.org/project/setuptools/>
+[63]: <https://github.com/prrvchr/vCardOOo/security/dependabot/1>
+[64]: <https://pypi.org/project/validators/>
+[65]: <https://github.com/prrvchr/vCardOOo/blob/master/source/vCardOOo/build.xml>
+[66]: <https://pypi.org/project/six/>
+[67]: <https://github.com/LibreOffice/loeclipse/pull/152>
+[68]: <https://github.com/LibreOffice/loeclipse/pull/157>
+[69]: <https://prrvchr.github.io/vCardOOo/#how-to-build-the-extension>
+[70]: <https://github.com/prrvchr/vCardOOo/tree/main/source/ezvcard>
+[71]: <https://github.com/prrvchr/vCardOOo/tree/main/source/vinnie>
+[72]: <https://github.com/mangstadt/ez-vcard/issues/156>
+[73]: <https://peps.python.org/pep-0570/>
+[74]: <https://github.com/prrvchr/vCardOOo/blob/master/uno/lib/uno/logger/logwrapper.py#L109>

@@ -33,60 +33,51 @@ import org.json.JSONObject;
 import com.sun.star.sdbc.SQLException;
 
 
-public final class Organizer
-{
-    private Map<String, CardProperty> m_properties = new HashMap<String, CardProperty>();
-    private Map<Integer, JSONObject> m_groups = new HashMap<Integer, JSONObject>();
+public final class Organizer {
+
+    private Map<String, CardProperty> mProperties = new HashMap<>();
+    private Map<Integer, JSONObject> mGroups = new HashMap<>();
 
     public Organizer(DataBase database)
-        throws SQLException
-    {
-        m_properties = database.getCardProperties();
-        m_groups = database.getCardGroup();
+        throws SQLException {
+        mProperties = database.getCardProperties();
+        mGroups = database.getCardGroup();
     }
 
-    public boolean supportProperty(String name)
-    {
-        return m_properties.containsKey(name);
+    public boolean supportProperty(String name) {
+        return mProperties.containsKey(name);
     }
 
-    public boolean supportField(String name)
-    {
+    public boolean supportField(String name) {
         return true;
     }
 
-    public CardProperty getProperty(String name)
-    {
-        return m_properties.get(name);
+    public CardProperty getProperty(String name) {
+        return mProperties.get(name);
     }
 
-    public boolean isGroupProperty(String name)
-    {
-        return m_properties.containsKey(name) & m_properties.get(name).isGroup();
-    }
-    
-
-    public boolean isTypedProperty(String name)
-    {
-        return m_properties.containsKey(name) & m_properties.get(name).isTyped();
+    public boolean isGroupProperty(String name) {
+        return mProperties.containsKey(name) & mProperties.get(name).isGroup();
     }
 
-    public boolean hasGroup(Integer user,
-                            String name)
-    {
-        if (m_groups.containsKey(user)) {
-            return m_groups.get(user).has(name);
+    public boolean isTypedProperty(String name) {
+        return mProperties.containsKey(name) & mProperties.get(name).isTyped();
+    }
+
+    public boolean hasGroup(Integer user, String name) {
+        boolean has = false;
+        if (mGroups.containsKey(user)) {
+            has = mGroups.get(user).has(name);
         }
-        return false;
+        return has;
     }
 
-    public Integer getGroupId(Integer user,
-                              String name)
-    {
-        if (m_groups.containsKey(user) & m_groups.get(user).has(name)){
-            return m_groups.get(user).getInt(name);
+    public Integer getGroupId(Integer user, String name) {
+        Integer groupid = -1;
+        if (mGroups.containsKey(user) & mGroups.get(user).has(name)) {
+            groupid = mGroups.get(user).getInt(name);
         }
-        return -1;
+        return groupid;
     }
 
 }

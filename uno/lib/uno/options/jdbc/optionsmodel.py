@@ -27,49 +27,63 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from ..unotool import getContainerWindow
+from ...unotool import getConfiguration
 
-from ..configuration import g_identifier
+from ...configuration import g_identifier
 
 import traceback
 
 
-class OptionWindow():
-    def __init__(self, ctx, window, handler, options, restart, offset):
-        self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionDialog')
-        self._window.setVisible(True)
-        for crs in options:
-            self._getCachedRowSet(crs).Model.Enabled = False
-        self.setRestart(restart)
-        self._getRestart().Model.PositionY += offset
+class OptionsModel():
+    def __init__(self, ctx, instrumented):
+        self._rebootkeys = ('ApiLevel', 'CachedRowSet')
+        configkeys = ('ShowSystemTable', )
+        self._keys = self._rebootkeys + configkeys
+        self._config = getConfiguration(ctx, g_identifier, True)
+        self._settings = self._getSettings()
+        self._instrumented = instrumented
 
-# OptionWindow setter methods
-    def dispose(self):
-        self._window.dispose()
+# OptionModel getter methods
+    def getConfigApiLevel(self):
+        return self._config.getByName('ApiLevel')
 
-    def initView(self, level, crs, system, enabled):
-        self._getApiLevel(level).State = 1
-        self._getCachedRowSet(crs).State = 1
-        self.enableCachedRowSet(enabled)
-        self._getSytemTable().State = int(system)
+    def getViewData(self):
+        self._settings = self._getSettings()
+        level = self._settings.get('ApiLevel')
+        crs = self._settings.get('CachedRowSet')
+        system = self._settings.get('ShowSystemTable')
+        return self._instrumented, level, crs, system, self._isRowSetEnabled(level)
 
-    def enableCachedRowSet(self, enabled):
-        for crs in range(3):
-            self._getCachedRowSet(crs).Model.Enabled = enabled
+# OptionModel setter methods
+    def setApiLevel(self, level):
+        self._settings['ApiLevel'] = level
+        return self._instrumented and self._isRowSetEnabled(level)
 
-    def setRestart(self, enabled):
-        self._getRestart().setVisible(enabled)
+    def setCachedRowSet(self, level):
+        self._settings['CachedRowSet'] = level
 
-# OptionWindow private control methods
-    def _getApiLevel(self, index):
-        return self._window.getControl('OptionButton%s' % (index + 1))
+    def setSystemTable(self, state):
+        self._settings['ShowSystemTable'] = bool(state)
 
-    def _getCachedRowSet(self, index):
-        return self._window.getControl('OptionButton%s' % (index + 4))
+    def saveSetting(self):
+        reboot = False
+        for key in self._keys:
+            if key != 'CachedRowSet' or self._instrumented:
+                value = self._settings.get(key)
+                if value != self._config.getByName(key):
+                    self._config.replaceByName(key, value)
+                    if key in self._rebootkeys:
+                        reboot = True
+        if self._config.hasPendingChanges():
+            self._config.commitChanges()
+        return reboot
 
-    def _getSytemTable(self):
-        return self._window.getControl('CheckBox1')
+# OptionModel private methods
+    def _getSettings(self):
+        settings = {}
+        for key in self._keys:
+            settings[key] = self._config.getByName(key)
+        return settings
 
-    def _getRestart(self):
-        return self._window.getControl('Label3')
-
+    def _isRowSetEnabled(self, level):
+        return level != 0

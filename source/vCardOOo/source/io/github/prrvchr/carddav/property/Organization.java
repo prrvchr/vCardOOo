@@ -29,11 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 
-public class Organization extends ezvcard.property.Organization
-{
+public class Organization extends ezvcard.property.Organization {
+
     public Organization() {
         //empty
     }
+
     public Organization(Organization original) {
         super(original);
     }
@@ -42,6 +43,7 @@ public class Organization extends ezvcard.property.Organization
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -49,9 +51,10 @@ public class Organization extends ezvcard.property.Organization
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (!getValues().isEmpty()) values.put("values", getValues().get(0));
+        if (!getValues().isEmpty()) {
+            values.put("values", getValues().get(0));
+        }
         return values;
     }
 
 }
-

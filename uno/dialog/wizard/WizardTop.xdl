@@ -1,7 +1,5 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
@@ -25,59 +23,25 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
-
-from com.sun.star.logging.LogLevel import SEVERE
-
-from .optionview import OptionView
-from .optionhandler import WindowHandler
-
-from ..options import OptionsManager
-
-from ..unotool import executeDispatch
-
-from ..configuration import g_extension
-
-import traceback
-
-
-class OptionManager():
-    def __init__(self, ctx, logger, window, offset):
-        self._ctx = ctx
-        self._module = 'CardDAVDiscoveryUrl'
-        self._sub = 'Main'
-        self._line = 26
-        self._optionsmanager = OptionsManager(ctx, logger, window, offset)
-        self._view = OptionView(ctx, window, WindowHandler(self))
-        self._logger = logger
-
-    def saveSetting(self):
-        self._optionsmanager.saveSetting()
-
-    def loadSetting(self):
-        self._optionsmanager.loadSetting()
-
-    def viewData(self):
-        self._optionsmanager.viewData()
-
-    def serverConnection(self):
-        service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
-        factory = self._ctx.getByName(service)
-        provider = factory.createScriptProvider(self._ctx)
-        args = (g_extension, self._module, self._sub)
-        url = 'vnd.sun.star.script:%s.%s.%s?language=Basic&location=application' % args
-        script = provider.getScript(url)
-        try:
-            script.invoke(((), ), (), ())
-        except Exception as e:
-            self._logger.logprb(SEVERE, 'OptionManager', 'serverConnection()', 101, e, traceback.format_exc())
-            print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
-
-    def editMacro(self):
-        args = {'Document': 'LibreOffice Macros & Dialogs',
-                'LibName': g_extension,
-                'Name': self._module,
-                'Type': 'Module',
-                'Line': self._line}
-        executeDispatch(self._ctx, '.uno:BasicIDEAppear', **args)
+-->
+<!DOCTYPE dlg:window PUBLIC "-//OpenOffice.org//DTD OfficeDocument 1.0//EN" "dialog.dtd">
+<dlg:window xmlns:dlg="http://openoffice.org/2000/dialog" xmlns:script="http://openoffice.org/2000/script" dlg:id="WizardTop" dlg:left="0" dlg:top="0" dlg:width="385" dlg:height="205" dlg:help-text="&amp;Wizard.HelpText" dlg:closeable="false" dlg:moveable="true" dlg:title="&amp;Wizard.Title" dlg:withtitlebar="false">
+  <dlg:bulletinboard>
+    <dlg:button dlg:id="CommandButton5" dlg:tab-index="1" dlg:disabled="true" dlg:left="5" dlg:top="186" dlg:width="50" dlg:height="15" dlg:help-text="&amp;Wizard.CommandButton5.HelpText" dlg:value="&amp;Wizard.CommandButton5.Label">
+      <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:Help" script:language="UNO"/>
+    </dlg:button>
+    <dlg:button dlg:id="CommandButton4" dlg:tab-index="2" dlg:disabled="true" dlg:left="165" dlg:top="186" dlg:width="50" dlg:height="15" dlg:help-text="&amp;Wizard.CommandButton4.HelpText" dlg:value="&amp;Wizard.CommandButton4.Label">
+      <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:Previous" script:language="UNO"/>
+    </dlg:button>
+    <dlg:button dlg:id="CommandButton3" dlg:tab-index="3" dlg:disabled="true" dlg:left="220" dlg:top="186" dlg:width="50" dlg:height="15" dlg:help-text="&amp;Wizard.CommandButton3.HelpText" dlg:value="&amp;Wizard.CommandButton3.Label">
+      <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:Next" script:language="UNO"/>
+    </dlg:button>
+    <dlg:button dlg:id="CommandButton2" dlg:tab-index="4" dlg:disabled="true" dlg:left="275" dlg:top="186" dlg:width="50" dlg:height="15" dlg:help-text="&amp;Wizard.CommandButton2.HelpText" dlg:value="&amp;Wizard.CommandButton2.Label">
+      <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:Finish" script:language="UNO"/>
+    </dlg:button>
+    <dlg:button dlg:id="CommandButton1" dlg:tab-index="5" dlg:disabled="false" dlg:left="330" dlg:top="186" dlg:width="50" dlg:height="15" dlg:help-text="&amp;Wizard.CommandButton1.HelpText" dlg:value="&amp;Wizard.CommandButton1.Label">
+      <script:event script:event-name="on-performaction" script:macro-name="vnd.sun.star.UNO:Cancel" script:language="UNO"/>
+    </dlg:button>
+  </dlg:bulletinboard>
+</dlg:window>
 

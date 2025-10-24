@@ -29,8 +29,8 @@ import ezvcard.io.scribe.UriPropertyScribe;
 import io.github.prrvchr.carddav.property.Uid;
 
 
-public final class UidScribe extends UriPropertyScribe<Uid>
-{
+public final class UidScribe extends UriPropertyScribe<Uid> {
+
     public UidScribe() {
         super(Uid.class, "UID");
     }
@@ -41,4 +41,3 @@ public final class UidScribe extends UriPropertyScribe<Uid>
     }
 
 }
-

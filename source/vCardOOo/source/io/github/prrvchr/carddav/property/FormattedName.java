@@ -29,11 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 
-public class FormattedName extends ezvcard.property.FormattedName
-{
+public class FormattedName extends ezvcard.property.FormattedName {
+
     public FormattedName(String value) {
         super(value);
     }
+
     public FormattedName(FormattedName original) {
         super(original);
     }
@@ -42,6 +43,7 @@ public class FormattedName extends ezvcard.property.FormattedName
     public int hashCode() {
         return super.hashCode();
     }
+
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
@@ -49,9 +51,10 @@ public class FormattedName extends ezvcard.property.FormattedName
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getValue() != null) values.put("value", getValue());
+        if (getValue() != null) {
+            values.put("value", getValue());
+        }
         return values;
     }
 
 }
-

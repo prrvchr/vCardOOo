@@ -29,7 +29,7 @@
 
 from .driver import Driver
 
-from .option import OptionManager
+from .options import OptionsManager
 
 from .helper import checkConfiguration
 

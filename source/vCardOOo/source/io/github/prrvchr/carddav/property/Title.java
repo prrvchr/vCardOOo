@@ -28,11 +28,13 @@ package io.github.prrvchr.carddav.property;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Title extends ezvcard.property.Title
-{
+
+public class Title extends ezvcard.property.Title {
+
     public Title(String value) {
         super(value);
     }
+
     public Title(Title original) {
         super(original);
     }
@@ -48,9 +50,10 @@ public class Title extends ezvcard.property.Title
 
     public Map<String, String> getPropertiesValue() {
         Map<String, String> values = new LinkedHashMap<>();
-        if (getValue() != null) values.put("value", getValue());
+        if (getValue() != null) {
+            values.put("value", getValue());
+        }
         return values;
     }
 
 }
-

@@ -82,6 +82,7 @@ class Provider(ProviderMain):
 
 # Method called from Provider.initAddressbooks()
     def getAddressbooks(self, database, user):
+        mtd = 'getAddressbooks'
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
         if not response.Ok:

@@ -29,8 +29,8 @@ import ezvcard.io.scribe.StringPropertyScribe;
 import io.github.prrvchr.carddav.property.Title;
 
 
-public final class TitleScribe extends StringPropertyScribe<Title>
-{
+public final class TitleScribe extends StringPropertyScribe<Title> {
+
     public TitleScribe() {
         super(Title.class, "TITLE");
     }
@@ -41,4 +41,3 @@ public final class TitleScribe extends StringPropertyScribe<Title>
     }
 
 }
-

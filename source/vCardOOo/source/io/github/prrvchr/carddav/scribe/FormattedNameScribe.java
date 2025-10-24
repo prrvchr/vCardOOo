@@ -29,8 +29,7 @@ import ezvcard.io.scribe.StringPropertyScribe;
 import io.github.prrvchr.carddav.property.FormattedName;
 
 
-public final class FormattedNameScribe extends StringPropertyScribe<FormattedName>
-{
+public final class FormattedNameScribe extends StringPropertyScribe<FormattedName> {
     public FormattedNameScribe() {
         super(FormattedName.class, "FN");
     }
@@ -41,4 +40,3 @@ public final class FormattedNameScribe extends StringPropertyScribe<FormattedNam
     }
 
 }
-
