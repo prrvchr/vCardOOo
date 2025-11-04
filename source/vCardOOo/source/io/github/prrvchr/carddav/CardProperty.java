@@ -57,9 +57,6 @@ public final class CardProperty {
     }
 
     public Boolean isGroup() {
-        if (mIsGroup) {
-            System.out.println("CardProperty.isGroup() IsGroup: " + mIsGroup);
-        }
         return mIsGroup;
     }
 

@@ -98,7 +98,6 @@ public final class CardSync
     // com.sun.star.task.XJob:
     public Object execute(NamedValue[] arguments)
         throws SQLException {
-        System.out.println("CardSync.execute() 1");
         int cnum = 0;
         int gnum = 0;
         DataBase database = new DataBase(arguments);
@@ -148,12 +147,10 @@ public final class CardSync
                 database.commitBatchCall(cnum, gnum, stop);
                 database.close(result);
                 database.close(call);
-                System.out.println("CardSync.execute() 10 Count: " + cnum);
             } catch (Exception e) {
                 System.out.println("Error happened: " + e.getMessage());
                 e.printStackTrace();
             }
-            System.out.println("CardSync.execute() 2 End");
         }
         return null;
     }
