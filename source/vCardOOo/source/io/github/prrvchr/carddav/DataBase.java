@@ -131,7 +131,6 @@ public final class DataBase {
 
     public boolean prepareBatchCall()
         throws SQLException {
-        System.out.println("DataBase.prepareBatchCall() 1");
         boolean batched = false;
         XArray columns = getColumnIds();
         if (columns != null) {
@@ -144,7 +143,6 @@ public final class DataBase {
             XPreparedStatement call2 = mConnection.prepareCall("CALL \"MergeCardGroup\"(?,?)");
             mGroupSetting = UnoRuntime.queryInterface(XParameters.class, call2);
             mGroupCall = UnoRuntime.queryInterface(XPreparedBatchExecution.class, call2);
-            System.out.println("DataBase.prepareBatchCall() 2");
             batched = true;
         }
         return batched;
@@ -152,7 +150,6 @@ public final class DataBase {
 
     public XArray getColumnIds()
         throws SQLException {
-        System.out.println("DataBase._getColumnIds() 1");
         XArray columns = null;
         XPreparedStatement call = mConnection.prepareCall("CALL \"SelectColumnIds\"()");
         XResultSet result = call.executeQuery();
@@ -162,7 +159,6 @@ public final class DataBase {
         }
         close(result);
         close(call);
-        System.out.println("DataBase._getColumnIds() 2");
         return columns;
     }
 
@@ -172,8 +168,6 @@ public final class DataBase {
                              String[] suffixes,
                              String value)
         throws SQLException {
-        System.out.println("DataBase.mergeCardProperty() CardId: " + cid +
-                           " - Prefix: " + prefix + " - Label: " + label);
         final int CID = 3;
         final int PREFIX = 4;
         final int LABEL = 5;
@@ -201,7 +195,6 @@ public final class DataBase {
                                 int gnum,
                                 DateTimeWithTimezone timestamp)
         throws SQLException {
-        System.out.println("DataBase.commitBatchCall() 1");
         if (cnum > 0) {
             mCardCall.executeBatch();
         }
@@ -215,7 +208,6 @@ public final class DataBase {
         mCardCall = null;
         mCardSetting = null;
         updateCardSync(timestamp);
-        System.out.println("DataBase.commitBatchCall() 2 Count: " + cnum);
     }
 
     private void setBatchModeOn()
@@ -264,7 +256,6 @@ public final class DataBase {
 
     public Map<Integer, JSONObject> getCardGroup()
         throws SQLException {
-        System.out.println("DataBase.getCardGroup() 1");
         Map<Integer, JSONObject> maps = new HashMap<Integer, JSONObject>();
         XPreparedStatement call = mConnection.prepareCall("CALL \"SelectCardGroup\"()");
         XResultSet result = call.executeQuery();
@@ -279,7 +270,6 @@ public final class DataBase {
         }
         close(result);
         close(call);
-        System.out.println("DataBase.getCardGroup() 2 Count: " + maps.size());
         return maps;
     }
 

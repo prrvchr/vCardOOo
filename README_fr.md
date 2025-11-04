@@ -29,7 +29,7 @@
 
 **L'utilisation de ce logiciel vous soumet à nos [Conditions d'utilisation][4] et à notre [Politique de protection des données][5]**.
 
-# version [1.4.0][6]
+# version [1.4.1][6]
 
 ## Introduction:
 
@@ -332,7 +332,13 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 - Nécessite l'extension **OAuth2OOo en version 1.6.0 minimum**.
 - A été testé sous LibreOfficeDev 26.2.
 
-### Que reste-t-il à faire pour la version 1.4.0:
+### Ce qui a été fait pour la version 1.4.1:
+
+- Toutes les fenêtres modales s'ouvrent désormais correctement en mode modal.
+- Nécessite l'extension **jdbcDriverOOo en version 1.6.1 minimum**.
+- Nécessite l'extension **OAuth2OOo en version 1.6.1 minimum**.
+
+### Que reste-t-il à faire pour la version 1.4.1:
 
 - Rendre le carnet d'adresses modifiable localement avec la réplication des modifications.
 
@@ -345,7 +351,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 [3]: <https://prrvchr.github.io/vCardOOo>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-140>
+[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-141>
 [7]: <https://prrvchr.github.io/README_fr>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>
@@ -368,7 +374,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 [26]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [27]: <img/vCardOOo.svg#middle>
 [28]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.0#right>
+[29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.1#right>
 [30]: <img/vCardOOo-1_fr.png>
 [31]: <img/vCardOOo-2_fr.png>
 [32]: <img/vCardOOo-3_fr.png>

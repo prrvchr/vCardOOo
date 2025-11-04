@@ -29,7 +29,7 @@
 
 **The use of this software subjects you to our [Terms Of Use][4] and [Data Protection Policy][5].**
 
-# version [1.4.0][6]
+# version [1.4.1][6]
 
 ## Introduction:
 
@@ -332,7 +332,13 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 - Requires the **OAuth2OOo extension at least version 1.6.0**.
 - Has been tested under LibreOfficeDev 26.2.
 
-### What remains to be done for version 1.4.0:
+### What has been done for version 1.4.1:
+
+- All modal windows now open correctly in modal mode.
+- Requires the **jdbcDriverOOo extension at least version 1.6.1**.
+- Requires the **OAuth2OOo extension at least version 1.6.1**.
+
+### What remains to be done for version 1.4.1:
 
 - Make the address book locally editable with replication of changes.
 
@@ -345,7 +351,7 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 [3]: <https://prrvchr.github.io/vCardOOo/README_fr>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-140>
+[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-141>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
@@ -368,7 +374,7 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 [26]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [27]: <img/vCardOOo.svg#middle>
 [28]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
-[29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.0#right>
+[29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.1#right>
 [30]: <img/vCardOOo-1.png>
 [31]: <img/vCardOOo-2.png>
 [32]: <img/vCardOOo-3.png>
