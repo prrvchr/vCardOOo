@@ -334,6 +334,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 
 ### Ce qui a été fait pour la version 1.4.1:
 
+- Toutes les fenêtres modales s'ouvrent désormais correctement en mode modal.
 - Nécessite l'extension **jdbcDriverOOo en version 1.6.1 minimum**.
 - Nécessite l'extension **OAuth2OOo en version 1.6.1 minimum**.
 
