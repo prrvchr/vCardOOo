@@ -27,13 +27,20 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
+from .setup import SetupManager
+
 from .driver import Driver
 
 from .options import OptionsManager
 
 from .helper import checkConfiguration
 
+from .unotool import createMessageBox
+from .unotool import getStringResource
+
 from .logger import getLogger
+
+from .oauth20 import g_checkSetup
 
 from .configuration import g_basename
 from .configuration import g_defaultlog
