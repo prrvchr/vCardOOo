@@ -37,7 +37,7 @@ redirect_from:
 
 Regarding installation, configuration and use, please consult the **[documentation][4]**.
 
-### What has been done for version 0.0.1:
+### What was done for version 0.0.1:
 
 - Writing of the UNO service [com.sun.star.sdbc.Driver][5] responding to the call from the url `sdbc:address:vcard:*`  
   The `connect(url, info)` method of this Driver use the [DataSource][6] singleton to return the UNO service `com.sun.star.sdbc.Connection`.
@@ -52,43 +52,43 @@ Regarding installation, configuration and use, please consult the **[documentati
 
 -  After retrieving the remote modifications, the Replicator uses to analyze the content of the vCards a UNO `com.sun.star.task.Job` service [CardSync][9] written in Java and using the [ez-vcard][10] library.
 
-### What has been done for version 1.0.1:
+### What was done for version 1.0.1:
 
 - The absence or obsolescence of the **OAuth2OOo** and/or **jdbcDriverOOo** extensions necessary for the proper functioning of **vCardOOo** now displays an error message.
 
 - Many other things...
 
-### What has been done for version 1.0.2:
+### What was done for version 1.0.2:
 
 - Support for version **1.2.0** of the **OAuth2OOo** extension. Previous versions will not work with **OAuth2OOo** extension 1.2.0 or higher.
 
-### What has been done for version 1.0.3:
+### What was done for version 1.0.3:
 
 - Support for version **1.2.1** of the **OAuth2OOo** extension. Previous versions will not work with **OAuth2OOo** extension 1.2.1 or higher.
 
-### What has been done for version 1.1.0:
+### What was done for version 1.1.0:
 
 - All Python packages necessary for the extension are now recorded in a [requirements.txt][11] file following [PEP 508][12].
 - Now if you are not on Windows then the Python packages necessary for the extension can be easily installed with the command:  
   `pip install requirements.txt`
 - Modification of the [Requirement][13] section.
 
-### What has been done for version 1.1.1:
+### What was done for version 1.1.1:
 
 - Using Python package `dateutil` to convert timestamp strings to UNO DateTime.
 - Many other fixes...
 
-### What has been done for version 1.1.2:
+### What was done for version 1.1.2:
 
 - Integration of a fix to workaround the [issue #159988][14].
 
-### What has been done for version 1.1.3:
+### What was done for version 1.1.3:
 
 - The creation of the database, during the first connection, uses the UNO API offered by the jdbcDriverOOo extension since version 1.3.2. This makes it possible to record all the information necessary for creating the database in 9 text tables which are in fact [9 csv files][15].
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.4 and 1.3.2 respectively minimum.
 - Many fixes.
 
-### What has been done for version 1.1.4:
+### What was done for version 1.1.4:
 
 - Updated the [Python python-dateutil][16] package to version 2.9.0.post0.
 - Updated the [Python decorator][17] package to version 5.1.1.
@@ -97,26 +97,26 @@ Regarding installation, configuration and use, please consult the **[documentati
 - Updated the [Python validators][21] package to version 0.33.0.
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.6 and 1.4.2 respectively minimum.
 
-### What has been done for version 1.1.5:
+### What was done for version 1.1.5:
 
 - Updated the [Python setuptools][19] package to version 73.0.1.
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.7 and 1.4.5 respectively minimum.
 - Changes to extension options that require a restart of LibreOffice will result in a message being displayed.
 - Support for LibreOffice version 24.8.x.
 
-### What has been done for version 1.1.6:
+### What was done for version 1.1.6:
 
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.3.8 and 1.4.6 respectively minimum.
 - Modification of the extension options accessible via: **Tools -> Options... -> Internet -> vCardOOo** in order to comply with the new graphic charter.
 
-### What has been done for version 1.2.0:
+### What was done for version 1.2.0:
 
 - The extension will ask you to install the OAuth2OOo and jdbcDriverOOo extensions in versions 1.4.0 and 1.4.6 respectively minimum.
 - It is possible to build the extension archive (ie: the oxt file) with the [Apache Ant][22] utility and the [build.xml][23] script file.
 - The extension will refuse to install under OpenOffice regardless of version or LibreOffice other than 7.x or higher.
 - Added binaries needed for Python libraries to work on Linux and LibreOffice 24.8 (ie: Python 3.9).
 
-### What has been done for version 1.2.1:
+### What was done for version 1.2.1:
 
 - Updated the [Python packaging][18] package to version 24.2.
 - Updated the [Python setuptools][19] package to version 75.8.0.
@@ -124,7 +124,7 @@ Regarding installation, configuration and use, please consult the **[documentati
 - Updated the [Python validators][21] package to version 0.34.0.
 - Support for Python version 3.13.
 
-### What has been done for version 1.3.0:
+### What was done for version 1.3.0:
 
 - Updated the [Python packaging][18] package to version 25.0.
 - Downgrade the [Python setuptools][19] package to version 75.3.2. to ensure support for Python 3.8.
@@ -139,18 +139,18 @@ Regarding installation, configuration and use, please consult the **[documentati
 - Requires the **jdbcDriverOOo extension at least version 1.5.0**.
 - Requires the **OAuth2OOo extension at least version 1.5.0**.
 
-### What has been done for version 1.3.1:
+### What was done for version 1.3.1:
 
 vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating this library in jdbcDriverOOo requires the same update in vCardOOo.
 - Requires the **jdbcDriverOOo extension at least version 1.5.4**.
 - Requires the **OAuth2OOo extension at least version 1.5.1**.
 
-### What has been done for version 1.3.2:
+### What was done for version 1.3.2:
 
 - Support for LibreOffice 25.2.x and 25.8.x on Windows 64-bit.
 - Requires the **OAuth2OOo extension at least version 1.5.2**.
 
-### What has been done for version 1.4.0:
+### What was done for version 1.4.0:
 
 - If an incorrect password is provided when connecting to the data source, it is no longer necessary to restart LibreOffice to attempt to connect again.
 - If the jdbcDriverOOo extension works without Java instrumentation, a warning message will be displayed in the extension options.
@@ -158,13 +158,13 @@ vCardOOo shares the Java library `UnoHelper.jar` with jdbcDriverOOo. Updating th
 - Requires the **OAuth2OOo extension at least version 1.6.0**.
 - Has been tested under LibreOfficeDev 26.2.
 
-### What has been done for version 1.4.1:
+### What was done for version 1.4.1:
 
 - All modal windows now open correctly in modal mode.
 - Requires the **jdbcDriverOOo extension at least version 1.6.1**.
 - Requires the **OAuth2OOo extension at least version 1.6.1**.
 
-### What has been done for version 1.5.0:
+### What was done for version 1.5.0:
 
 
 

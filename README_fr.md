@@ -228,7 +228,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [3]: <https://prrvchr.github.io/vCardOOo>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[6]: <https://prrvchr.github.io/vCardOOo/fr/#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-141>
+[6]: <https://prrvchr.github.io/vCardOOo/change/fr/#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-141>
 [7]: <https://prrvchr.github.io/fr/>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>

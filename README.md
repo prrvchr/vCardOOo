@@ -228,7 +228,7 @@ It will give you access to an information system that only larges companies are 
 [3]: <https://prrvchr.github.io/vCardOOo/fr/>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
-[6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-141>
+[6]: <https://prrvchr.github.io/vCardOOo/change/#what-was-done-for-version-141>
 [7]: <https://prrvchr.github.io/>
 [8]: <https://www.libreoffice.org/download/download/>
 [9]: <https://www.openoffice.org/download/index.html>
