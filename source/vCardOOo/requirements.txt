@@ -4,4 +4,4 @@ ijson>=3.3.0
 packaging>=25.0
 setuptools>=75.3.2
 six>=1.17.0
-validators>=0.34.0
+validators>=0.35.0
