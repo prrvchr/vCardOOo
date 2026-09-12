@@ -249,7 +249,7 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [24]: <https://prrvchr.github.io/jdbcDriverOOo/fr/>
 [25]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
 [26]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
-[27]: <img/vCardOOo.svg#middle>
+[27]: <https://prrvchr.github.io/vCardOOo/img/vCardOOo.svg#middle>
 [28]: <https://github.com/prrvchr/vCardOOo/releases/latest/download/vCardOOo.oxt>
 [29]: <https://img.shields.io/github/downloads/prrvchr/vCardOOo/latest/total?label=v1.4.1#right>
 [30]: <../setup/fr/>
