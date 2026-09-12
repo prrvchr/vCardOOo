@@ -179,7 +179,7 @@ vCardOOo partage la bibliothèque Java `UnoHelper.jar` avec jdbcDriverOOo. La mi
 [1]: </img/contact.svg#collapse>
 [2]: <https://prrvchr.github.io/vCardOOo/>
 [3]: <https://prrvchr.github.io/vCardOOo/change/>
-[4]: <https://prrvchr.github.io/vCardOOo/>
+[4]: <https://prrvchr.github.io/vCardOOo/fr/>
 [5]: <https://github.com/prrvchr/vCardOOo/blob/main/source/vCardOOo/service/Driver.py>
 [6]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/datasource.py>
 [7]: <https://github.com/prrvchr/vCardOOo/blob/main/uno/lib/uno/card/card/replicator.py>
