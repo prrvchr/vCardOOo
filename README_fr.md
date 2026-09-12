@@ -228,8 +228,8 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [3]: <https://prrvchr.github.io/vCardOOo>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_fr>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_fr>
-[6]: <https://prrvchr.github.io/vCardOOo/README_fr#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-141>
-[7]: <https://prrvchr.github.io/README_fr>
+[6]: <https://prrvchr.github.io/vCardOOo/fr/#ce-qui-a-%C3%A9t%C3%A9-fait-pour-la-version-141>
+[7]: <https://prrvchr.github.io/fr/>
 [8]: <https://fr.libreoffice.org/download/telecharger-libreoffice/>
 [9]: <https://www.openoffice.org/fr/Telecharger/>
 [10]: <https://fr.wikipedia.org/wiki/CardDAV>
@@ -239,14 +239,14 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [14]: <https://github.com/prrvchr/vCardOOo/issues/new>
 [15]: <https://github.com/sponsors/prrvchr>
 [16]: <https://appdefensealliance.dev/casa>
-[17]: <https://prrvchr.github.io/OAuth2OOo/README_fr#pr%C3%A9requis>
-[18]: <https://prrvchr.github.io/jdbcDriverOOo/README_fr#pr%C3%A9requis>
+[17]: <https://prrvchr.github.io/OAuth2OOo/fr/#pr%C3%A9requis>
+[18]: <https://prrvchr.github.io/jdbcDriverOOo/fr/#pr%C3%A9requis>
 [19]: <https://prrvchr.github.io/OAuth2OOo/img/OAuth2OOo.svg#middle>
-[20]: <https://prrvchr.github.io/OAuth2OOo/README_fr>
+[20]: <https://prrvchr.github.io/OAuth2OOo/fr/>
 [21]: <https://github.com/prrvchr/OAuth2OOo/releases/latest/download/OAuth2OOo.oxt>
 [22]: <https://img.shields.io/github/v/tag/prrvchr/OAuth2OOo?label=latest#right>
 [23]: <https://prrvchr.github.io/jdbcDriverOOo/img/jdbcDriverOOo.svg#middle>
-[24]: <https://prrvchr.github.io/jdbcDriverOOo/README_fr>
+[24]: <https://prrvchr.github.io/jdbcDriverOOo/fr/>
 [25]: <https://github.com/prrvchr/jdbcDriverOOo/releases/latest/download/jdbcDriverOOo.oxt>
 [26]: <https://img.shields.io/github/v/tag/prrvchr/jdbcDriverOOo?label=latest#right>
 [27]: <img/vCardOOo.svg#middle>
@@ -269,6 +269,6 @@ Elle vous donnera accès à un système d'information que seules les grandes ent
 [44]: <https://downloadarchive.documentfoundation.org/libreoffice/old/7.6.7.2/>
 [45]: <https://github.com/prrvchr/vCardOOo.git>
 [46]: <https://bz.apache.org/ooo/show_bug.cgi?id=128569>
-[47]: <https://prrvchr.github.io/eMailerOOo/README_fr>
+[47]: <https://prrvchr.github.io/eMailerOOo/fr/>
 [48]: <https://en.wikipedia.org/wiki/Mail_merge>
 [49]: <https://prrvchr.github.io/vCardOOo/change/fr/>

@@ -225,7 +225,7 @@ It will give you access to an information system that only larges companies are 
 
 [1]: </img/contact.svg#collapse>
 [2]: <https://prrvchr.github.io/vCardOOo/>
-[3]: <https://prrvchr.github.io/vCardOOo/README_fr>
+[3]: <https://prrvchr.github.io/vCardOOo/fr/>
 [4]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/TermsOfUse_en>
 [5]: <https://prrvchr.github.io/vCardOOo/source/vCardOOo/registration/PrivacyPolicy_en>
 [6]: <https://prrvchr.github.io/vCardOOo#what-has-been-done-for-version-141>
