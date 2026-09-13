@@ -56,8 +56,8 @@ class OptionsManager():
     _restart = False
 
     def saveSetting(self):
+        self._model.saveStartup(self._view.getStartup())
         if self._manager.saveSetting():
-            print("OptionsManager.saveSetting() restart")
             OptionsManager._restart = True
             self._view.setWarning(True, self._model.isInstrumented())
 

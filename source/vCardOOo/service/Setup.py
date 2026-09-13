@@ -1,5 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+#!
+# -*- coding: utf-8 -*-
+
+"""
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
@@ -23,14 +25,77 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
--->
-<manifest:manifest xmlns:manifest="http://openoffice.org/2001/manifest">
-  <manifest:file-entry manifest:full-path="types.rdb" manifest:media-type="application/vnd.sun.star.uno-typelibrary;type=RDB"/>
-  <manifest:file-entry manifest:full-path="vCardOOo/" manifest:media-type="application/vnd.sun.star.basic-library"/>
-  <manifest:file-entry manifest:full-path="Drivers.xcu" manifest:media-type="application/vnd.sun.star.configuration-data"/>
-  <manifest:file-entry manifest:full-path="OptionsDialog.xcu" manifest:media-type="application/vnd.sun.star.configuration-data"/>
-  <manifest:file-entry manifest:full-path="Options.xcs" manifest:media-type="application/vnd.sun.star.configuration-schema"/>
-  <manifest:file-entry manifest:full-path="Options.xcu" manifest:media-type="application/vnd.sun.star.configuration-data"/>
-  <manifest:file-entry manifest:full-path="Jobs.xcu" manifest:media-type="application/vnd.sun.star.configuration-data"/>
-  <manifest:file-entry manifest:full-path="package.components" manifest:media-type="application/vnd.sun.star.uno-components"/>
-</manifest:manifest>
+"""
+
+import unohelper
+
+from com.sun.star.lang import XServiceInfo
+from com.sun.star.task import XAsyncJob
+
+from vcard import SetupManager
+
+from vcard import checkInternet
+from vcard import createMessageBox
+from vcard import getStringResource
+
+from vcard import g_identifier
+
+import traceback
+
+
+# pythonloader looks for a static g_ImplementationHelper variable
+g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationName = 'io.github.prrvchr.vCardOOo.Setup'
+g_ServiceNames = ('io.github.prrvchr.vCardOOo.Setup',
+                  'com.sun.star.task.Job')
+
+
+class Setup(unohelper.Base,
+            XServiceInfo,
+            XAsyncJob):
+    def __init__(self, ctx):
+        self._ctx = ctx
+        self._job = 'vCardOOo.Setup'
+        self._name = 'SetupWindow'
+        self._code = 500
+        self._resources = {'Title': 'Setup.ErrorBox.Title',
+                           'Message': 'Setup.ErrorBox.Message'}
+
+    # XAsyncJob
+    def executeAsync(self, arguments, listener):
+        try:
+            if checkInternet():
+                SetupManager(self._ctx, self._job, self._name, self._code)
+            else:
+                self._showMessageBox()
+        except Exception as e:
+            # FIXME: It is essential to notify LibreOffice of
+            # FIXME: the Job's completion so as not to block its loading.
+            pass
+        finally:
+            if listener is not None:
+                listener.jobFinished(self, None)
+        return None
+
+    # XServiceInfo
+    def supportsService(self, service):
+        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
+    def getImplementationName(self):
+        return g_ImplementationName
+    def getSupportedServiceNames(self):
+        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
+
+    # Show MessageBox Error
+    def _showMessageBox(self):
+        resolver = getStringResource(self._ctx, g_identifier, 'dialogs', 'MessageBox')
+        title = resolver.resolveString(self._resources.get('Title'))
+        message = resolver.resolveString(self._resources.get('Message'))
+        dialog = createMessageBox(self._ctx, title, message)
+        dialog.execute()
+        dialog.dispose()
+
+
+g_ImplementationHelper.addImplementation(Setup,
+                                         g_ImplementationName,
+                                         g_ServiceNames)
+

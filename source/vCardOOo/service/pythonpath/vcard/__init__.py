@@ -27,11 +27,17 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
+from .setup import SetupManager
+
 from .driver import Driver
 
 from .options import OptionsManager
 
 from .helper import checkConfiguration
+
+from .unotool import checkInternet
+from .unotool import createMessageBox
+from .unotool import getStringResource
 
 from .logger import getLogger
 
