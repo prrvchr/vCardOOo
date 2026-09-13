@@ -27,40 +27,84 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from ..jdbcdriver import isInstrumented
+import unohelper
 
-from ..unotool import deregisterStartupJob
-from ..unotool import getStringResource
-from ..unotool import hasStartupJob
-from ..unotool import registerStartupJob
+from com.sun.star.lang import XServiceInfo
+from com.sun.star.task import XAsyncJob
 
-from ..configuration import g_identifier
+from vcard import SetupManager
+
+from vcard import createMessageBox
+from vcard import getStringResource
+
+from vcard import g_identifier
 
 
+import socket
 import traceback
 
+# pythonloader looks for a static g_ImplementationHelper variable
+g_ImplementationHelper = unohelper.ImplementationHelper()
+g_ImplementationName = 'io.github.prrvchr.vCardOOo.Setup'
+g_ServiceNames = ('io.github.prrvchr.vCardOOo.Setup',
+                  'com.sun.star.task.Job')
 
-class OptionsModel():
+
+class Setup(unohelper.Base,
+            XServiceInfo,
+            XAsyncJob):
     def __init__(self, ctx):
         self._ctx = ctx
         self._job = 'vCardOOoSetup'
-        self._instrumented = isInstrumented(ctx, 'xdbc:jdbc')
-        resolver = getStringResource(ctx, g_identifier, 'dialogs', 'OptionsDialog')
-        self._url = resolver.resolveString('OptionsDialog.Hyperlink1.Url')
-        self._startup = hasStartupJob(ctx, self._job)
+        self._name = 'SetupWindow'
+        self._code = 200
+        self._resources = {'Title': 'Setup.ErrorBox.Title',
+                           'Message': 'Setup.ErrorBox.Message'}
 
-# OptionsModel getter methods
-    def isInstrumented(self):
-        return self._instrumented
-
-    def getViewData(self):
-        return self._url, self._instrumented, self._startup
-
-# OptionsModel setter methods
-    def saveStartup(self, startup):
-        if startup != self._startup:
-            if startup:
-                registerStartupJob(self._ctx, self._job)
+    # XAsyncJob
+    def executeAsync(self, arguments, listener):
+        try:
+            if self._checkInternet():
+                SetupManager(self._ctx, self._job, self._name, self._code)
             else:
-                deregisterStartupJob(self._ctx, self._job)
+                self._showMessageBox()
+        except Exception as e:
+            # FIXME: It is essential to notify LibreOffice of
+            # FIXME: the Job's completion so as not to block its loading.
+            pass
+        finally:
+            if listener is not None:
+                listener.jobFinished(self, None)
+        return None
+
+    # XServiceInfo
+    def supportsService(self, service):
+        return g_ImplementationHelper.supportsService(g_ImplementationName, service)
+    def getImplementationName(self):
+        return g_ImplementationName
+    def getSupportedServiceNames(self):
+        return g_ImplementationHelper.getSupportedServiceNames(g_ImplementationName)
+
+    # Show MessageBox Error
+    def _showMessageBox(self):
+        resolver = getStringResource(self._ctx, g_identifier, 'dialogs', 'MessageBox')
+        title = resolver.resolveString(self._resources.get('Title'))
+        message = resolver.resolveString(self._resources.get('Message'))
+        dialog = createMessageBox(self._ctx, title, message)
+        dialog.execute()
+        dialog.dispose()
+
+    def _checkInternet(self, host="8.8.8.8", port=53, timeout=3):
+        try:
+            socket.setdefaulttimeout(timeout)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((host, port))
+            return True
+        except (OSError, socket.timeout):
+            return False
+
+
+g_ImplementationHelper.addImplementation(Setup,
+                                         g_ImplementationName,
+                                         g_ServiceNames)
 

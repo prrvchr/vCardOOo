@@ -1,7 +1,5 @@
-#!
-# -*- coding: utf-8 -*-
-
-"""
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
 ╔════════════════════════════════════════════════════════════════════════════════════╗
 ║                                                                                    ║
 ║   Copyright (c) 2020-25 https://prrvchr.github.io                                  ║
@@ -25,62 +23,26 @@
 ║   OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                    ║
 ║                                                                                    ║
 ╚════════════════════════════════════════════════════════════════════════════════════╝
-"""
-
-from .setupmodel import SetupModel
-
-from .setupview import SetupView
-
-from .setuphandler import WindowHandler
-
-import traceback
-
-
-class SetupManager():
-    def __init__(self, ctx, job, name, code):
-        self._model = SetupModel(ctx, job, name, code)
-        self._view = SetupView(ctx, WindowHandler(self), name, self._model.getTitle())
-
-    def cancel(self):
-        self._view.close()
-
-    def next(self):
-        step = self._view.getStep()
-        if step == 1 or step == 7:
-            self._checkRequirements()
-        elif step == 3:
-            self._installPackages()
-        elif step == 6:
-            if self._view.isDeregistered():
-                self._model.deregisterJob()
-            self._view.close()
-        else:
-            self._view.setPage(*self._model.getPage(step + 1))
-
-    def setMaxProgress(self, value):
-        self._view.setMaxProgress(value)
-
-    def setProgress(self, text, progress):
-        self._view.setProgess(text, progress)
-
-    def _checkRequirements(self):
-        self._view.setPage(*self._model.getPage(2))
-        self._view.enableNext(False)
-        success, result = self._model.checkRequirements(self.setMaxProgress, self.setProgress)
-        self._view.enableNext(True)
-        if success:
-            self._view.setPage(*self._model.getPage(3))
-            self._view.setResult(result)
-        else:
-            self._view.setPage(*self._model.getPage(6))
-
-    def _installPackages(self):
-        self._view.setPage(*self._model.getPage(4))
-        self._view.enableNext(False)
-        success, result = self._model.installPackages(self.setMaxProgress, self.setProgress)
-        self._view.enableNext(True)
-        if success:
-            self._view.setPage(*self._model.getPage(5))
-        else:
-            self._view.setPage(*self._model.getPage(7))
-        self._view.setResult(result)
+-->
+<!DOCTYPE oor:component-data SYSTEM "component-update.dtd">
+<oor:component-data
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:oor="http://openoffice.org/2001/registry"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  oor:package="org.openoffice.Office"
+  oor:name="Jobs">
+  <node oor:name="Jobs">
+    <node oor:name="vCardOOoSetup" oor:op="fuse">
+      <prop oor:name="Service">
+        <value>io.github.prrvchr.vCardOOo.Setup</value>
+      </prop>
+    </node>
+  </node>
+  <node oor:name="Events">
+    <node oor:name="OnStartApp" oor:op="fuse">
+      <node oor:name="JobList">
+        <node oor:name="vCardOOoSetup" oor:op="fuse"/>
+      </node>
+    </node>
+  </node>
+</oor:component-data>
