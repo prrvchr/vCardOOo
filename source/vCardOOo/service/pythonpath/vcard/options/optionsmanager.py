@@ -33,11 +33,29 @@ from .optionsmodel import OptionsModel
 
 from .optionsview import OptionsView
 
-from .options import OptionsManager as Manager
+from .optionshandler import OptionsListener
+
+from .option import OptionManager
+
+from ..runner import DispatchListener
+
+from ..setup import SetupCheck
+
+from ..setup import showSetup
 
 from ..unotool import executeDispatch
 
+from ..helper import getExtensions
+
+from ..jdbcdriver import g_agent
+from ..jdbcdriver import g_java
+from ..jdbcdriver import g_protocol
+from ..jdbcdriver import g_script
+from ..jdbcdriver import g_service
+
+from ..configuration import State
 from ..configuration import g_extension
+from ..configuration import g_identifier
 
 import traceback
 
@@ -45,24 +63,40 @@ import traceback
 class OptionsManager():
     def __init__(self, ctx, logger, window):
         self._ctx = ctx
+        self._disposed = False
+        self._java = g_extension, g_java, g_script
+        self._agent = g_service, g_protocol, g_agent
         self._model = OptionsModel(ctx)
-        self._view = OptionsView(window, OptionsManager._restart, *self._model.getViewData())
-        self._manager = Manager(ctx, logger, window)
+        self._view = OptionsView(window, *self._model.getViewData())
+        self._manager = OptionManager(ctx, logger, window, self._model.getConfig())
+        window.addEventListener(OptionsListener(self))
         self._logger = logger
         self._module = 'CardDAVDiscoveryUrl'
         self._sub = 'Main'
         self._line = 26
+        self._loadView(self.init)
 
-    _restart = False
+    def init(self, state):
+        if not self._disposed:
+            self._manager.init(state)
+            self._view.initView(*self._model.getInitData(state))
+
+    def refresh(self, state):
+        if not self._disposed:
+            self._manager.refresh(state)
+            self._view.refreshView(state)
 
     def saveSetting(self):
+        self._model.saveData(self._view.getData())
         if self._manager.saveSetting():
-            print("OptionsManager.saveSetting() restart")
-            OptionsManager._restart = True
-            self._view.setWarning(True, self._model.isInstrumented())
+            State.restart = True
+            self._loadView(self.refresh)
 
     def loadSetting(self):
-        self._manager.loadSetting()
+        self._loadView(self.init)
+
+    def dispose(self):
+        self._disposed = True
 
     def serverConnection(self):
         service = '/singletons/com.sun.star.script.provider.theMasterScriptProviderFactory'
@@ -75,7 +109,7 @@ class OptionsManager():
             script.invoke(((), ), (), ())
         except Exception as e:
             self._logger.logprb(SEVERE, 'OptionManager', 'serverConnection()', 101, e, traceback.format_exc())
-            print("OptionManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
+            print("OptionsManager.serverConnection() ERROR: %s - %s" % (e, traceback.format_exc()))
 
     def editMacro(self):
         args = {'Document': 'LibreOffice Macros & Dialogs',
@@ -84,4 +118,18 @@ class OptionsManager():
                 'Type': 'Module',
                 'Line': self._line}
         executeDispatch(self._ctx, '.uno:BasicIDEAppear', **args)
+
+    def showSetup(self):
+        mode = self._view.getSetup()
+        showSetup(self._ctx, g_identifier, Dispatch=DispatchListener(self), Mode=mode)
+
+    def dispatchFinished(self, notification):
+        if not self._disposed:
+            self._loadView(self.refresh)
+
+    def _loadView(self, callback):
+        mode = self._view.getSetup()
+        database = self._manager.getDataSourceUrl()
+        setup = SetupCheck(self._ctx, callback, database=database, java=self._java, agent=self._agent, python=True, extensions=getExtensions(), mode=mode)
+        setup.start()
 
