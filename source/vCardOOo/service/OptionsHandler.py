@@ -35,12 +35,11 @@ from com.sun.star.lang import XServiceInfo
 
 from com.sun.star.awt import XContainerWindowEventHandler
 
-from vcard import OptionsManager
+from vcard.options.optionsmanager import OptionsManager
 
-from vcard import getLogger
+from vcard.logger.helper import getLogger
 
-from vcard import g_identifier
-from vcard import g_defaultlog
+from vcard.configuration import g_defaultlog
 
 import traceback
 
@@ -64,7 +63,7 @@ class OptionsHandler(unohelper.Base,
             handled = False
             if method == 'external_event':
                 if event == 'initialize':
-                    self._manager = OptionsManager(self._ctx, self._logger, window)
+                    self._manager = OptionsManager(self._ctx, window, self._logger)
                     handled = True
                 elif event == 'ok':
                     self._manager.saveSetting()
@@ -81,7 +80,7 @@ class OptionsHandler(unohelper.Base,
             return handled
         except Exception as e:
             print("OptionsHandler.callHandlerMethod() ERROR: %s" % traceback.format_exc())
-            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 201, e, traceback.format_exc())
+            self._logger.logprb(SEVERE, 'OptionsHandler', 'callHandlerMethod()', 401, e, traceback.format_exc())
 
     def getSupportedMethodNames(self):
         return ('external_event',
@@ -102,4 +101,3 @@ class OptionsHandler(unohelper.Base,
 g_ImplementationHelper.addImplementation(OptionsHandler,                  # UNO object class
                                          g_ImplementationName,            # Implementation name
                                          g_ServiceNames)                  # List of implemented services
-
