@@ -29,7 +29,10 @@
 
 from ..jdbcdriver import isInstrumented
 
+from ..unotool import deregisterStartupJob
 from ..unotool import getStringResource
+from ..unotool import hasStartupJob
+from ..unotool import registerStartupJob
 
 from ..configuration import g_identifier
 
@@ -39,14 +42,25 @@ import traceback
 
 class OptionsModel():
     def __init__(self, ctx):
-        self._instrumented = isInstrumented(ctx, 'xdbc:jdbc')
+        self._ctx = ctx
+        self._job = 'vCardOOo.Setup'
+        self._instrumented = isInstrumented(ctx, 'juda:jdbc')
         resolver = getStringResource(ctx, g_identifier, 'dialogs', 'OptionsDialog')
         self._url = resolver.resolveString('OptionsDialog.Hyperlink1.Url')
+        self._startup = hasStartupJob(ctx, self._job)
 
 # OptionsModel getter methods
     def isInstrumented(self):
         return self._instrumented
 
     def getViewData(self):
-        return self._url, self._instrumented
+        return self._url, self._instrumented, self._startup
+
+# OptionsModel setter methods
+    def saveStartup(self, startup):
+        if startup != self._startup:
+            if startup:
+                registerStartupJob(self._ctx, self._job)
+            else:
+                deregisterStartupJob(self._ctx, self._job)
 

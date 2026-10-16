@@ -31,14 +31,18 @@ import traceback
 
 
 class OptionsView():
-    def __init__(self, window, restart, url, instrumented):
+    def __init__(self, window, restart, url, instrumented, startup):
         self._window = window
         control = self._getWarning()
         control.URL = url
         self._setWarning(control, restart, instrumented)
+        self._getStartupJob().State = int(startup)
 
     def setWarning(self, restart, instrumented):
         self._setWarning(self._getWarning(), restart, instrumented)
+
+    def getStartup(self):
+        return bool(self._getStartupJob().State)
 
 # OptionsView private setter methods
     def _setWarning(self, control, restart, instrumented):
@@ -52,6 +56,9 @@ class OptionsView():
 # OptionsView private control methods
     def _getRestart(self):
         return self._window.getControl('Label3')
+
+    def _getStartupJob(self):
+        return self._window.getControl('CheckBox1')
 
     def _getWarning(self):
         return self._window.getControl('Hyperlink1')
