@@ -32,11 +32,11 @@ import unohelper
 from com.sun.star.logging.LogLevel import INFO
 from com.sun.star.logging.LogLevel import SEVERE
 
+from com.sun.star.sdbc import SQLException
+
 from com.sun.star.uno import Exception as UNOException
 
 from vcard import Driver as DriverBase
-
-from vcard import checkConfiguration
 
 from vcard import getLogger
 
@@ -51,11 +51,12 @@ import traceback
 # pythonloader looks for a static g_ImplementationHelper variable
 g_ImplementationHelper = unohelper.ImplementationHelper()
 g_ImplementationName = 'io.github.prrvchr.vCardOOo.Driver'
-g_ServiceNames = ('io.github.prrvchr.vCardOOo.Driver', 'com.sun.star.sdbc.Driver')
+g_ServiceNames = ('io.github.prrvchr.vCardOOo.Driver',
+                  'com.sun.star.sdbc.Driver')
 
 # XXX: This class is simply a bootstrap to enable the following:
-# XXX: - Check the required configuration
 # XXX: - Log any errors that occur while loading the Java driver
+# XXX: - Keep a reference of the logger to allow for later consultation
 
 class Driver():
     def __new__(cls, ctx, *args, **kwargs):
@@ -64,14 +65,23 @@ class Driver():
                 if cls._instance is None:
                     logger = getLogger(ctx, g_defaultlog, g_basename)
                     try:
-                        checkConfiguration(ctx, logger)
                         cls._instance = DriverBase(ctx, logger, g_ImplementationName, g_ServiceNames)
                         logger.logprb(INFO, 'Driver', '__new__', 101, g_ImplementationName)
-                    except UNOException as e:
+                    except SQLException as e:
                         if cls._logger is None:
                             cls._logger = logger
                         logger.logprb(SEVERE, 'Driver', '__new__', 102, g_ImplementationName, e.Message)
                         raise e
+                    except UNOException as e1:
+                        if cls._logger is None:
+                            cls._logger = logger
+                        logger.logprb(SEVERE, 'Driver', '__new__', 102, g_ImplementationName, e1.Message)
+                        raise SQLException(e1.Message)
+                    except Exception as e2:
+                        if cls._logger is None:
+                            cls._logger = logger
+                        logger.logprb(SEVERE, 'Driver', '__new__', 102, g_ImplementationName, str(e2))
+                        raise SQLException(str(e2))
         return cls._instance
 
     # XXX: If the driver fails to load then we keep a reference
