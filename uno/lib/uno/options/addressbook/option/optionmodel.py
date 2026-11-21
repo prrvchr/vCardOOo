@@ -28,9 +28,11 @@
 """
 
 from ...unotool import createService
+from ...unotool import getStringResource
 
 from ...dbinit import getDataSourceUrl
 
+from ...configuration import g_extension
 from ...configuration import g_identifier
 from ...configuration import g_implementation
 
@@ -41,19 +43,32 @@ class OptionModel():
         self._config = config
         self._url = getDataSourceUrl(ctx)
         self._factor = 60
+        self._resolver = getStringResource(ctx, g_identifier, 'dialogs', 'OptionDialog')
+        self._resources = {'Title': 'OptionDialog.FixedLine1.Label'}
 
     @property
-    def _Timeout(self):
-        timeout = self._config.getByName('ReplicateTimeout')
+    def _timeout(self):
+        timeout = self._config.getByName('ReplicatorTimeout')
         return timeout // self._factor
 
+    @_timeout.setter
+    def _timeout(self, timeout):
+        self._config.replaceByName('ReplicatorTimeout', timeout * self._factor)
+
     @property
-    def _ViewName(self):
+    def _view(self):
         return self._config.getByName('AddressBookName')
 
+    @_view.setter
+    def _view(self, view):
+        self._config.replaceByName('AddressBookName', view)
+
 # OptionModel getter methods
+    def getViewData(self):
+        return self._getTitle()
+
     def getInitData(self, state):
-        return self._Timeout, self._ViewName, state
+        return self._timeout, self._view, state
 
     def getDataSourceUrl(self):
         return self._url
@@ -61,19 +76,23 @@ class OptionModel():
 # OptionModel setter methods
     def loadDriver(self):
         try:
-            driver = createService(self._ctx, g_implementation)
-        except:
+            _ = createService(self._ctx, g_implementation)
+        except Exception:
             # Nothing to do the error is already logged
             pass
 
-# OptionsModel getter methods
+# OptionModel getter methods
     def setViewData(self, timeout, view):
-        if timeout != self._Timeout:
-            self._config.replaceByName('ReplicateTimeout', timeout * self._factor)
-        if view != self._ViewName:
-            self._config.replaceByName('AddressBookName', view)
+        if timeout != self._timeout:
+            self._timeout = timeout
+        if view != self._view:
+            self._view = view
         if self._config.hasPendingChanges():
             self._config.commitChanges()
             return True
         return False
 
+# OptionModel private methods
+    def _getTitle(self):
+        resource = self._resources.get('Title')
+        return self._resolver.resolveString(resource).format(extension=g_extension)

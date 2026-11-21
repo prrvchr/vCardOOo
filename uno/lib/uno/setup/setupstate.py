@@ -27,7 +27,13 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
+from ..unotool import getStringResource
+
 from ..configuration import State
+
+from ..configuration import g_extension
+from ..configuration import g_identifier
+from ..configuration import g_resource
 
 from dataclasses import dataclass
 from dataclasses import InitVar
@@ -62,20 +68,27 @@ class SetupState:
         return State.restart
 
     @property
-    def runnable(self) -> bool:
-        return all([self.extension, self.java, self.python]) and not self.restart
+    def valid(self) -> bool:
+        return all([self.extension, self.java, self.python])
 
     @property
-    def step(self) -> int:
-        if not self.extension:
-            return 2
-        if not self.java:
-            return 2 + self.jcode
-        if not self.database:
-            return 9
-        if not self.python:
-            return 9 + self.pcode
-        if self.restart:
-            return 14
-        return 1
+    def runnable(self) -> bool:
+        return self.valid and not self.restart
 
+    @property
+    def code(self) -> int:
+        if not self.extension:
+            return 1
+        if not self.java:
+            return 1 + self.jcode
+        if not self.database:
+            return 8
+        if not self.python:
+            return 8 + self.pcode
+        if self.restart:
+            return 13
+        return 0
+
+    def getMessage(self, ctx) -> str:
+        resolver = getStringResource(ctx, g_identifier, g_resource, 'SetupState')
+        return resolver.resolveString(self.code).format(extension=g_extension)

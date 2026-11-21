@@ -27,41 +27,61 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import traceback
+from com.sun.star.awt import Size
+
+from ..unotool import Layout
+from ..unotool import LinkListener
+from ..unotool import SubLayout
 
 
 class OptionsView():
-    def __init__(self, window, update, links):
+    def __init__(self, ctx, window):
         self._window = window
-        self._getSetup().Model.Enabled = update
-        for i, link in enumerate(links, start=1):
-            self._getLink(i).URL = link
+        self._link = LinkListener(ctx, self._getLabel())
+        self._layout = SubLayout(Layout(window, size=Size(279, 225), **self._getLayouts()))
+        window.addWindowListener(self._layout)
 
-# OptionView getter methods
-    def getData(self):
-        return self.getSetup()
+# OptionsView getter methods
+    def getLayout(self):
+        return self._layout
+
+    def getFrame(self):
+        return self._getFrame()
 
     def getSetup(self):
-        return self._getSetup().getSelectedItemPos()
+        return self._getSetup()
 
-# OptionView setter methods
-    def initView(self, setup, state):
-        self._setSetup(setup)
-        self.refreshView(state)
+# OptionsView setter methods
+    def dispose(self):
+        if self._layout:
+            self._layout.dispose()
+            self._layout = None
+        if self._link:
+            self._link.dispose()
+            self._link = None
 
-    def refreshView(self, state):
-        self._window.Model.Step = state.step
+    def refreshView(self, label, url):
+        self._setLabel(label, url)
 
 # OptionsView private methods
-    def _setSetup(self, setup):
-        control = self._getSetup()
-        if control.Model.Enabled:
-            control.selectItemPos(setup, True)
+    def _getLayouts(self):
+        return {'horizontals': self._getHorizontals()}
+
+    def _getHorizontals(self):
+        yield self._getFrame()
+        yield self._getSetup()
+        yield self._getLabel()
+
+    def _setLabel(self, label, url):
+        self._getLabel().Model.Label = label
+        self._link.setUrl(url)
 
 # OptionsView private control methods
+    def _getFrame(self):
+        return self._window.getControl('FrameControl1')
+
     def _getSetup(self):
-        return self._window.getControl('ListBox1')
+        return self._window.getControl('FrameControl2')
 
-    def _getLink(self, index):
-        return self._window.getControl(f'Hyperlink{index}')
-
+    def _getLabel(self):
+        return self._window.getControl('Label1')

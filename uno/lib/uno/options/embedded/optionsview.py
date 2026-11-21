@@ -27,26 +27,71 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import traceback
+from com.sun.star.awt import Size
+
+from ..unotool import Layout
+from ..unotool import LinkListener
+from ..unotool import SubLayout
 
 
 class OptionsView():
-    def __init__(self, window, links):
+    def __init__(self, ctx, window):
         self._window = window
-        for i, link in enumerate(links, start=1):
-            self._getLink(i).URL = link
+        self._link = LinkListener(ctx, self._getLabel())
+        self._layout = SubLayout(Layout(window, size=Size(279, 225), **self._getLayouts()))
+        window.addWindowListener(self._layout)
+
+# OptionsView getter methods
+    def getLayout(self):
+        return self._layout
+
+    def getFrame(self):
+        return self._getFrame()
+
+    def getSetup(self):
+        return self._getSetup()
 
 # OptionsView setter methods
-    def refreshView(self, state):
-        self._window.Model.Step = state.step
+    def dispose(self):
+        if self._layout:
+            self._layout.dispose()
+            self._layout = None
+        if self._link:
+            self._link.dispose()
+            self._link = None
+
+    def refreshView(self, label, url):
+        self._setLabel(label, url)
 
     def setDriverVersion(self, version):
         self._getVersion().Text = version
 
+# OptionsView private methods
+    def _getLayouts(self):
+        return {'horizontals': self._getHorizontals(),
+                'tops': self._getTops()}
+
+    def _getHorizontals(self):
+        yield self._getFrame()
+        yield self._getSetup()
+        yield self._getLabel()
+
+    def _getTops(self):
+        yield self._getVersion()
+
+    def _setLabel(self, label, url):
+        self._getLabel().Model.Label = label
+        self._link.setUrl(url)
+
 # OptionsView private control methods
+    def _getFrame(self):
+        return self._window.getControl('FrameControl1')
+
+    def _getSetup(self):
+        return self._window.getControl('FrameControl2')
+
     def _getVersion(self):
         return self._window.getControl('Label2')
 
-    def _getLink(self, index):
-        return self._window.getControl(f'Hyperlink{index}')
-
+    def _getLabel(self):
+        return self._window.getControl('Label3')

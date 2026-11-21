@@ -28,7 +28,6 @@
 """
 
 from com.sun.star.logging.LogLevel import INFO
-from com.sun.star.logging.LogLevel import SEVERE
 
 from .optionmodel import OptionModel
 
@@ -45,15 +44,21 @@ from ...configuration import g_synclog
 
 
 class OptionManager():
-    def __init__(self, ctx, logger, window, config):
+    def __init__(self, ctx, window, config, logger):
         self._ctx = ctx
         self._model = OptionModel(ctx, config)
-        self._view = OptionView(ctx, window, OptionHandler(self))
-        self._logmanager = LogManager(ctx, self._view.getWindow(), 'requirements.txt', g_defaultlog, g_synclog)
+        self._view = OptionView(ctx, window, OptionHandler(self), self._model.getViewData())
+        self._logmanager = LogManager(ctx, self._view.getFrame(), 'requirements.txt', g_defaultlog, g_synclog)
         self._logmanager.initView()
         self._logger = logger
         self._logger.logprb(INFO, 'OptionManager', '__init__()', 301)
         self._model.loadDriver()
+
+    def getLayout(self):
+        return self._view.getLayout().addLayout(self._logmanager.getLayout())
+
+    def getDataSourceUrl(self):
+        return self._model.getDataSourceUrl()
 
     def init(self, state):
         self._view.initView(*self._model.getInitData(state))
@@ -63,6 +68,10 @@ class OptionManager():
     def refresh(self, state):
         self._view.refreshView(state)
 
+    def dispose(self):
+        self._logmanager.dispose()
+        self._view.dispose()
+
     def saveSetting(self):
         option = self._model.setViewData(*self._view.getViewData())
         saved = self._logmanager.saveSetting()
@@ -71,7 +80,3 @@ class OptionManager():
 
     def viewData(self):
         getDesktop(self._ctx).loadComponentFromURL(self.getDataSourceUrl(), '_default', 0, ())
-
-    def getDataSourceUrl(self):
-        return self._model.getDataSourceUrl()
-

@@ -29,6 +29,8 @@
 
 import uno
 
+from ...unotool import Layout
+
 from ...unotool import getContainerWindow
 from ...unotool import getDialog
 
@@ -38,9 +40,13 @@ from ...configuration import g_identifier
 class LogWindow():
     def __init__(self, ctx, window, handler):
         self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'LogWindow')
+        self._layout = Layout(self._window, **self._getLayouts())
         self._window.setVisible(True)
 
 # LogWindow getter methods
+    def getLayout(self):
+        return self._layout
+
     def getParent(self):
         return self._window.getPeer()
 
@@ -52,7 +58,12 @@ class LogWindow():
 
 # LogWindow setter methods
     def dispose(self):
-        self._window.dispose()
+        if self._layout:
+            self._layout.dispose()
+            self._layout = None
+        if self._window:
+            self._window.dispose()
+            self._window = None
 
     def initView(self, loggers):
         control = self._getLoggers()
@@ -83,7 +94,14 @@ class LogWindow():
         control.Model.Enabled = enabled
         self.enableViewer(enabled and control.State)
 
+    def _getLayouts(self):
+        return {'horizontals': (self._getFixedLine(), self._getLoggers(), self._getLevel()),
+                'tops': (self._getLogger(), )}
+
 # LogWindow private control methods
+    def _getFixedLine(self):
+        return self._window.getControl('FixedLine1')
+
     def _getLoggers(self):
         return self._window.getControl('ListBox1')
 
@@ -134,4 +152,3 @@ class LogDialog():
 # LogDialog private control methods
     def _getLogger(self):
         return self._dialog.getControl('TextField1')
-

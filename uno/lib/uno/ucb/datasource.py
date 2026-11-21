@@ -38,19 +38,27 @@ from .listener import CloseListener
 
 from .provider import Provider
 
-from .replicator import Replicator
+# from .replicator import Replicator
 
 from .ucp import User
 
+from .setup import Check
+
 from .oauth20 import getOAuth2UserName
 
-from .dbinit import getDataBaseUrl
 from .dbinit import getDataSourceUrl
 
 from .helper import getExceptionMessage
+from .helper import getExtensions
 from .helper import showWarning
 
 from .unotool import getUriFactory
+
+from .jdbcdriver import g_agent
+from .jdbcdriver import g_java
+from .jdbcdriver import g_protocol
+from .jdbcdriver import g_script
+from .jdbcdriver import g_service
 
 from .configuration import g_extension
 
@@ -72,7 +80,7 @@ class DataSource():
         url = getDataSourceUrl(ctx)
         self._database = DataBase(ctx, url)
         self._provider = Provider(ctx, logger)
-        self._replicator = Replicator(ctx, url, self._provider, self._users, self._sync, self._lock)
+        self._replicator = None
         self._logger = logger
         self._database.addCloseListener(CloseListener(self))
         logger.logprb(INFO, cls, mtd, 302)
@@ -80,18 +88,19 @@ class DataSource():
     @property
     def DataBase(self):
         return self._database
+
     @property
     def Replicator(self):
-        return self._replicator
+        return None
 
     # called from XCloseListener
     def dispose(self):
         try:
-            if self.Replicator.is_alive():
-                self.Replicator.cancel()
+            # if self.Replicator.is_alive():
+            #    self.Replicator.cancel()
             for user in self._users.values():
                 user.dispose()
-            self.DataBase.shutdownDataBase(self.Replicator.fullPull())
+            self.DataBase.shutdownDataBase()
             self._logger.logprb(INFO, 'DataSource', 'dispose', 341, self._provider.Scheme)
         except Exception as e:
             self._logger.logprb(SEVERE, 'DataSource', 'dispose', 342, e, traceback.format_exc())
@@ -157,7 +166,7 @@ class DataSource():
     def _getUserName(self, source, url):
         try:
             name = getOAuth2UserName(self._ctx, source, self._provider.Scheme)
-        except:
+        except Exception:
             print("DataSource._getUserName() ERROR: %s" % traceback.format_exc())
         if not name:
             title, msg = self._getExceptionMessage(331, url)
@@ -167,3 +176,10 @@ class DataSource():
 
     def _getExceptionMessage(self, code, *args):
         return getExceptionMessage(self._logger, code, g_extension, *args)
+
+    @classmethod
+    def checkSetup(cls, ctx):
+        java = g_extension, g_java, g_script
+        agent = g_service, g_protocol, g_agent
+        database = getDataSourceUrl(ctx)
+        return Check.getState(ctx, database=database, java=java, agent=agent, python=True, extensions=getExtensions())

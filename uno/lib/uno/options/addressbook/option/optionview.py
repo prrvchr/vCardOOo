@@ -27,26 +27,37 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
+from ...unotool import Layout
+from ...unotool import SubLayout
+
 from ...unotool import getContainerWindow
 
 from ...configuration import g_identifier
 
-import traceback
-
 
 class OptionView():
-    def __init__(self, ctx, window, handler):
+    def __init__(self, ctx, window, handler, title):
         self._window = getContainerWindow(ctx, window.getPeer(), handler, g_identifier, 'OptionDialog')
+        self._getTitle().Model.Label = title
+        self._layout = SubLayout(Layout(self._window, **self._getLayouts()))
         self._window.setVisible(True)
 
 # OptionView getter methods
-    def getWindow(self):
-        return self._window
+    def getLayout(self):
+        return self._layout
+
+    def getFrame(self):
+        return self._getFrame()
 
     def getViewData(self):
         return int(self._getTimeout().Value), self._getViewName().Text
 
 # OptionView setter methods
+    def dispose(self):
+        if self._layout:
+            self._layout.dispose()
+            self._layout = None
+
     def initView(self, timeout, view, state):
         self._getTimeout().Value = timeout
         self._getViewName().Text = view
@@ -56,7 +67,26 @@ class OptionView():
         self._getDatasource().Model.Enabled = state.database
         self._getViewName().Model.Enabled = not state.database
 
+    def _getLayouts(self):
+        return {'horizontals': self._getHorizontals(),
+                'tops': self._getTops()}
+
+    def _getHorizontals(self):
+        yield self._getFrame()
+        yield self._getTitle()
+        yield self._getViewName()
+
+    def _getTops(self):
+        yield self._getTimeout()
+        yield self._getDatasource()
+
 # OptionView private control methods
+    def _getFrame(self):
+        return self._window.getControl('FrameControl1')
+
+    def _getTitle(self):
+        return self._window.getControl('FixedLine1')
+
     def _getTimeout(self):
         return self._window.getControl('NumericField1')
 
@@ -68,4 +98,3 @@ class OptionView():
 
     def _getViewName(self):
         return self._window.getControl('TextField1')
-

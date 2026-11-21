@@ -40,9 +40,8 @@ class OptionsListener(unohelper.Base,
         self._manager = manager
 
 # com.sun.star.lang.XEventListener
-    def disposing(self, source):
+    def disposing(self, event):
         try:
-            self._manager.dispose()
-        except Exception as e:
-            print("ERROR: %s - %s" % (e, traceback.format_exc()))
-
+            self._manager.dispose(event.Source)
+        except Exception:
+            print("OptionsListener.disposing() ERROR: %s" % traceback.format_exc())
