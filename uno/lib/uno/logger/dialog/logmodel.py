@@ -45,16 +45,17 @@ from ...logger.loggerpool import LoggerPool
 
 from ...logger.helper import getLoggerName
 
-from ...setup.helper import isLinuxDistribution
-from ...setup.helper import parseRequirements
+from ...setup.task.helper import isLinuxDistribution
+from ...setup.task.helper import parseRequirements
 
 from ...unotool import getPathSubstitution
 from ...unotool import getResourceLocation
 from ...unotool import getSimpleFile
 from ...unotool import getStringResourceWithLocation
 
+from ...config.configuration import g_resource
+
 from ...configuration import g_identifier
-from ...configuration import g_resource
 from ...configuration import g_basename
 
 from importlib import metadata
@@ -176,7 +177,7 @@ class LogModel():
         return index
 
     def _getLogHandler(self, index):
-        return self._logHandlers()[index -1]
+        return self._logHandlers()[index - 1]
 
     def _getHandlerIndex(self, handler):
         return self._logHandlers().index(handler) + 1
