@@ -317,7 +317,7 @@
     <target name="compile-module" depends="compile-java" if="src.withmodule">
         <echo message="Build module path: ${build.classes.dir}"/>
         <echo message="Source dir: ${src.dir.absolute}"/>
-        <javac srcdir="${src.dir.absolute}" source="11" target="11" encoding="UTF-8" includeantruntime="false"
+        <javac srcdir="${src.dir.absolute}" source="${ant.java.version}" target="${ant.java.version}" encoding="UTF-8" includeantruntime="false"
             destdir="${build.classes.dir}" excludes="**/*Test*">
             <modulepath>
                 <pathelement location="${build.classes.dir}"/>

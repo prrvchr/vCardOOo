@@ -27,32 +27,75 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import traceback
+from com.sun.star.awt import Size
+
+from ..unotool.layout import Layout
+
+from ..unotool.linklistener import LinkListener
+
+from ..unotool.sublayout import SubLayout
 
 
 class OptionsView():
-    def __init__(self, window, restart, url, instrumented):
+    def __init__(self, ctx, window):
         self._window = window
-        control = self._getWarning()
-        control.URL = url
-        self._setWarning(control, restart, instrumented)
+        self._link = LinkListener(ctx, self._getLabel())
+        self._layout = SubLayout(Layout(window, size=Size(279, 265), **self._getLayouts()))
+        window.addWindowListener(self._layout)
 
-    def setWarning(self, restart, instrumented):
-        self._setWarning(self._getWarning(), restart, instrumented)
+# OptionsView getter methods
+    def getLayout(self):
+        return self._layout
 
-# OptionsView private setter methods
-    def _setWarning(self, control, restart, instrumented):
-        if restart:
-            control.setVisible(False)
-            self._getRestart().setVisible(True)
-        else:
-            self._getRestart().setVisible(False)
-            control.setVisible(not instrumented)
+    def getFrame(self):
+        return self._getFrame()
+
+    def getSetup(self):
+        return self._getSetup()
+
+# OptionsView setter methods
+    def dispose(self):
+        if self._layout:
+            self._layout.dispose()
+            self._layout = None
+        if self._link:
+            self._link.dispose()
+            self._link = None
+
+    def refreshView(self, label, url):
+        self._setLabel(label, url)
+
+# OptionsView private methods
+    def _getLayouts(self):
+        return {'horizontals': self._getHorizontals(),
+                'tops': self._getTops()}
+
+    def _getHorizontals(self):
+        yield self._getFrame()
+        yield self._getTitle()
+        yield self._getSetup()
+        yield self._getLabel()
+
+    def _getTops(self):
+        for index in range(1, 3):
+            yield self._getButtons(index)
+
+    def _setLabel(self, label, url):
+        self._getLabel().Model.Label = label
+        self._link.setUrl(url)
 
 # OptionsView private control methods
-    def _getRestart(self):
+    def _getFrame(self):
+        return self._window.getControl('FrameControl1')
+
+    def _getTitle(self):
+        return self._window.getControl('FixedLine1')
+
+    def _getSetup(self):
+        return self._window.getControl('FrameControl2')
+
+    def _getButtons(self, index):
+        return self._window.getControl(f'CommandButton{index}')
+
+    def _getLabel(self):
         return self._window.getControl('Label3')
-
-    def _getWarning(self):
-        return self._window.getControl('Hyperlink1')
-

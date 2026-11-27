@@ -27,11 +27,9 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-from .card import DataBase as DataBaseMain
-
-import traceback
+from .card.database import DataBase as DataBaseMain
 
 
 class DataBase(DataBaseMain):
-    def __init__(self, ctx, logger, url, user='', pwd=''):
-        DataBaseMain.__init__(self, ctx, logger, url, user, pwd)
+    def __init__(self, ctx, logger=None):
+        super().__init__(ctx, logger)

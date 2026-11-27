@@ -29,12 +29,10 @@
 
 # General configuration
 g_extension = 'vCardOOo'
-g_identifier = 'io.github.prrvchr.%s' % g_extension
+g_identifier = f'io.github.prrvchr.{g_extension}'
+g_implementation = f'{g_identifier}.Driver'
 g_protocol = 'sdbc:address:vcard'
-g_implementation = '%s.Driver' % g_identifier
 
-# Resource strings files folder
-g_resource = 'resource'
 g_basename = 'Driver'
 
 g_defaultlog = 'vCardLog'
@@ -53,3 +51,5 @@ g_group = 'all'
 g_filter = 'USER_CONTACT_GROUP'
 g_timestamp = '%Y-%m-%dT%H:%M:%S.00'
 g_db_timestamp = 'YYYY-MM-DD"T"HH24:MI:SS.FFFFFFFFFFFF"Z"'
+
+g_version = '1.5.0'

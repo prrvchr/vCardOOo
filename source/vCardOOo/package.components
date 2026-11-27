@@ -10,11 +10,18 @@
     <implementation name="io.github.prrvchr.vCardOOo.Driver">
       <service name="io.github.prrvchr.vCardOOo.Driver"/>
       <service name="com.sun.star.sdbc.Driver"/>
+      <service name="com.sun.star.sdbcx.Driver"/>
     </implementation>
   </component>
   <component loader="com.sun.star.loader.Python" uri="service/OptionsHandler.py">
     <implementation name="io.github.prrvchr.vCardOOo.OptionsHandler">
       <service name="io.github.prrvchr.vCardOOo.OptionsHandler"/>
+    </implementation>
+  </component>
+  <component loader="com.sun.star.loader.Python" uri="service/Setup.py">
+    <implementation name="io.github.prrvchr.vCardOOo.Setup">
+      <service name="io.github.prrvchr.vCardOOo.Setup"/>
+      <service name="com.sun.star.task.Job"/>
     </implementation>
   </component>
 </components>

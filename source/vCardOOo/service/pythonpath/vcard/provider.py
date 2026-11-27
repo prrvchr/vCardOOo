@@ -27,29 +27,23 @@
 ╚════════════════════════════════════════════════════════════════════════════════════╝
 """
 
-import uno
-
-from com.sun.star.logging.LogLevel import INFO
-from com.sun.star.logging.LogLevel import SEVERE
-
-from .card import Provider as ProviderMain
+from .card.provider import Provider as ProviderMain
 
 from .unotool import executeDispatch
 from .unotool import getUrl
 
-from .helper import getSqlException
+from .card.helper import getSqlException
 
-from .oauth20 import getRequest
+from .oauth20.oauth2tool import getRequest
 
 from .configuration import g_identifier
 
 import xml.etree.ElementTree as ET
-import traceback
 
 
 class Provider(ProviderMain):
-    def __init__(self, ctx, src, database):
-        ProviderMain.__init__(self, ctx, src)
+    def __init__(self, ctx, source):
+        ProviderMain.__init__(self, ctx, source)
         self._chunk = 256
         self._cardsync = '%s.CardSync' % g_identifier
         self._url = '/.well-known/carddav'
@@ -81,7 +75,7 @@ class Provider(ProviderMain):
         return server + '/' + name
 
 # Method called from Provider.initAddressbooks()
-    def getAddressbooks(self, database, user):
+    def getAddressbooks(self, _database, user):
         mtd = 'getAddressbooks'
         parameter = self._getAllBookParameter(user)
         response = user.Request.execute(parameter)
@@ -94,7 +88,7 @@ class Provider(ProviderMain):
 
     # Method called from User.__init__()
     # This method call Request without OAuth2 mode
-    def getRequest(self, url, user):
+    def getRequest(self, _url, _user):
         return getRequest(self._ctx)
 
     # Private method
@@ -138,7 +132,7 @@ class Provider(ProviderMain):
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
+            for _, element in parser.read_events():
                 if element.tag != '{DAV:}current-user-principal':
                     continue
                 for child in element:
@@ -192,7 +186,7 @@ class Provider(ProviderMain):
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
+            for _, element in parser.read_events():
                 if element.tag != '{urn:ietf:params:xml:ns:carddav}addressbook-home-set':
                     continue
                 for child in element:
@@ -210,7 +204,7 @@ class Provider(ProviderMain):
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
+            for _, element in parser.read_events():
                 if element.tag != '{DAV:}response':
                     continue
                 url = name = tag = token = None
@@ -309,7 +303,7 @@ class Provider(ProviderMain):
         page += 1
         return page, count, args
 
-    def _pullCardByTag(self, database, user, book, page, count):
+    def _pullCardByTag(self, _database, _user, book, page, count):
         # TODO: Need to be implemented method
         print("Provider._pullCardByTag() %s" % (book.Name, ))
         return page, count, None
@@ -331,7 +325,7 @@ class Provider(ProviderMain):
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
+            for _, element in parser.read_events():
                 if element.tag != '{DAV:}response':
                     continue
                 url = tag = data = None
@@ -355,7 +349,7 @@ class Provider(ProviderMain):
         while iterator.hasMoreElements():
             # FIXME: As Decode is False we obtain a sequence of bytes
             parser.feed(iterator.nextElement().value)
-            for event, element in parser.read_events():
+            for _, element in parser.read_events():
                 if element.tag == '{DAV:}response':
                     url = status = None
                     for child in element.iter():
@@ -412,7 +406,6 @@ class Provider(ProviderMain):
 </C:addressbook-multiget>
 ''' % href.join(urls)
         return self._getRequestParameter(user.Request, 'getAddressbookCards', url, user.Name, user.Password, data)
-
 
     # Private getter method for Request Parameter
     def _getRequestParameter(self, request, method, url, name, pwd, data=None):
@@ -471,4 +464,3 @@ class Provider(ProviderMain):
             parameter.setHeader('Content-Type', 'application/xml; charset=utf-8')
 
         return parameter
-
