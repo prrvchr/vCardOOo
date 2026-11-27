@@ -109,14 +109,18 @@ class Driver(unohelper.Base,
         try:
             mtd = 'connect'
             self._logger.logprb(INFO, self._cls, mtd, 1111, url)
-            params = self._getConnectionParams(url, infos, mtd)
-            connection = self._getDataSource(mtd).getConnection(self, self._logger, *params)
+            if self._isAdminConnection(infos):
+                print("Driver.connect() 1 ")
+                connection = self._getDataSource(mtd).getAdminConnection()
+                print("Driver.connect() 2 ")
+            else:
+                params = self._getConnectionParams(url, infos, mtd)
+                connection = self._getDataSource(mtd).getConnection(self, self._logger, *params)
             metadata = connection.getMetaData()
             self._logger.logprb(INFO, self._cls, mtd, 1115, metadata.getDriverVersion(), metadata.getUserName())
             return connection
         except SQLException as e:
-            self._logger.logp(SEVERE, self._cls, mtd, e.Message)
-            raise e
+            raise
         except Exception as e:
             raise getLogException(self._logger, self, 1005, 1116, self._cls, mtd, str(e), traceback.format_exc())
 
@@ -148,6 +152,9 @@ class Driver(unohelper.Base,
         return self._services
 
 # Private getter methods
+    def _isAdminConnection(self, infos):
+        return any(p.Name == 'Admin' and bool(p.Value) for p in infos)
+
     def _getConnectionParams(self, url, infos, mtd):
         raise NotImplementedError
 
